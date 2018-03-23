@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Implementation-Title: JourneyMap
+Implementation-Version: 1.12.2-5.5.2
+Implementation-URL: http://journeymap.info
+FMLAT: journeymap_at.cfg
+
