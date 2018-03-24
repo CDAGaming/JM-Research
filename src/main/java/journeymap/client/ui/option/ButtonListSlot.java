@@ -1,5 +1,6 @@
 package journeymap.client.ui.option;
 
+import journeymap.client.ui.component.Button;
 import net.minecraft.client.*;
 import net.minecraft.client.gui.*;
 import journeymap.client.ui.component.*;
@@ -8,6 +9,7 @@ import java.awt.*;
 import journeymap.client.render.draw.*;
 import com.google.common.base.*;
 import java.util.*;
+import java.util.List;
 
 public class ButtonListSlot implements ScrollListPane.ISlot, Comparable<ButtonListSlot>
 {
@@ -78,7 +80,7 @@ public class ButtonListSlot implements ScrollListPane.ISlot, Comparable<ButtonLi
         SlotMetadata tooltipMetadata = null;
         if (this.buttons.size() > 0) {
             this.buttons.setHeights(slotHeight);
-            if (this.buttonOptionMetadata.get(((ArrayList<Object>)this.buttons).get(0)).isToolbar()) {
+            if (this.buttonOptionMetadata.get((this.buttons).get(0)).isToolbar()) {
                 this.buttons.fitWidths(this.fontRenderer);
                 this.buttons.layoutHorizontal(x + listWidth - ButtonListSlot.hgap, y, false, ButtonListSlot.hgap);
                 DrawUtil.drawGradientRect(x, y, listWidth, slotHeight, this.colorToolbarBgStart, 0.15f, this.colorToolbarBgEnd, 0.6f);

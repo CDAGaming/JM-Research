@@ -25,8 +25,8 @@ class LabelVars
     }
     
     void draw(final String text) {
-        GlStateManager.func_179147_l();
+        GlStateManager.enableBlend();
         DrawUtil.drawLabel(text, this.labelSpec, (int)this.x, (int)this.y, this.hAlign, this.vAlign, this.fontScale, 0.0);
-        GlStateManager.func_179084_k();
+        GlStateManager.disableBlend();
     }
 }

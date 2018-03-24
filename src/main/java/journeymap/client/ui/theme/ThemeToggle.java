@@ -22,8 +22,8 @@ public class ThemeToggle extends ThemeButton
     }
     
     @Override
-    public boolean func_146116_c(final Minecraft minecraft, final int mouseX, final int mouseY) {
-        return (!this.toggled || !this.staysOn) && super.func_146116_c(minecraft, mouseX, mouseY);
+    public boolean mousePressed(final Minecraft minecraft, final int mouseX, final int mouseY) {
+        return (!this.toggled || !this.staysOn) && super.mousePressed(minecraft, mouseX, mouseY);
     }
     
     @Override

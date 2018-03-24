@@ -21,8 +21,8 @@ class SortButton extends OnOffButton
     }
     
     @Override
-    public void func_191745_a(final Minecraft minecraft, final int mouseX, final int mouseY, final float f) {
-        super.func_191745_a(minecraft, mouseX, mouseY, f);
+    public void drawButton(final Minecraft minecraft, final int mouseX, final int mouseY, final float f) {
+        super.drawButton(minecraft, mouseX, mouseY, f);
         super.drawUnderline();
     }
     

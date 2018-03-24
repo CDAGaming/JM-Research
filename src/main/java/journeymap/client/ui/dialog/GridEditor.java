@@ -3,6 +3,7 @@ package journeymap.client.ui.dialog;
 import journeymap.client.model.*;
 import java.awt.geom.*;
 import journeymap.client.ui.component.*;
+import journeymap.client.ui.component.Button;
 import net.minecraft.util.*;
 import journeymap.client.*;
 import journeymap.client.render.texture.*;
