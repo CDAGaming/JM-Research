@@ -48,26 +48,26 @@ public class ScrollPane extends GuiSlot
         return (int)this.origin.getY();
     }
     
-    public int func_148146_j() {
-        return this.field_148149_f;
+    public int getSlotHeight() {
+        return this.slotHeight;
     }
     
     public void setDimensions(final int width, final int height, final int marginTop, final int marginBottom, final int x, final int y) {
-        super.func_148122_a(width, height, marginTop, height - marginBottom);
+        super.setDimensions(width, height, marginTop, height - marginBottom);
         this.paneWidth = width;
         this.paneHeight = height;
         this.origin.setLocation(x, y);
     }
     
-    protected int func_148127_b() {
+    protected int getSize() {
         return this.items.size();
     }
     
-    protected void func_148144_a(final int i, final boolean flag, final int p1, final int p2) {
+    protected void elementClicked(final int i, final boolean flag, final int p1, final int p2) {
         this.selected = (Scrollable)this.items.get(i);
     }
     
-    protected boolean func_148131_a(final int i) {
+    protected boolean isSelected(final int i) {
         return this.items.get(i) == this.selected;
     }
     
@@ -79,7 +79,7 @@ public class ScrollPane extends GuiSlot
         this.selected = item;
     }
     
-    protected void func_148123_a() {
+    protected void drawBackground() {
     }
     
     public Button mouseClicked(final int mouseX, final int mouseY, final int mouseButton) {
@@ -94,8 +94,8 @@ public class ScrollPane extends GuiSlot
                 }
                 if (item instanceof Button) {
                     final Button button = (Button)item;
-                    if (button.func_146116_c(this.mc, mouseX, mouseY)) {
-                        this.func_148147_a((GuiButton)button);
+                    if (button.mousePressed(this.mc, mouseX, mouseY)) {
+                        this.actionPerformed((GuiButton)button);
                         return button;
                     }
                     continue;
@@ -108,25 +108,25 @@ public class ScrollPane extends GuiSlot
         return null;
     }
     
-    public void func_148128_a(final int mX, final int mY, final float f) {
-        GlStateManager.func_179094_E();
-        GlStateManager.func_179109_b((float)this.getX(), (float)this.getY(), 0.0f);
+    public void drawScreen(final int mX, final int mY, final float f) {
+        GlStateManager.pushMatrix();
+        GlStateManager.translate((float)this.getX(), (float)this.getY(), 0.0f);
         this._mouseX = mX;
         this._mouseY = mY;
         if (this.selected == null || Mouse.isButtonDown(0) || Mouse.getDWheel() != 0 || !Mouse.next() || Mouse.getEventButtonState()) {}
         this.firstVisibleIndex = -1;
         this.lastVisibleIndex = -1;
-        super.func_148128_a(mX - this.getX(), mY - this.getY(), f);
-        GlStateManager.func_179121_F();
+        super.drawScreen(mX - this.getX(), mY - this.getY(), f);
+        GlStateManager.popMatrix();
     }
     
-    protected void func_192637_a(final int index, final int xPosition, final int y, final int l, final int var6, final int var7, final float f) {
+    protected void drawSlot(final int index, final int xPosition, final int y, final int l, final int var6, final int var7, final float f) {
         if (this.firstVisibleIndex == -1) {
             this.firstVisibleIndex = index;
         }
         this.lastVisibleIndex = Math.max(this.lastVisibleIndex, index);
-        GlStateManager.func_179094_E();
-        GlStateManager.func_179109_b((float)(-this.getX()), (float)(-this.getY()), 0.0f);
+        GlStateManager.pushMatrix();
+        GlStateManager.translate((float)(-this.getX()), (float)(-this.getY()), 0.0f);
         final int margin = 4;
         final int itemX = this.getX() + 2;
         final int itemY = y + this.getY();
@@ -153,19 +153,19 @@ public class ScrollPane extends GuiSlot
                 item.drawPartialScrollable(this.mc, itemX, drawY, item.getWidth(), item.getHeight() - yDiff);
             }
         }
-        GlStateManager.func_179121_F();
+        GlStateManager.popMatrix();
     }
     
     public boolean inFullView(final Scrollable item) {
         return item.getY() >= this.getY() && item.getY() + item.getHeight() <= this.getY() + this.paneHeight;
     }
     
-    protected int func_148137_d() {
+    protected int getScrollBarX() {
         return this.paneWidth;
     }
     
     public int getWidth() {
-        final boolean scrollVisible = 0 < this.func_148148_g();
+        final boolean scrollVisible = 0 < this.getAmountScrolled();
         return this.paneWidth + (scrollVisible ? 5 : 0);
     }
     
@@ -184,8 +184,8 @@ public class ScrollPane extends GuiSlot
     protected void drawContainerBackground(final Tessellator tess) {
         final int width = this.getWidth();
         float alpha = 0.4f;
-        DrawUtil.drawRectangle(0.0, this.field_148153_b, width, this.paneHeight, Color.BLACK.getRGB(), alpha);
-        DrawUtil.drawRectangle(width - 6, this.field_148153_b, 5.0, this.paneHeight, Color.BLACK.getRGB(), alpha);
+        DrawUtil.drawRectangle(0.0, this.top, width, this.paneHeight, Color.BLACK.getRGB(), alpha);
+        DrawUtil.drawRectangle(width - 6, this.top, 5.0, this.paneHeight, Color.BLACK.getRGB(), alpha);
         if (this.showFrame) {
             alpha = 1.0f;
             DrawUtil.drawRectangle(-1.0, -1.0, width + 2, 1.0, this.frameColor, alpha);

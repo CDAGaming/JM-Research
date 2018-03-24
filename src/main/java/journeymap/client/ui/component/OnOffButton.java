@@ -35,7 +35,7 @@ public class OnOffButton extends Button
     @Override
     protected void updateLabel() {
         if (this.labelOn != null && this.labelOff != null) {
-            super.field_146126_j = (this.getToggled() ? this.labelOn : this.labelOff);
+            super.displayString = (this.getToggled() ? this.labelOn : this.labelOff);
         }
     }
     
@@ -45,12 +45,12 @@ public class OnOffButton extends Button
     
     @Override
     public int getFitWidth(final FontRenderer fr) {
-        int max = fr.func_78256_a(this.field_146126_j);
+        int max = fr.getStringWidth(this.displayString);
         if (this.labelOn != null) {
-            max = Math.max(max, fr.func_78256_a(this.labelOn));
+            max = Math.max(max, fr.getStringWidth(this.labelOn));
         }
         if (this.labelOff != null) {
-            max = Math.max(max, fr.func_78256_a(this.labelOff));
+            max = Math.max(max, fr.getStringWidth(this.labelOff));
         }
         return max + this.WIDTH_PAD;
     }
@@ -69,7 +69,7 @@ public class OnOffButton extends Button
     }
     
     public void setToggled(final Boolean toggled, final boolean notifyToggleListener) {
-        if (this.toggled == toggled || !this.isEnabled() || !this.field_146125_m) {
+        if (this.toggled == toggled || !this.isEnabled() || !this.visible) {
             return;
         }
         boolean allowChange = true;
@@ -84,7 +84,7 @@ public class OnOffButton extends Button
             }
         }
         catch (Throwable t) {
-            Journeymap.getLogger().error("Error trying to toggle button '" + this.field_146126_j + "': " + LogFormatter.toString(t));
+            Journeymap.getLogger().error("Error trying to toggle button '" + this.displayString + "': " + LogFormatter.toString(t));
             allowChange = false;
         }
         if (allowChange) {

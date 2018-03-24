@@ -50,7 +50,7 @@ public class ChunkMD
     }
     
     public IBlockState getBlockState(final BlockPos blockPos) {
-        return JmBlockAccess.INSTANCE.func_180495_p(blockPos);
+        return JmBlockAccess.INSTANCE.getBlockState(blockPos);
     }
     
     public BlockMD getBlockMD(final BlockPos blockPos) {

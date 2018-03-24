@@ -2,6 +2,7 @@ package journeymap.client.model;
 
 import java.io.*;
 import com.google.gson.annotations.*;
+import journeymap.client.Constants;
 import net.minecraft.client.*;
 import net.minecraftforge.fml.client.*;
 import java.awt.*;
@@ -16,7 +17,10 @@ import com.google.common.base.*;
 import journeymap.client.waypoint.*;
 import journeymap.common.*;
 import java.util.*;
+import java.util.List;
+
 import com.google.gson.*;
+import org.apache.logging.log4j.util.Strings;
 
 public class Waypoint implements Serializable
 {
@@ -88,7 +92,7 @@ public class Waypoint implements Serializable
     }
     
     public Waypoint(final String name, final BlockPos pos, final Color color, final Type type, final Integer currentDimension) {
-        this(name, pos.func_177958_n(), pos.func_177956_o(), pos.func_177952_p(), true, color.getRed(), color.getGreen(), color.getBlue(), type, "journeymap", currentDimension, Arrays.asList(currentDimension));
+        this(name, pos.getX(), pos.getY(), pos.getZ(), true, color.getRed(), color.getGreen(), color.getBlue(), type, "journeymap", currentDimension, Arrays.asList(currentDimension));
     }
     
     public Waypoint(String name, final int x, final int y, final int z, final boolean enable, final int red, final int green, final int blue, final Type type, final String origin, final Integer currentDimension, Collection<Integer> dimensions) {
@@ -98,7 +102,7 @@ public class Waypoint implements Serializable
         }
         if (dimensions == null || dimensions.size() == 0) {
             dimensions = new TreeSet<Integer>();
-            dimensions.add(FMLClientHandler.instance().getClient().field_71439_g.field_70170_p.field_73011_w.getDimension());
+            dimensions.add(FMLClientHandler.instance().getClient().player.world.provider.getDimension());
         }
         (this.dimensions = new TreeSet<Integer>(dimensions)).add(currentDimension);
         this.name = name;
@@ -123,8 +127,8 @@ public class Waypoint implements Serializable
     }
     
     public static Waypoint of(final EntityPlayer player) {
-        final BlockPos blockPos = new BlockPos(MathHelper.func_76128_c(player.field_70165_t), MathHelper.func_76128_c(player.field_70163_u), MathHelper.func_76128_c(player.field_70161_v));
-        return at(blockPos, Type.Normal, FMLClientHandler.instance().getClient().field_71439_g.field_70170_p.field_73011_w.getDimension());
+        final BlockPos blockPos = new BlockPos(MathHelper.floor(player.posX), MathHelper.floor(player.posY), MathHelper.floor(player.posZ));
+        return at(blockPos, Type.Normal, FMLClientHandler.instance().getClient().player.world.provider.getDimension());
     }
     
     public static Waypoint at(final BlockPos blockPos, final Type type, final int dimension) {
@@ -134,7 +138,7 @@ public class Waypoint implements Serializable
             name = String.format("%s %s %s", Constants.getString("jm.waypoint.deathpoint"), DateFormat.getTimeInstance().format(now), DateFormat.getDateInstance(3).format(now));
         }
         else {
-            name = createName(blockPos.func_177958_n(), blockPos.func_177952_p());
+            name = createName(blockPos.getX(), blockPos.getZ());
         }
         final Waypoint waypoint = new Waypoint(name, blockPos, Color.white, type, dimension);
         waypoint.setRandomColor();
@@ -237,7 +241,7 @@ public class Waypoint implements Serializable
     }
     
     public boolean isInPlayerDimension() {
-        return this.dimensions.contains(FMLClientHandler.instance().getClient().field_71439_g.field_70170_p.field_73011_w.getDimension());
+        return this.dimensions.contains(FMLClientHandler.instance().getClient().player.world.provider.getDimension());
     }
     
     public String getId() {
@@ -267,7 +271,7 @@ public class Waypoint implements Serializable
     }
     
     public int getX() {
-        if (this.mc != null && this.mc.field_71439_g != null && this.mc.field_71439_g.field_71093_bK == -1) {
+        if (this.mc != null && this.mc.player != null && this.mc.player.dimension == -1) {
             return this.x / 8;
         }
         return this.x;
@@ -286,7 +290,7 @@ public class Waypoint implements Serializable
     }
     
     public int getZ() {
-        if (this.mc != null && this.mc.field_71439_g != null && this.mc.field_71439_g.field_71093_bK == -1) {
+        if (this.mc != null && this.mc.player != null && this.mc.player.dimension == -1) {
             return this.z / 8;
         }
         return this.z;
