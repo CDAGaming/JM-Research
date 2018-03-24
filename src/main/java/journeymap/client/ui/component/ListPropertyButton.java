@@ -27,7 +27,7 @@ public class ListPropertyButton<T> extends Button implements IConfigFieldHolder<
             this.field.set(value);
             this.field.save();
         }
-        this.field_146126_j = this.getFormattedLabel(value.toString());
+        this.displayString = this.getFormattedLabel(value.toString());
     }
     
     public ConfigField<T> getField() {
@@ -51,7 +51,7 @@ public class ListPropertyButton<T> extends Button implements IConfigFieldHolder<
     }
     
     @Override
-    public boolean func_146116_c(final Minecraft minecraft, final int mouseX, final int mouseY) {
+    public boolean mousePressed(final Minecraft minecraft, final int mouseX, final int mouseY) {
         if (super.mousePressed(minecraft, mouseX, mouseY, false)) {
             this.nextOption();
             return this.checkClickListeners();
@@ -65,16 +65,16 @@ public class ListPropertyButton<T> extends Button implements IConfigFieldHolder<
     
     @Override
     public int getFitWidth(final FontRenderer fr) {
-        int max = fr.func_78256_a(this.field_146126_j);
+        int max = fr.getStringWidth(this.displayString);
         for (final T value : this.values) {
-            max = Math.max(max, fr.func_78256_a(this.getFormattedLabel(value.toString())));
+            max = Math.max(max, fr.getStringWidth(this.getFormattedLabel(value.toString())));
         }
         return max + this.WIDTH_PAD;
     }
     
     @Override
     public boolean keyTyped(final char c, final int i) {
-        if (this.func_146115_a()) {
+        if (this.isMouseOver()) {
             if (i == 203 || i == 208 || i == 74) {
                 this.prevOption();
                 return true;

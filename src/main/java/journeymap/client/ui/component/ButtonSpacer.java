@@ -18,7 +18,7 @@ public class ButtonSpacer extends Button
     }
     
     @Override
-    public void func_191745_a(final Minecraft minecraft, final int mouseX, final int mouseY, final float f) {
+    public void drawButton(final Minecraft minecraft, final int mouseX, final int mouseY, final float f) {
     }
     
     @Override
@@ -26,7 +26,7 @@ public class ButtonSpacer extends Button
     }
     
     @Override
-    public boolean func_146116_c(final Minecraft minecraft, final int mouseX, final int mouseY) {
+    public boolean mousePressed(final Minecraft minecraft, final int mouseX, final int mouseY) {
         return false;
     }
     

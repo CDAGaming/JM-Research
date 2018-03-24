@@ -4,6 +4,8 @@ import java.awt.geom.*;
 import net.minecraft.client.*;
 import java.awt.*;
 import java.util.*;
+import java.util.List;
+
 import org.lwjgl.input.*;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.*;

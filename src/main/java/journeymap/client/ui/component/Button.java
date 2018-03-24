@@ -74,7 +74,7 @@ public class Button extends GuiButton implements ScrollPane.Scrollable
             this.setHeight(20);
         }
         if (this.width == 0) {
-            this.func_175211_a(200);
+            this.setWidth(200);
         }
         this.updateBounds();
     }
@@ -92,31 +92,31 @@ public class Button extends GuiButton implements ScrollPane.Scrollable
     }
     
     public void fitWidth(final FontRenderer fr) {
-        this.func_175211_a(this.getFitWidth(fr));
+        this.setWidth(this.getFitWidth(fr));
     }
     
     public void drawPartialScrollable(final Minecraft minecraft, final int x, final int y, final int width, final int height) {
-        minecraft.getTextureManager().func_110577_a(Button.field_146122_a);
+        minecraft.getTextureManager().bindTexture(Button.BUTTON_TEXTURES);
         final int k = 0;
-        this.func_73729_b(x, y, 0, 46 + k * 20, width / 2, height);
-        this.func_73729_b(x + width / 2, y, 200 - width / 2, 46 + k * 20, width / 2, height);
+        this.drawTexturedModalRect(x, y, 0, 46 + k * 20, width / 2, height);
+        this.drawTexturedModalRect(x + width / 2, y, 200 - width / 2, 46 + k * 20, width / 2, height);
     }
     
     public void showDisabledOnHover(final boolean show) {
         this.showDisabledHoverText = show;
     }
     
-    public boolean func_146115_a() {
-        return super.func_146115_a();
+    public boolean isMouseOver() {
+        return super.isMouseOver();
     }
     
     public void setMouseOver(final boolean hover) {
         this.setHovered(hover);
     }
     
-    public void func_146113_a(final SoundHandler soundHandler) {
+    public void playPressSound(final SoundHandler soundHandler) {
         if (this.isEnabled()) {
-            super.func_146113_a(soundHandler);
+            super.playPressSound(soundHandler);
         }
     }
     
@@ -128,30 +128,30 @@ public class Button extends GuiButton implements ScrollPane.Scrollable
             super.drawButton(minecraft, mouseX, mouseY, partialTicks);
         }
         else {
-            minecraft.getTextureManager().func_110577_a(Button.field_146122_a);
-            GlStateManager.func_179131_c(1.0f, 1.0f, 1.0f, 1.0f);
-            this.setHovered(mouseX >= this.field_146128_h && mouseY >= this.field_146129_i && mouseX < this.field_146128_h + this.field_146120_f && mouseY < this.field_146129_i + this.field_146121_g);
-            final int hoverState = this.func_146114_a(this.isHovered());
+            minecraft.getTextureManager().bindTexture(Button.BUTTON_TEXTURES);
+            GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
+            this.setHovered(mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height);
+            final int hoverState = this.getHoverState(this.isHovered());
             if (this.isDrawFrame()) {
-                DrawUtil.drawRectangle(this.field_146128_h, this.field_146129_i, this.field_146120_f, 1.0, this.customFrameColorLight, 1.0f);
-                DrawUtil.drawRectangle(this.field_146128_h, this.field_146129_i, 1.0, this.field_146121_g, this.customFrameColorLight, 1.0f);
-                DrawUtil.drawRectangle(this.field_146128_h, this.field_146129_i + this.field_146121_g - 1, this.field_146120_f - 1, 1.0, this.customFrameColorDark, 1.0f);
-                DrawUtil.drawRectangle(this.field_146128_h + this.field_146120_f - 1, this.field_146129_i + 1, 1.0, this.field_146121_g - 1, this.customFrameColorDark, 1.0f);
+                DrawUtil.drawRectangle(this.x, this.y, this.width, 1.0, this.customFrameColorLight, 1.0f);
+                DrawUtil.drawRectangle(this.x, this.y, 1.0, this.height, this.customFrameColorLight, 1.0f);
+                DrawUtil.drawRectangle(this.x, this.y + this.height - 1, this.width - 1, 1.0, this.customFrameColorDark, 1.0f);
+                DrawUtil.drawRectangle(this.x + this.width - 1, this.y + 1, 1.0, this.height - 1, this.customFrameColorDark, 1.0f);
             }
             if (this.isDrawBackground()) {
-                DrawUtil.drawRectangle(this.field_146128_h + 1, this.field_146129_i + 1, this.field_146120_f - 2, this.field_146121_g - 2, (hoverState == 2) ? this.customBgHoverColor : this.customBgColor, 1.0f);
+                DrawUtil.drawRectangle(this.x + 1, this.y + 1, this.width - 2, this.height - 2, (hoverState == 2) ? this.customBgHoverColor : this.customBgColor, 1.0f);
             }
             else if (this.isEnabled() && this.isHovered()) {
-                DrawUtil.drawRectangle(this.field_146128_h + 1, this.field_146129_i + 1, this.field_146120_f - 2, this.field_146121_g - 2, this.customBgHoverColor2, 0.5f);
+                DrawUtil.drawRectangle(this.x + 1, this.y + 1, this.width - 2, this.height - 2, this.customBgHoverColor2, 0.5f);
             }
-            this.func_146119_b(minecraft, mouseX, mouseY);
+            this.mouseDragged(minecraft, mouseX, mouseY);
             Integer varLabelColor = this.labelColor;
             if (!this.isEnabled()) {
                 varLabelColor = this.disabledLabelColor;
                 if (this.drawBackground) {
                     final float alpha = 0.7f;
-                    final int widthOffset = this.field_146120_f - ((this.field_146121_g >= 20) ? 3 : 2);
-                    DrawUtil.drawRectangle(this.getX() + 1, this.getY() + 1, widthOffset, this.field_146121_g - 2, this.disabledBgColor, alpha);
+                    final int widthOffset = this.width - ((this.height >= 20) ? 3 : 2);
+                    DrawUtil.drawRectangle(this.getX() + 1, this.getY() + 1, widthOffset, this.height - 2, this.disabledBgColor, alpha);
                 }
             }
             else if (this.isHovered()) {
@@ -168,19 +168,19 @@ public class Button extends GuiButton implements ScrollPane.Scrollable
     }
     
     public void drawCenteredString(final FontRenderer fontRenderer, final String text, final float x, final float y, final int color) {
-        fontRenderer.func_175063_a(text, x - fontRenderer.getStringWidth(text) / 2, y, color);
+        fontRenderer.drawStringWithShadow(text, x - fontRenderer.getStringWidth(text) / 2, y, color);
     }
     
     public void drawUnderline() {
         if (this.isVisible()) {
-            DrawUtil.drawRectangle(this.field_146128_h, this.field_146129_i + this.field_146121_g, this.field_146120_f, 1.0, this.customFrameColorDark, 1.0f);
+            DrawUtil.drawRectangle(this.x, this.y + this.height, this.width, 1.0, this.customFrameColorDark, 1.0f);
         }
     }
     
     public void secondaryDrawButton() {
     }
     
-    public boolean func_146116_c(final Minecraft minecraft, final int mouseX, final int mouseY) {
+    public boolean mousePressed(final Minecraft minecraft, final int mouseX, final int mouseY) {
         return this.mousePressed(minecraft, mouseX, mouseY, true);
     }
     
@@ -218,7 +218,7 @@ public class Button extends GuiButton implements ScrollPane.Scrollable
         final ArrayList<String> list = new ArrayList<String>();
         if (this.tooltip != null) {
             for (final String line : this.tooltip) {
-                list.addAll(this.fontRenderer.func_78271_c(line, 200));
+                list.addAll(this.fontRenderer.listFormattedStringToWidth(line, 200));
             }
             return list;
         }
@@ -248,27 +248,27 @@ public class Button extends GuiButton implements ScrollPane.Scrollable
     }
     
     public int getWidth() {
-        return this.field_146120_f;
+        return this.width;
     }
     
-    public void func_175211_a(final int width) {
-        if (this.field_146120_f != width) {
-            this.field_146120_f = width;
+    public void setWidth(final int width) {
+        if (this.width != width) {
+            this.width = width;
             this.bounds = null;
         }
     }
     
     public void setScrollableWidth(final int width) {
-        this.func_175211_a(width);
+        this.setWidth(width);
     }
     
     public int getHeight() {
-        return this.field_146121_g;
+        return this.height;
     }
     
     public void setHeight(final int height) {
-        if (this.field_146121_g != height) {
-            this.field_146121_g = height;
+        if (this.height != height) {
+            this.height = height;
             this.bounds = null;
             if (height != 20) {
                 this.defaultStyle = false;
@@ -291,41 +291,41 @@ public class Button extends GuiButton implements ScrollPane.Scrollable
     }
     
     public int getX() {
-        return this.field_146128_h;
+        return this.x;
     }
     
     public void setX(final int x) {
-        if (this.field_146128_h != x) {
-            this.field_146128_h = x;
+        if (this.x != x) {
+            this.x = x;
             this.bounds = null;
         }
     }
     
     public int getY() {
-        return this.field_146129_i;
+        return this.y;
     }
     
     public void setY(final int y) {
-        if (this.field_146129_i != y) {
-            this.field_146129_i = y;
+        if (this.y != y) {
+            this.y = y;
             this.bounds = null;
         }
     }
     
     public int getCenterX() {
-        return this.field_146128_h + this.field_146120_f / 2;
+        return this.x + this.width / 2;
     }
     
     public int getMiddleY() {
-        return this.field_146129_i + this.field_146121_g / 2;
+        return this.y + this.height / 2;
     }
     
     public int getBottomY() {
-        return this.field_146129_i + this.field_146121_g;
+        return this.y + this.height;
     }
     
     public int getRightX() {
-        return this.field_146128_h + this.field_146120_f;
+        return this.x + this.width;
     }
     
     public void setPosition(final int x, final int y) {
@@ -344,12 +344,12 @@ public class Button extends GuiButton implements ScrollPane.Scrollable
     }
     
     public Button centerHorizontalOn(final int x) {
-        this.setX(x - this.field_146120_f / 2);
+        this.setX(x - this.width / 2);
         return this;
     }
     
     public Button centerVerticalOn(final int y) {
-        this.setY(y - this.field_146121_g / 2);
+        this.setY(y - this.height / 2);
         return this;
     }
     

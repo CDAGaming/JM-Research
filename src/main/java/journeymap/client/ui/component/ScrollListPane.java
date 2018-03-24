@@ -6,7 +6,7 @@ import net.minecraft.client.*;
 import java.util.*;
 import net.minecraft.client.renderer.*;
 
-public class ScrollListPane<T extends ISlot> extends GuiListExtended
+public class ScrollListPane<T extends ScrollListPane.ISlot> extends GuiListExtended
 {
     final JmUI parent;
     public SlotMetadata lastTooltipMetadata;

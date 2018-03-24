@@ -160,7 +160,7 @@ public class ButtonList extends ArrayList<Button>
     
     public Button findButton(final int id) {
         for (final Button button : this) {
-            if (button.field_146127_k == id) {
+            if (button.id == id) {
                 return button;
             }
         }
@@ -177,7 +177,7 @@ public class ButtonList extends ArrayList<Button>
         this.direction = (leftToRight ? Direction.LeftToRight : Direction.RightToLeft);
         Button last = null;
         for (final Button button : this) {
-            if (!button.field_146125_m) {
+            if (!button.visible) {
                 continue;
             }
             if (last == null) {
@@ -313,7 +313,7 @@ public class ButtonList extends ArrayList<Button>
     
     public ButtonList draw(final Minecraft minecraft, final int mouseX, final int mouseY) {
         for (final Button button : this) {
-            button.func_191745_a(minecraft, mouseX, mouseY, 0.0f);
+            button.drawButton(minecraft, mouseX, mouseY, 0.0f);
         }
         return this;
     }
@@ -326,7 +326,7 @@ public class ButtonList extends ArrayList<Button>
     
     public void setWidths(final int width) {
         for (final Button button : this) {
-            button.func_175211_a(width);
+            button.setWidth(width);
         }
     }
     
@@ -370,7 +370,7 @@ public class ButtonList extends ArrayList<Button>
             final int pad = (maxTotalWidth - totalWidth) / this.size();
             if (pad > 0) {
                 for (final Button button2 : this) {
-                    button2.func_175211_a(button2.getWidth() + pad);
+                    button2.setWidth(button2.getWidth() + pad);
                 }
             }
         }
@@ -379,7 +379,7 @@ public class ButtonList extends ArrayList<Button>
     public int getVisibleButtonCount() {
         int count = 0;
         for (final Button button : this) {
-            if (button.field_146125_m) {
+            if (button.visible) {
                 ++count;
             }
         }
