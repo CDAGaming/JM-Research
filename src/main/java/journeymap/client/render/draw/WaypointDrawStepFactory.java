@@ -21,17 +21,17 @@ public class WaypointDrawStepFactory
     
     public List<DrawWayPointStep> prepareSteps(final Collection<Waypoint> waypoints, final GridRenderer grid, boolean checkDistance, final boolean showLabel) {
         final Minecraft mc = FMLClientHandler.instance().getClient();
-        final EntityPlayer player = (EntityPlayer)mc.field_71439_g;
-        final int dimension = player.field_71093_bK;
+        final EntityPlayer player = (EntityPlayer)mc.player;
+        final int dimension = player.dimension;
         final int maxDistance = Journeymap.getClient().getWaypointProperties().maxDistance.get();
         checkDistance = (checkDistance && maxDistance > 0);
-        final Vec3d playerVec = checkDistance ? player.func_174791_d() : null;
+        final Vec3d playerVec = checkDistance ? player.getPositionVector() : null;
         this.drawStepList.clear();
         try {
             for (final Waypoint waypoint : waypoints) {
                 if (waypoint.isEnable() && waypoint.isInPlayerDimension()) {
                     if (checkDistance) {
-                        final double actualDistance = playerVec.func_72438_d(waypoint.getPosition());
+                        final double actualDistance = playerVec.distanceTo(waypoint.getPosition());
                         if (actualDistance > maxDistance) {
                             continue;
                         }

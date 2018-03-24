@@ -149,7 +149,7 @@ public class CoreProperties extends ClientPropertiesBase implements Comparable<C
     public boolean isValid(final boolean fix) {
         boolean valid = super.isValid(fix);
         if (FMLClientHandler.instance().getClient() != null) {
-            final int gameRenderDistance = FMLClientHandler.instance().getClient().field_71474_y.field_151451_c;
+            final int gameRenderDistance = FMLClientHandler.instance().getClient().gameSettings.renderDistanceChunks;
             for (final IntegerField prop : Arrays.asList(this.renderDistanceCaveMax, this.renderDistanceSurfaceMax)) {
                 if (prop.get() > gameRenderDistance) {
                     this.warn(String.format("Render distance %s is less than %s", gameRenderDistance, prop.getDeclaredField()));

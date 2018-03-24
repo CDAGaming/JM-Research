@@ -55,8 +55,8 @@ public class FullscreenActions
     public static void openKeybindings() {
         UIManager.INSTANCE.closeAll();
         final Fullscreen fullscreen = UIManager.INSTANCE.openFullscreenMap();
-        final Minecraft mc = Minecraft.func_71410_x();
-        mc.func_147108_a((GuiScreen)new GuiControls((GuiScreen)fullscreen, mc.field_71474_y));
+        final Minecraft mc = Minecraft.getMinecraft();
+        mc.displayGuiScreen((GuiScreen)new GuiControls((GuiScreen)fullscreen, mc.gameSettings));
     }
     
     public static void tweet(final String message) {

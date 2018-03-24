@@ -61,9 +61,9 @@ public class GridEditor extends JmUI
     }
     
     @Override
-    public void func_73866_w_() {
+    public void initGui() {
         try {
-            if (this.field_146292_n.isEmpty()) {
+            if (this.buttonList.isEmpty()) {
                 final GridSpec spec = this.gridSpecs.getSpec(this.activeMapType);
                 this.buttonStyle = new ListPropertyButton<GridSpec.Style>(EnumSet.allOf(GridSpec.Style.class), Constants.getString("jm.common.grid_style"), new EnumField<GridSpec.Style>(Category.Hidden, "", spec.style));
                 this.buttonOpacity = new IntSliderButton(new IntegerField(Category.Hidden, "", 0, 100, (int)Math.ceil(spec.alpha * 100.0f)), Constants.getString("jm.common.grid_opacity") + " : ", "", 0, 100, true);
@@ -81,10 +81,10 @@ public class GridEditor extends JmUI
                 this.buttonCancel = new Button(Constants.getString("jm.waypoint.cancel"));
                 this.buttonClose = new Button(Constants.getString("jm.waypoint.save"));
                 (this.bottomButtons = new ButtonList(new Button[] { this.buttonReset, this.buttonCancel, this.buttonClose })).equalizeWidths(this.getFontRenderer());
-                this.field_146292_n.addAll(this.topButtons);
-                this.field_146292_n.addAll(this.leftChecks);
-                this.field_146292_n.addAll(this.leftButtons);
-                this.field_146292_n.addAll(this.bottomButtons);
+                this.buttonList.addAll(this.topButtons);
+                this.buttonList.addAll(this.leftChecks);
+                this.buttonList.addAll(this.leftButtons);
+                this.buttonList.addAll(this.bottomButtons);
                 this.updatePreview(this.activeMapType);
             }
         }
@@ -97,11 +97,11 @@ public class GridEditor extends JmUI
     @Override
     protected void layoutButtons() {
         try {
-            this.func_73866_w_();
+            this.initGui();
             final int hgap = 6;
             final int vgap = 6;
-            final int startY = Math.max(40, (this.field_146295_m - 230) / 2);
-            final int centerX = this.field_146294_l / 2;
+            final int startY = Math.max(40, (this.height - 230) / 2);
+            final int centerX = this.width / 2;
             final int cpSize = this.topButtons.getHeight(6);
             final int topRowWidth = 6 + cpSize + this.topButtons.get(0).getWidth();
             final int topRowLeft = centerX - topRowWidth / 2;
@@ -114,7 +114,7 @@ public class GridEditor extends JmUI
             this.leftChecks.setHeights(this.leftButtons.get(0).getHeight());
             this.leftChecks.setWidths(15);
             this.leftChecks.layoutVertical(this.leftButtons.getLeftX() - this.checkDay.getWidth(), this.leftButtons.getTopY(), true, 6);
-            final int bottomY = Math.min(tileY + 128 + 12, this.field_146295_m - 10 - this.buttonClose.getHeight());
+            final int bottomY = Math.min(tileY + 128 + 12, this.height - 10 - this.buttonClose.getHeight());
             this.bottomButtons.equalizeWidths(this.getFontRenderer(), 6, this.topButtons.get(0).getRightX() - topRowLeft);
             this.bottomButtons.layoutCenteredHorizontal(centerX, bottomY, true, 6);
         }
@@ -124,13 +124,13 @@ public class GridEditor extends JmUI
     }
     
     @Override
-    public void func_73863_a(final int x, final int y, final float par3) {
+    public void drawScreen(final int x, final int y, final float par3) {
         try {
-            this.func_146278_c(0);
+            this.drawBackground(0);
             this.layoutButtons();
-            for (int k = 0; k < this.field_146292_n.size(); ++k) {
-                final GuiButton guibutton = this.field_146292_n.get(k);
-                guibutton.func_191745_a(this.field_146297_k, x, y, 0.0f);
+            for (int k = 0; k < this.buttonList.size(); ++k) {
+                final GuiButton guibutton = this.buttonList.get(k);
+                guibutton.drawButton(this.mc, x, y, 0.0f);
             }
             this.drawTitle();
             this.drawLogo();
@@ -142,7 +142,7 @@ public class GridEditor extends JmUI
     
     protected void drawColorPicker(final int x, final int y, final float size) {
         final int sizeI = (int)size;
-        func_73734_a(x - 1, y - 1, x + sizeI + 1, y + sizeI + 1, -6250336);
+        drawRect(x - 1, y - 1, x + sizeI + 1, y + sizeI + 1, -6250336);
         if (this.colorPickRect.width != size) {
             final Image image = this.colorPickTexture.getImage().getScaledInstance(sizeI, sizeI, 2);
             this.colorPickImg = new BufferedImage(sizeI, sizeI, 1);
@@ -167,7 +167,7 @@ public class GridEditor extends JmUI
     
     protected void drawMapTile(final int x, final int y) {
         final float scale = 1.0f;
-        func_73734_a(x - 1, y - 1, x + 128 + 1, y + 128 + 1, -6250336);
+        drawRect(x - 1, y - 1, x + 128 + 1, y + 128 + 1, -6250336);
         final TextureImpl tileTex = this.getTileSample(this.activeMapType);
         DrawUtil.drawImage(tileTex, x, y, false, 1.0f, 0.0);
         if (scale == 2.0f) {
@@ -182,11 +182,11 @@ public class GridEditor extends JmUI
     }
     
     protected void drawLabel(final String label, final int x, final int y) {
-        this.func_73731_b(this.getFontRenderer(), label, x, y, Color.cyan.getRGB());
+        this.drawString(this.getFontRenderer(), label, x, y, Color.cyan.getRGB());
     }
     
     @Override
-    protected void func_73869_a(final char par1, final int par2) {
+    protected void keyTyped(final char par1, final int par2) {
         try {
             switch (par2) {
                 case 1: {
@@ -202,7 +202,7 @@ public class GridEditor extends JmUI
         }
     }
     
-    protected void func_146273_a(final int par1, final int par2, final int par3, final long par4) {
+    protected void mouseClickMove(final int par1, final int par2, final int par3, final long par4) {
         try {
             if (this.buttonOpacity.dragging) {
                 this.updateGridSpecs();
@@ -216,9 +216,9 @@ public class GridEditor extends JmUI
         }
     }
     
-    protected void func_73864_a(final int mouseX, final int mouseY, final int mouseButton) {
+    protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton) {
         try {
-            super.func_73864_a(mouseX, mouseY, mouseButton);
+            super.mouseClicked(mouseX, mouseY, mouseButton);
             if (mouseButton == 0) {
                 this.checkColorPicker(mouseX, mouseY);
             }
@@ -239,7 +239,7 @@ public class GridEditor extends JmUI
         }
     }
     
-    protected void func_146284_a(final GuiButton guibutton) {
+    protected void actionPerformed(final GuiButton guibutton) {
         try {
             if (guibutton == this.buttonDay) {
                 this.updatePreview(MapType.day(0));
@@ -316,8 +316,8 @@ public class GridEditor extends JmUI
         if (this.checkUnderground.getToggled()) {
             this.gridSpecs.setSpec(MapType.underground(0, 0), GridSpecs.DEFAULT_UNDERGROUND.clone());
         }
-        this.field_146292_n.clear();
-        this.func_73866_w_();
+        this.buttonList.clear();
+        this.initGui();
     }
     
     @Override
