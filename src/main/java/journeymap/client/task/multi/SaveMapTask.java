@@ -64,7 +64,7 @@ public class SaveMapTask implements ITask
             if (this.mapSaver == null) {
                 return null;
             }
-            return new SaveMapTask(this.mapSaver, null);
+            return new SaveMapTask(this.mapSaver);
         }
         
         @Override

@@ -28,14 +28,14 @@ public class ActionService extends BaseService
         final Query query = event.query();
         query.parse();
         final Minecraft minecraft = FMLClientHandler.instance().getClient();
-        final World world = (World)minecraft.field_71441_e;
+        final World world = (World)minecraft.world;
         if (world == null) {
             this.throwEventException(503, "World not connected", event, false);
         }
         if (!Journeymap.getClient().isMapping()) {
             this.throwEventException(503, "JourneyMap not mapping", event, false);
         }
-        final String type = this.getParameter(query, "type", null);
+        final String type = this.getParameter(query, "type", (String) null);
         if ("savemap".equals(type)) {
             this.saveMap(event);
         }
@@ -51,7 +51,7 @@ public class ActionService extends BaseService
     private void saveMap(final Event event) throws Event, Exception {
         final Query query = event.query();
         final Minecraft minecraft = FMLClientHandler.instance().getClient();
-        final World world = (World)minecraft.field_71441_e;
+        final World world = (World)minecraft.world;
         try {
             final File worldDir = FileHandler.getJMWorldDir(minecraft);
             if (!worldDir.exists() || !worldDir.isDirectory()) {
@@ -74,7 +74,7 @@ public class ActionService extends BaseService
                 vSlice = null;
             }
             mapType = MapType.from(mapTypeName, vSlice, dimension);
-            final Boolean hardcore = world.func_72912_H().func_76093_s();
+            final Boolean hardcore = world.getWorldInfo().isHardcoreModeEnabled();
             if (mapType.isUnderground() && hardcore) {
                 final String error2 = "Cave mapping on hardcore servers is not allowed";
                 this.throwEventException(403, error2, event, true);
@@ -85,7 +85,7 @@ public class ActionService extends BaseService
             }
             Journeymap.getClient().toggleTask(SaveMapTask.Manager.class, true, mapSaver);
             final Properties response = new Properties();
-            ((Hashtable<String, String>)response).put("filename", mapSaver.getSaveFileName());
+            (response).put("filename", mapSaver.getSaveFileName());
             this.respondJson(event, response);
         }
         catch (NumberFormatException e2) {

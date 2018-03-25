@@ -59,21 +59,21 @@ public class MapPlayerTask extends BaseMapTask
             mapType = MapType.underground(player);
         }
         else {
-            final long time = playerEntity.field_70170_p.func_72912_H().func_76073_f() % 24000L;
+            final long time = playerEntity.world.getWorldInfo().getWorldTime() % 24000L;
             mapType = ((time < 13800L) ? MapType.day(player) : MapType.night(player));
         }
         final List<ITask> tasks = new ArrayList<ITask>(2);
-        tasks.add(new MapPlayerTask(chunkRenderController, playerEntity.field_70170_p, mapType, new ArrayList<ChunkPos>()));
+        tasks.add(new MapPlayerTask(chunkRenderController, playerEntity.world, mapType, new ArrayList<ChunkPos>()));
         if (underground) {
             if (surfaceAllowed && Journeymap.getClient().getCoreProperties().alwaysMapSurface.get()) {
-                tasks.add(new MapPlayerTask(chunkRenderController, playerEntity.field_70170_p, MapType.day(player), new ArrayList<ChunkPos>()));
+                tasks.add(new MapPlayerTask(chunkRenderController, playerEntity.world, MapType.day(player), new ArrayList<ChunkPos>()));
             }
         }
         else if (cavesAllowed && Journeymap.getClient().getCoreProperties().alwaysMapCaves.get()) {
-            tasks.add(new MapPlayerTask(chunkRenderController, playerEntity.field_70170_p, MapType.underground(player), new ArrayList<ChunkPos>()));
+            tasks.add(new MapPlayerTask(chunkRenderController, playerEntity.world, MapType.underground(player), new ArrayList<ChunkPos>()));
         }
         if (Journeymap.getClient().getCoreProperties().mapTopography.get()) {
-            tasks.add(new MapPlayerTask(chunkRenderController, playerEntity.field_70170_p, MapType.topo(player), new ArrayList<ChunkPos>()));
+            tasks.add(new MapPlayerTask(chunkRenderController, playerEntity.world, MapType.topo(player), new ArrayList<ChunkPos>()));
         }
         return new MapPlayerTaskBatch(tasks);
     }
@@ -101,8 +101,8 @@ public class MapPlayerTask extends BaseMapTask
     }
     
     public static void addTempDebugMessage(final String key, final String message) {
-        if (Minecraft.func_71410_x().field_71474_y.field_181657_aC) {
-            MapPlayerTask.tempDebugLines.put((Object)key, (Object)message);
+        if (Minecraft.getMinecraft().gameSettings.showLagometer) {
+            MapPlayerTask.tempDebugLines.put(key, message);
         }
     }
     
@@ -153,18 +153,18 @@ public class MapPlayerTask extends BaseMapTask
         final long now = System.currentTimeMillis();
         final List<ChunkPos> renderArea = renderSpec.getRenderAreaCoords();
         final int maxBatchSize = renderArea.size() / 4;
-        final ChunkMD chunkMD;
-        final long n;
+        final ChunkMD[] chunkMD = new ChunkMD[1];
+        final long n = 0;
         renderArea.removeIf(chunkPos -> {
-            chunkMD = DataCache.INSTANCE.getChunkMD(chunkPos);
-            if (chunkMD == null || !chunkMD.hasChunk() || n - chunkMD.getLastRendered(this.mapType) < 30000L) {
+            chunkMD[0] = DataCache.INSTANCE.getChunkMD(chunkPos);
+            if (chunkMD[0] == null || !chunkMD[0].hasChunk() || n - chunkMD[0].getLastRendered(this.mapType) < 30000L) {
                 return true;
             }
-            else if (chunkMD.getDimension() != this.mapType.dimension) {
+            else if (chunkMD[0].getDimension() != this.mapType.dimension) {
                 return true;
             }
             else {
-                chunkMD.resetBlockData(this.mapType);
+                chunkMD[0].resetBlockData(this.mapType);
                 return false;
             }
         });
@@ -172,7 +172,7 @@ public class MapPlayerTask extends BaseMapTask
             this.chunkCoords.addAll(renderArea);
         }
         else {
-            final List<ChunkPos> list = Arrays.asList((ChunkPos[])renderArea.toArray((T[])new ChunkPos[renderArea.size()]));
+            final List<ChunkPos> list = Arrays.asList((ChunkPos[])renderArea.toArray(new ChunkPos[renderArea.size()]));
             this.chunkCoords.addAll(list.subList(0, maxBatchSize));
         }
         this.scheduledChunks = this.chunkCoords.size();
@@ -192,7 +192,7 @@ public class MapPlayerTask extends BaseMapTask
         MapPlayerTask.MAX_STALE_MILLISECONDS = 30000;
         MapPlayerTask.MAX_BATCH_SIZE = 32;
         MapPlayerTask.decFormat = new DecimalFormat("##.#");
-        MapPlayerTask.tempDebugLines = (Cache<String, String>)CacheBuilder.newBuilder().maximumSize(20L).expireAfterWrite(1500L, TimeUnit.MILLISECONDS).build();
+        MapPlayerTask.tempDebugLines = CacheBuilder.newBuilder().maximumSize(20L).expireAfterWrite(1500L, TimeUnit.MILLISECONDS).build();
     }
     
     public static class Manager implements ITaskManager
@@ -226,7 +226,7 @@ public class MapPlayerTask extends BaseMapTask
         
         @Override
         public ITask getTask(final Minecraft minecraft) {
-            if (this.enabled && minecraft.field_71439_g.field_70175_ag && System.currentTimeMillis() - MapPlayerTask.lastTaskCompleted >= this.mapTaskDelay) {
+            if (this.enabled && minecraft.player.addedToChunk && System.currentTimeMillis() - MapPlayerTask.lastTaskCompleted >= this.mapTaskDelay) {
                 final ChunkRenderController chunkRenderController = Journeymap.getClient().getChunkRenderController();
                 return MapPlayerTask.create(chunkRenderController, DataCache.getPlayer());
             }
@@ -246,7 +246,7 @@ public class MapPlayerTask extends BaseMapTask
         
         @Override
         public void performTask(final Minecraft mc, final JourneymapClient jm, final File jmWorldDir, final boolean threadLogging) throws InterruptedException {
-            if (mc.field_71439_g == null) {
+            if (mc.player == null) {
                 return;
             }
             this.startNs = System.nanoTime();

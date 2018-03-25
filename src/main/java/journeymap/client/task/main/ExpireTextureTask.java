@@ -86,7 +86,7 @@ public class ExpireTextureTask implements IMainThreadTask
         if (texture.isBound()) {
             try {
                 if (Display.isCurrent()) {
-                    GlStateManager.func_179150_h(texture.func_110552_b());
+                    GlStateManager.deleteTexture(texture.getGlTextureId());
                     texture.clear();
                     success = true;
                 }
@@ -106,7 +106,7 @@ public class ExpireTextureTask implements IMainThreadTask
     private boolean deleteTexture(final int textureId) {
         try {
             if (Display.isCurrent()) {
-                GlStateManager.func_179150_h(textureId);
+                GlStateManager.deleteTexture(textureId);
                 return true;
             }
         }

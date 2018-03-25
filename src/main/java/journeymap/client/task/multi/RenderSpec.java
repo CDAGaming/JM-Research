@@ -79,7 +79,7 @@ public class RenderSpec
     }
     
     private static ListMultimap<Integer, Offset> calculateOffsets(final int minOffset, final int maxOffset, final RevealShape revealShape) {
-        final ListMultimap<Integer, Offset> multimap = (ListMultimap<Integer, Offset>)ArrayListMultimap.create();
+        final ListMultimap<Integer, Offset> multimap = ArrayListMultimap.create();
         int offset = maxOffset;
         final int baseX = 0;
         final int baseZ = 0;
@@ -94,13 +94,13 @@ public class RenderSpec
                 }
             }
             if (offset < maxOffset) {
-                final List<Offset> oneUp = (List<Offset>)multimap.get((Object)(offset + 1));
-                oneUp.removeAll(multimap.get((Object)offset));
+                final List<Offset> oneUp = (List<Offset>)multimap.get((offset + 1));
+                oneUp.removeAll(multimap.get(offset));
             }
             --offset;
         }
         for (int i = minOffset; i <= maxOffset; ++i) {
-            multimap.get((Object)i).sort((o1, o2) -> Double.compare(o1.distance(), o2.distance()));
+            multimap.get(i).sort((o1, o2) -> Double.compare(o1.distance(), o2.distance()));
         }
         return (ListMultimap<Integer, Offset>)new ImmutableListMultimap.Builder().putAll((Multimap)multimap).build();
     }
@@ -149,7 +149,7 @@ public class RenderSpec
         }
         this.lastPlayerCoord = new ChunkPos(RenderSpec.minecraft.field_71439_g.field_70176_ah, RenderSpec.minecraft.field_71439_g.field_70164_aj);
         if (this.primaryRenderCoords == null || this.primaryRenderCoords.isEmpty()) {
-            final List<Offset> primaryOffsets = (List<Offset>)this.offsets.get((Object)this.primaryRenderDistance);
+            final List<Offset> primaryOffsets = (List<Offset>)this.offsets.get(this.primaryRenderDistance);
             this.primaryRenderCoords = new ArrayList<ChunkPos>(primaryOffsets.size());
             for (final Offset offset : primaryOffsets) {
                 final ChunkPos primaryCoord = offset.from(this.lastPlayerCoord);
@@ -164,7 +164,7 @@ public class RenderSpec
             this.lastSecondaryRenderDistance = this.primaryRenderDistance;
         }
         ++this.lastSecondaryRenderDistance;
-        final List<Offset> secondaryOffsets = (List<Offset>)this.offsets.get((Object)this.lastSecondaryRenderDistance);
+        final List<Offset> secondaryOffsets = (List<Offset>)this.offsets.get(this.lastSecondaryRenderDistance);
         final ArrayList<ChunkPos> renderCoords = new ArrayList<ChunkPos>(this.primaryRenderCoords.size() + secondaryOffsets.size());
         for (final Offset offset2 : secondaryOffsets) {
             final ChunkPos secondaryCoord = offset2.from(this.lastPlayerCoord);
@@ -207,11 +207,11 @@ public class RenderSpec
         if (this.primaryRenderDistance == this.maxSecondaryRenderDistance) {
             return 0;
         }
-        return (this.offsets == null) ? 0 : this.offsets.get((Object)this.lastSecondaryRenderDistance).size();
+        return (this.offsets == null) ? 0 : this.offsets.get(this.lastSecondaryRenderDistance).size();
     }
     
     public int getPrimaryRenderSize() {
-        return (this.offsets == null) ? 0 : this.offsets.get((Object)this.primaryRenderDistance).size();
+        return (this.offsets == null) ? 0 : this.offsets.get(this.primaryRenderDistance).size();
     }
     
     public void setLastTaskInfo(final int chunks, final long elapsedNs) {

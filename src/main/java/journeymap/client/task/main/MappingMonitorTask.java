@@ -26,20 +26,20 @@ public class MappingMonitorTask implements IMainThreadTask
             if (!jm.isInitialized()) {
                 return this;
             }
-            final boolean isDead = mc.field_71462_r != null && mc.field_71462_r instanceof GuiGameOver;
-            if (mc.field_71441_e == null) {
+            final boolean isDead = mc.currentScreen != null && mc.currentScreen instanceof GuiGameOver;
+            if (mc.world == null) {
                 if (jm.isMapping()) {
                     jm.stopMapping();
                 }
-                final GuiScreen guiScreen = mc.field_71462_r;
+                final GuiScreen guiScreen = mc.currentScreen;
                 if ((guiScreen instanceof GuiMainMenu || guiScreen instanceof GuiWorldSelection || guiScreen instanceof GuiMultiplayer) && jm.getCurrentWorldId() != null) {
                     this.logger.info("World ID has been reset.");
                     jm.setCurrentWorldId(null);
                 }
                 return this;
             }
-            if (this.lastDimension != mc.field_71439_g.field_71093_bK) {
-                this.lastDimension = mc.field_71439_g.field_71093_bK;
+            if (this.lastDimension != mc.player.dimension) {
+                this.lastDimension = mc.player.dimension;
                 if (jm.isMapping()) {
                     jm.stopMapping();
                 }
@@ -47,7 +47,7 @@ public class MappingMonitorTask implements IMainThreadTask
             else if (!jm.isMapping() && !isDead && Journeymap.getClient().getCoreProperties().mappingEnabled.get()) {
                 jm.startMapping();
             }
-            final boolean isGamePaused = mc.field_71462_r != null && !(mc.field_71462_r instanceof Fullscreen);
+            final boolean isGamePaused = mc.currentScreen != null && !(mc.currentScreen instanceof Fullscreen);
             if (isGamePaused && !jm.isMapping()) {
                 return this;
             }

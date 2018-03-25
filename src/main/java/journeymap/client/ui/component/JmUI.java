@@ -193,8 +193,8 @@ public abstract class JmUI extends GuiScreen
             GlStateManager.disableLighting();
             GlStateManager.disableDepth();
             int maxLineWidth = 0;
-            for (final String line : tooltip) {
-                int lineWidth = fontRenderer.getStringWidth(line);
+            for (final Object line : tooltip) {
+                int lineWidth = fontRenderer.getStringWidth(line.toString());
                 if (fontRenderer.getBidiFlag()) {
                     lineWidth = (int)Math.ceil(lineWidth * 1.25);
                 }

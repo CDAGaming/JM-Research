@@ -1,5 +1,6 @@
 package journeymap.client.render.map;
 
+import com.google.common.base.Objects;
 import org.apache.logging.log4j.*;
 import journeymap.client.log.*;
 import java.util.concurrent.*;
@@ -109,12 +110,12 @@ public class TileDrawStep implements TextureImpl.Listener<RegionTextureImpl>
         final double endU = useScaled ? 1.0 : (this.sx2 / 512.0);
         final double endV = useScaled ? 1.0 : (this.sy2 / 512.0);
         DrawUtil.drawRectangle(startX, startY, endX - startX, endY - startY, TileDrawStep.bgColor, 0.8f);
-        GlStateManager.func_179147_l();
-        GlStateManager.func_179120_a(770, 771, 1, 0);
-        GlStateManager.func_179098_w();
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.enableTexture2D();
         if (textureId != -1) {
-            GlStateManager.func_179144_i((int)textureId);
-            GlStateManager.func_179131_c(1.0f, 1.0f, 1.0f, alpha);
+            GlStateManager.bindTexture((int)textureId);
+            GlStateManager.color(1.0f, 1.0f, 1.0f, alpha);
             GL11.glTexParameteri(3553, 10241, textureFilter);
             GL11.glTexParameteri(3553, 10240, textureFilter);
             GL11.glTexParameteri(3553, 10242, textureWrap);
@@ -137,8 +138,8 @@ public class TileDrawStep implements TextureImpl.Listener<RegionTextureImpl>
             final long age = (System.currentTimeMillis() - imageTimestamp) / 1000L;
             DrawUtil.drawLabel(this.mapType + " tile age: " + age + " seconds old", debugX + 5, debugY + 30, DrawUtil.HAlign.Right, DrawUtil.VAlign.Below, 16777215, 255.0f, 255, 255.0f, 1.0, false);
         }
-        GlStateManager.func_179131_c(1.0f, 1.0f, 1.0f, 1.0f);
-        GlStateManager.func_179082_a(1.0f, 1.0f, 1.0f, 1.0f);
+        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
+        GlStateManager.clearColor(1.0f, 1.0f, 1.0f, 1.0f);
         this.drawTimer.stop();
         final int glErr = GL11.glGetError();
         if (glErr != 0) {
@@ -212,11 +213,11 @@ public class TileDrawStep implements TextureImpl.Listener<RegionTextureImpl>
             this.updateRegionTimer.stop();
             return false;
         }
-        final RegionTextureImpl tex2;
+        final RegionTextureImpl[] tex2 = new RegionTextureImpl[1];
         this.regionFuture = TextureCache.scheduleTextureTask(() -> {
-            tex2 = this.getRegionTextureHolder().getTexture();
-            tex2.addListener(this);
-            return tex2;
+            tex2[0] = this.getRegionTextureHolder().getTexture();
+            tex2[0].addListener(this);
+            return tex2[0];
         });
         this.updateRegionTimer.stop();
         return true;
@@ -227,17 +228,17 @@ public class TileDrawStep implements TextureImpl.Listener<RegionTextureImpl>
         if (this.scaledFuture == null) {
             if (this.scaledTexture == null) {
                 this.needsScaledUpdate = false;
-                final TextureImpl temp;
+                final TextureImpl[] temp = new TextureImpl[1];
                 this.scaledFuture = TextureCache.scheduleTextureTask(() -> {
-                    temp = new TextureImpl(null, this.getScaledRegionArea(), false, false);
-                    temp.setDescription("Scaled " + this);
-                    return temp;
+                    temp[0] = new TextureImpl(null, this.getScaledRegionArea(), false, false);
+                    temp[0].setDescription("Scaled " + this);
+                    return temp[0];
                 });
             }
             else if (this.needsScaledUpdate) {
                 this.needsScaledUpdate = false;
                 final TextureImpl temp2 = this.scaledTexture;
-                final TextureImpl textureImpl;
+                final TextureImpl textureImpl = null;
                 this.scaledFuture = TextureCache.scheduleTextureTask(() -> {
                     textureImpl.setImage(this.getScaledRegionArea(), false);
                     return textureImpl;
@@ -287,7 +288,7 @@ public class TileDrawStep implements TextureImpl.Listener<RegionTextureImpl>
             }
             else {
                 for (final ChunkPos area : dirtyAreas) {
-                    if (area.field_77276_a >= this.sx1 && area.field_77275_b >= this.sy1 && area.field_77276_a + 16 <= this.sx2 && area.field_77275_b + 16 <= this.sy2) {
+                    if (area.x >= this.sx1 && area.z >= this.sy1 && area.x + 16 <= this.sx2 && area.z + 16 <= this.sy2) {
                         this.needsScaledUpdate = true;
                     }
                 }

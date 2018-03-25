@@ -49,6 +49,6 @@ public class ApiImageTask implements Runnable
             Journeymap.getLogger().error("Error in ApiImageTask: " + t, (Object)LogFormatter.toString(t));
         }
         final BufferedImage finalImage = image;
-        Minecraft.func_71410_x().func_152344_a(() -> this.callback.accept(finalImage));
+        Minecraft.getMinecraft().addScheduledTask(() -> this.callback.accept(finalImage));
     }
 }

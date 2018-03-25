@@ -30,7 +30,7 @@ public class DataService extends BaseService
                 if (!Journeymap.getClient().isMapping()) {
                     this.throwEventException(503, "JourneyMap not mapping", event, false);
                 }
-                else if (FMLClientHandler.instance().getClient().field_71441_e == null) {
+                else if (FMLClientHandler.instance().getClient().world == null) {
                     this.throwEventException(503, "World not connected", event, false);
                 }
             }

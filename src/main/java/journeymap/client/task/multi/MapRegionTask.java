@@ -1,5 +1,6 @@
 package journeymap.client.task.multi;
 
+import journeymap.client.io.nbt.ChunkLoader;
 import org.apache.logging.log4j.*;
 import journeymap.client.cartography.*;
 import net.minecraft.world.*;
@@ -42,14 +43,14 @@ public class MapRegionTask extends BaseMapTask
     }
     
     public static BaseMapTask create(final ChunkRenderController renderController, final RegionCoord rCoord, final MapType mapType, final Minecraft minecraft) {
-        final World world = (World)minecraft.field_71441_e;
+        final World world = (World)minecraft.world;
         final List<ChunkPos> renderCoords = rCoord.getChunkCoordsInRegion();
         final List<ChunkPos> retainedCoords = new ArrayList<ChunkPos>(renderCoords.size());
         final HashMap<RegionCoord, Boolean> existingRegions = new HashMap<RegionCoord, Boolean>();
         for (final ChunkPos coord : renderCoords) {
             for (final ChunkPos keepAliveOffset : MapRegionTask.keepAliveOffsets) {
-                final ChunkPos keepAliveCoord = new ChunkPos(coord.field_77276_a + keepAliveOffset.field_77276_a, coord.field_77275_b + keepAliveOffset.field_77275_b);
-                final RegionCoord neighborRCoord = RegionCoord.fromChunkPos(rCoord.worldDir, mapType, keepAliveCoord.field_77276_a, keepAliveCoord.field_77275_b);
+                final ChunkPos keepAliveCoord = new ChunkPos(coord.x + keepAliveOffset.x, coord.z + keepAliveOffset.z);
+                final RegionCoord neighborRCoord = RegionCoord.fromChunkPos(rCoord.worldDir, mapType, keepAliveCoord.x, keepAliveCoord.z);
                 if (!existingRegions.containsKey(neighborRCoord)) {
                     existingRegions.put(neighborRCoord, neighborRCoord.exists());
                 }
@@ -64,7 +65,7 @@ public class MapRegionTask extends BaseMapTask
     @Override
     public final void performTask(final Minecraft mc, final JourneymapClient jm, final File jmWorldDir, final boolean threadLogging) throws InterruptedException {
         ClientAPI.INSTANCE.show(this.regionOverlay);
-        final AnvilChunkLoader loader = new AnvilChunkLoader(FileHandler.getWorldSaveDir(mc), DataFixesManager.func_188279_a());
+        final AnvilChunkLoader loader = new AnvilChunkLoader(FileHandler.getWorldSaveDir(mc), DataFixesManager.createFixer());
         int missing = 0;
         for (final ChunkPos coord : this.retainedCoords) {
             final ChunkMD chunkMD = ChunkLoader.getChunkMD(loader, mc, coord, true);
@@ -183,7 +184,7 @@ public class MapRegionTask extends BaseMapTask
                 return false;
             }
             this.enabled = false;
-            if (minecraft.func_71387_A()) {
+            if (minecraft.isIntegratedServerRunning()) {
                 try {
                     MapType mapType = MapRegionTask.MAP_TYPE;
                     if (mapType == null) {

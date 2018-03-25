@@ -109,7 +109,7 @@ public class FileService extends BaseService
                 final File themeDir = new File(ThemeLoader.getThemeIconDir(), ThemePresets.getDefault().directory);
                 final File iconFile = new File(themeDir, themeIconPath);
                 if (!iconFile.exists()) {
-                    final String delim = "\\" + File.separator;
+                    final String delim = "\\u005c" + File.separator;
                     final String setName = themeIconPath.split(delim)[0];
                     final String iconPath = themeIconPath.substring(themeIconPath.indexOf(File.separatorChar) + 1);
                     if (event != null) {
@@ -117,9 +117,9 @@ public class FileService extends BaseService
                     }
                     final String resourcePath = String.format("theme/%s/%s", setName, iconPath);
                     try {
-                        final IResourceManager resourceManager = Minecraft.func_71410_x().func_110442_L();
-                        final IResource resource = resourceManager.func_110536_a(new ResourceLocation("journeymap", resourcePath));
-                        fileStream = resource.func_110527_b();
+                        final IResourceManager resourceManager = Minecraft.getMinecraft().getResourceManager();
+                        final IResource resource = resourceManager.getResource(new ResourceLocation("journeymap", resourcePath));
+                        fileStream = resource.getInputStream();
                     }
                     catch (FileNotFoundException e2) {
                         JMLogger.logOnce("Resource not found: " + resourcePath, null);

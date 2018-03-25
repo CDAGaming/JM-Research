@@ -16,8 +16,8 @@ public class MainTaskController
     private final ConcurrentLinkedQueue<IMainThreadTask> deferredQueue;
     
     public MainTaskController() {
-        this.currentQueue = (ConcurrentLinkedQueue<IMainThreadTask>)Queues.newConcurrentLinkedQueue();
-        this.deferredQueue = (ConcurrentLinkedQueue<IMainThreadTask>)Queues.newConcurrentLinkedQueue();
+        this.currentQueue = Queues.newConcurrentLinkedQueue();
+        this.deferredQueue = Queues.newConcurrentLinkedQueue();
     }
     
     public void addTask(final IMainThreadTask task) {

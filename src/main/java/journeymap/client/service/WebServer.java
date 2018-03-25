@@ -125,16 +125,16 @@ public class WebServer
             throw new IllegalStateException("Initialization failed");
         }
         final Properties props = new Properties();
-        ((Hashtable<String, String>)props).put("port", Integer.toString(this.port));
-        ((Hashtable<String, String>)props).put("delay", Integer.toString(5000));
-        ((Hashtable<String, String>)props).put("timeout", Integer.toString(0));
-        ((Hashtable<String, String>)props).put("threads", Integer.toString(5));
+        (props).put("port", Integer.toString(this.port));
+        (props).put("delay", Integer.toString(5000));
+        (props).put("timeout", Integer.toString(0));
+        (props).put("threads", Integer.toString(5));
         final Level logLevel = Level.toLevel(Journeymap.getClient().getCoreProperties().logLevel.get(), Level.INFO);
         if (logLevel.intLevel() >= Level.TRACE.intLevel()) {
-            ((Hashtable<String, String>)props).put("debug", Boolean.TRUE.toString());
+            (props).put("debug", Boolean.TRUE.toString());
         }
         if (logLevel.intLevel() >= Level.TRACE.intLevel()) {
-            ((Hashtable<String, String>)props).put("verbose", Boolean.TRUE.toString());
+            (props).put("verbose", Boolean.TRUE.toString());
         }
         (this.rupy = new Daemon(props)).add(new DataService());
         this.rupy.add(new LogService());
@@ -144,7 +144,7 @@ public class WebServer
         this.rupy.add(new PropertyService());
         this.rupy.add(new DebugService());
         this.rupy.add(new MapApiService());
-        this.rupy.init();
+        this.rupy.start();
         final JMThreadFactory tf = new JMThreadFactory("svr");
         final ExecutorService es = Executors.newSingleThreadExecutor(tf);
         es.execute(this.rupy);
@@ -159,10 +159,8 @@ public class WebServer
     
     public void stop() {
         try {
-            if (this.rupy.isAlive()) {
-                this.rupy.stop();
-                this.logger.info("Stopped webserver without errors");
-            }
+            this.rupy.stop();
+            this.logger.info("Stopped webserver without errors");
         }
         catch (Throwable t) {
             this.logger.info("Stopped webserver with error: " + t);

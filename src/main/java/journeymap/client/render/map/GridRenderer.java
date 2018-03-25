@@ -16,6 +16,8 @@ import java.awt.*;
 import net.minecraft.util.math.*;
 import journeymap.client.data.*;
 import java.util.*;
+import java.util.List;
+
 import journeymap.client.render.draw.*;
 import journeymap.client.model.*;
 import org.lwjgl.opengl.*;
@@ -184,12 +186,12 @@ public class GridRenderer
             if (this.debug) {
                 this.logger.debug("Centered on " + newCenterTile + " with pixel offsets of " + this.centerPixelOffset.x + "," + this.centerPixelOffset.y);
                 final Minecraft mc = FMLClientHandler.instance().getClient();
-                final BufferedImage tmp = new BufferedImage(mc.field_71443_c, mc.field_71440_d, 2);
+                final BufferedImage tmp = new BufferedImage(mc.displayWidth, mc.displayHeight, 2);
                 final Graphics2D g = tmp.createGraphics();
                 g.setStroke(new BasicStroke(1.0f));
                 g.setColor(Color.GREEN);
-                g.drawLine(mc.field_71443_c / 2, 0, mc.field_71443_c / 2, mc.field_71440_d);
-                g.drawLine(0, mc.field_71440_d / 2, mc.field_71443_c, mc.field_71440_d / 2);
+                g.drawLine(mc.displayWidth / 2, 0, mc.displayWidth / 2, mc.displayHeight);
+                g.drawLine(0, mc.displayHeight / 2, mc.displayWidth, mc.displayHeight / 2);
             }
         }
         this.updateUIState(true);
@@ -258,20 +260,20 @@ public class GridRenderer
         final double centerPixelZ = this.lastHeight / 2.0;
         final double deltaX = (centerPixelX - pixel.x) / this.uiState.blockSize;
         final double deltaZ = (centerPixelZ - (this.lastHeight - pixel.y)) / this.uiState.blockSize;
-        final int x = MathHelper.func_76128_c(this.centerBlockX - deltaX);
-        final int z = MathHelper.func_76128_c(this.centerBlockZ + deltaZ);
+        final int x = MathHelper.floor(this.centerBlockX - deltaX);
+        final int z = MathHelper.floor(this.centerBlockZ + deltaZ);
         int y = 0;
         if (DataCache.getPlayer().underground) {
-            y = MathHelper.func_76128_c(DataCache.getPlayer().posY);
+            y = MathHelper.floor(DataCache.getPlayer().posY);
         }
         else {
-            y = FMLClientHandler.instance().getClient().field_71441_e.func_181545_F();
+            y = FMLClientHandler.instance().getClient().world.getSeaLevel();
         }
         return new BlockPos(x, y, z);
     }
     
     public Point2D.Double getBlockPixelInGrid(final BlockPos pos) {
-        return this.getBlockPixelInGrid(pos.func_177958_n(), pos.func_177952_p());
+        return this.getBlockPixelInGrid(pos.getX(), pos.getZ());
     }
     
     public Point2D.Double getBlockPixelInGrid(final double blockX, final double blockZ) {
@@ -279,8 +281,8 @@ public class GridRenderer
         final double localBlockX = blockX - this.centerBlockX;
         final double localBlockZ = blockZ - this.centerBlockZ;
         final int blockSize = (int)Math.pow(2.0, this.zoom);
-        final double pixelOffsetX = mc.field_71443_c / 2.0 + localBlockX * blockSize;
-        final double pixelOffsetZ = mc.field_71440_d / 2.0 + localBlockZ * blockSize;
+        final double pixelOffsetX = mc.displayWidth / 2.0 + localBlockX * blockSize;
+        final double pixelOffsetZ = mc.displayHeight / 2.0 + localBlockZ * blockSize;
         return new Point2D.Double(pixelOffsetX, pixelOffsetZ);
     }
     
@@ -416,11 +418,11 @@ public class GridRenderer
         }
         UIState newState = null;
         if (isActive) {
-            final int worldHeight = FMLClientHandler.instance().getClient().field_71441_e.func_72940_L();
+            final int worldHeight = FMLClientHandler.instance().getClient().world.getActualHeight();
             final int pad = 32;
             final BlockPos upperLeft = this.getBlockAtPixel(new Point2D.Double(this.screenBounds.getMinX(), this.screenBounds.getMinY()));
             final BlockPos lowerRight = this.getBlockAtPixel(new Point2D.Double(this.screenBounds.getMaxX(), this.screenBounds.getMaxY()));
-            this.blockBounds = new AxisAlignedBB(upperLeft.func_177982_a(-pad, 0, -pad), lowerRight.func_177982_a(pad, worldHeight, pad));
+            this.blockBounds = new AxisAlignedBB(upperLeft.add(-pad, 0, -pad), lowerRight.add(pad, worldHeight, pad));
             try {
                 newState = new UIState(this.contextUi, true, this.mapType.dimension, this.zoom, this.mapType.apiMapType, new BlockPos(this.centerBlockX, 0.0, this.centerBlockZ), this.mapType.vSlice, this.blockBounds, this.screenBounds);
             }
