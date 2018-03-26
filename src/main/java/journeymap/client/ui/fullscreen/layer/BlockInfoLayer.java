@@ -39,7 +39,7 @@ public class BlockInfoLayer implements LayerDelegate.Layer
         this.blockInfoStep = new BlockInfoStep();
         this.playerInfoStep = new PlayerInfoStep();
         this.mc = FMLClientHandler.instance().getClient();
-        this.isSinglePlayer = this.mc.func_71356_B();
+        this.isSinglePlayer = this.mc.isSingleplayer();
     }
     
     @Override
@@ -53,7 +53,7 @@ public class BlockInfoLayer implements LayerDelegate.Layer
             this.drawStepList.add(this.playerInfoStep);
             this.drawStepList.add(this.blockInfoStep);
         }
-        this.playerInfoStep.update(mc.field_71443_c / 2, optionsToolbarRect.getMaxY());
+        this.playerInfoStep.update(mc.displayWidth / 2, optionsToolbarRect.getMaxY());
         if (!blockPos.equals((Object)this.lastCoord)) {
             final FullMapProperties fullMapProperties = Journeymap.getClient().getFullMapProperties();
             this.locationFormatKeys = this.locationFormat.getFormatKeys(fullMapProperties.locationFormat.get());
@@ -61,22 +61,22 @@ public class BlockInfoLayer implements LayerDelegate.Layer
             final ChunkMD chunkMD = DataCache.INSTANCE.getChunkMD(blockPos);
             String info = "";
             if (chunkMD != null && chunkMD.hasChunk()) {
-                BlockMD blockMD = chunkMD.getBlockMD(blockPos.func_177984_a());
+                BlockMD blockMD = chunkMD.getBlockMD(blockPos.up());
                 if (blockMD == null || blockMD.isIgnore()) {
-                    blockMD = chunkMD.getBlockMD(blockPos.func_177977_b());
+                    blockMD = chunkMD.getBlockMD(blockPos.down());
                 }
-                final Biome biome = JmBlockAccess.INSTANCE.func_180494_b(blockPos);
-                info = this.locationFormatKeys.format(fullMapProperties.locationFormatVerbose.get(), blockPos.func_177958_n(), blockPos.func_177952_p(), blockPos.func_177956_o(), blockPos.func_177956_o() >> 4) + " " + biome.func_185359_l();
+                final Biome biome = JmBlockAccess.INSTANCE.getBiome(blockPos);
+                info = this.locationFormatKeys.format(fullMapProperties.locationFormatVerbose.get(), blockPos.getX(), blockPos.getZ(), blockPos.getY(), blockPos.getY() >> 4) + " " + biome.getBiomeName();
                 if (!blockMD.isIgnore()) {
                     info = String.format("%s \u25a0 %s", blockMD.getName(), info);
                 }
             }
             else {
-                info = Constants.getString("jm.common.location_xz_verbose", blockPos.func_177958_n(), blockPos.func_177952_p());
+                info = Constants.getString("jm.common.location_xz_verbose", blockPos.getX(), blockPos.getZ());
                 if (this.isSinglePlayer) {
                     final Biome biome2 = JmBlockAccess.INSTANCE.getBiome(blockPos, null);
                     if (biome2 != null) {
-                        info = info + " " + biome2.func_185359_l();
+                        info = info + " " + biome2.getBiomeName();
                     }
                 }
             }
@@ -106,7 +106,7 @@ public class BlockInfoLayer implements LayerDelegate.Layer
             final Theme theme = ThemeLoader.getCurrentTheme();
             this.labelSpec = theme.fullscreen.statusLabel;
             if (this.prefix == null) {
-                this.prefix = BlockInfoLayer.this.mc.field_71439_g.func_70005_c_() + " \u25a0 ";
+                this.prefix = BlockInfoLayer.this.mc.player.getName() + " \u25a0 ";
             }
             this.x = x;
             this.y = y + theme.container.toolbar.horizontal.margin * BlockInfoLayer.this.fullscreen.getScreenScaleFactor();

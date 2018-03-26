@@ -217,7 +217,7 @@ public class AboutDialog extends JmUI
             DrawUtil.drawLabel(Constants.getString("jm.common.splash_whatisnew"), bx, topY, DrawUtil.HAlign.Center, DrawUtil.VAlign.Below, 0, 0.0f, 65535, 1.0f, 1.0, true);
         }
         final int rowHeight = this.buttonOptions.field_146121_g + 4;
-        by = this.field_146295_m - rowHeight - 4;
+        by = this.height - rowHeight - 4;
         this.bottomButtons.layoutCenteredHorizontal(bx, by, true, 4);
         by -= rowHeight;
         this.linkButtons.layoutCenteredHorizontal(bx, by, true, 4);
@@ -233,7 +233,7 @@ public class AboutDialog extends JmUI
         final int imgSize = (int)(person.getSkin().getWidth() * scale);
         final int imgY = button.getY() - 2;
         final int imgX = button.getCenterX() - imgSize / 2;
-        GlStateManager.func_179141_d();
+        GlStateManager.enableAlpha();
         if (!(person instanceof SplashPerson.Fake)) {
             DrawUtil.drawGradientRect(imgX - 1, imgY - 1, imgSize + 2, imgSize + 2, 0, 0.4f, 0, 0.8f);
             DrawUtil.drawImage(person.getSkin(), 1.0f, imgX, imgY, false, scale, 0.0);
@@ -285,7 +285,7 @@ public class AboutDialog extends JmUI
         }
         
         @Override
-        public boolean func_146116_c(final Minecraft minecraft, final int mouseX, final int mouseY) {
+        public boolean mousePressed(final Minecraft minecraft, final int mouseX, final int mouseY) {
             final boolean pressed = super.mousePressed(minecraft, mouseX, mouseY, false);
             if (pressed) {
                 this.infoLine.invokeAction(AboutDialog.this);

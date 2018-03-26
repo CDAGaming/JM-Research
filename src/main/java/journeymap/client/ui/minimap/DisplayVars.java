@@ -53,8 +53,8 @@ public class DisplayVars
         this.showReticle = miniMapProperties.showReticle.get();
         this.position = miniMapProperties.position.get();
         this.orientation = miniMapProperties.orientation.get();
-        this.displayWidth = mc.field_71443_c;
-        this.displayHeight = mc.field_71440_d;
+        this.displayWidth = mc.displayWidth;
+        this.displayHeight = mc.displayHeight;
         this.terrainAlpha = Math.max(0.0f, Math.min(1.0f, miniMapProperties.terrainAlpha.get() / 100.0f));
         this.locationFormatKeys = new LocationFormat().getFormatKeys(miniMapProperties.locationFormat.get());
         this.locationFormatVerbose = miniMapProperties.locationFormatVerbose.get();
@@ -65,7 +65,7 @@ public class DisplayVars
                     if (this.theme.minimap.square != null) {
                         this.shape = Shape.Rectangle;
                         this.minimapSpec = this.theme.minimap.square;
-                        final double ratio = mc.field_71443_c * 1.0 / mc.field_71440_d;
+                        final double ratio = mc.displayWidth * 1.0 / mc.displayHeight;
                         this.minimapHeight = miniMapProperties.getSize();
                         this.minimapWidth = (int)(this.minimapHeight * ratio);
                         this.reticleSegmentLength = this.minimapWidth / 1.5;
@@ -91,7 +91,7 @@ public class DisplayVars
             this.reticleSegmentLength = Math.sqrt(this.minimapHeight * this.minimapHeight + this.minimapWidth * this.minimapWidth) / 2.0;
         }
         this.fontScale = miniMapProperties.fontScale.get();
-        final FontRenderer fontRenderer = mc.field_71466_p;
+        final FontRenderer fontRenderer = mc.fontRenderer;
         final int topInfoLabelsHeight = this.getInfoLabelAreaHeight(fontRenderer, this.minimapSpec.labelTop, miniMapProperties.info1Label.get(), miniMapProperties.info2Label.get());
         final int bottomInfoLabelsHeight = this.getInfoLabelAreaHeight(fontRenderer, this.minimapSpec.labelBottom, miniMapProperties.info3Label.get(), miniMapProperties.info4Label.get());
         final int compassFontScale = miniMapProperties.compassFontScale.get();
@@ -124,10 +124,10 @@ public class DisplayVars
                 if (!this.minimapSpec.labelBottomInside) {
                     this.marginY += bottomInfoLabelsHeight;
                 }
-                this.textureX = mc.field_71443_c - this.minimapWidth - this.marginX;
-                this.textureY = mc.field_71440_d - this.minimapHeight - this.marginY;
-                this.translateX = mc.field_71443_c / 2 - halfWidth - this.marginX;
-                this.translateY = mc.field_71440_d / 2 - halfHeight - this.marginY;
+                this.textureX = mc.displayWidth - this.minimapWidth - this.marginX;
+                this.textureY = mc.displayHeight - this.minimapHeight - this.marginY;
+                this.translateX = mc.displayWidth / 2 - halfWidth - this.marginX;
+                this.translateY = mc.displayHeight / 2 - halfHeight - this.marginY;
                 break;
             }
             case TopLeft: {
@@ -136,8 +136,8 @@ public class DisplayVars
                 }
                 this.textureX = this.marginX;
                 this.textureY = this.marginY;
-                this.translateX = -(mc.field_71443_c / 2) + halfWidth + this.marginX;
-                this.translateY = -(mc.field_71440_d / 2) + halfHeight + this.marginY;
+                this.translateX = -(mc.displayWidth / 2) + halfWidth + this.marginX;
+                this.translateY = -(mc.displayHeight / 2) + halfHeight + this.marginY;
                 break;
             }
             case BottomLeft: {
@@ -145,24 +145,24 @@ public class DisplayVars
                     this.marginY += bottomInfoLabelsHeight;
                 }
                 this.textureX = this.marginX;
-                this.textureY = mc.field_71440_d - this.minimapHeight - this.marginY;
-                this.translateX = -(mc.field_71443_c / 2) + halfWidth + this.marginX;
-                this.translateY = mc.field_71440_d / 2 - halfHeight - this.marginY;
+                this.textureY = mc.displayHeight - this.minimapHeight - this.marginY;
+                this.translateX = -(mc.displayWidth / 2) + halfWidth + this.marginX;
+                this.translateY = mc.displayHeight / 2 - halfHeight - this.marginY;
                 break;
             }
             case TopCenter: {
                 if (!this.minimapSpec.labelTopInside) {
                     this.marginY = Math.max(this.marginY, topInfoLabelsHeight + 2 * this.minimapSpec.margin);
                 }
-                this.textureX = (mc.field_71443_c - this.minimapWidth) / 2;
+                this.textureX = (mc.displayWidth - this.minimapWidth) / 2;
                 this.textureY = this.marginY;
                 this.translateX = 0;
-                this.translateY = -(mc.field_71440_d / 2) + halfHeight + this.marginY;
+                this.translateY = -(mc.displayHeight / 2) + halfHeight + this.marginY;
                 break;
             }
             case Center: {
-                this.textureX = (mc.field_71443_c - this.minimapWidth) / 2;
-                this.textureY = (mc.field_71440_d - this.minimapHeight) / 2;
+                this.textureX = (mc.displayWidth - this.minimapWidth) / 2;
+                this.textureY = (mc.displayHeight - this.minimapHeight) / 2;
                 this.translateX = 0;
                 this.translateY = 0;
                 break;
@@ -171,10 +171,10 @@ public class DisplayVars
                 if (!this.minimapSpec.labelTopInside) {
                     this.marginY = Math.max(this.marginY, topInfoLabelsHeight + 2 * this.minimapSpec.margin);
                 }
-                this.textureX = mc.field_71443_c - this.minimapWidth - this.marginX;
+                this.textureX = mc.displayWidth - this.minimapWidth - this.marginX;
                 this.textureY = this.marginY;
-                this.translateX = mc.field_71443_c / 2 - halfWidth - this.marginX;
-                this.translateY = -(mc.field_71440_d / 2) + halfHeight + this.marginY;
+                this.translateX = mc.displayWidth / 2 - halfWidth - this.marginX;
+                this.translateY = -(mc.displayHeight / 2) + halfHeight + this.marginY;
                 break;
             }
         }
@@ -228,7 +228,7 @@ public class DisplayVars
     
     public void drawInfoLabels(final long currentTimeMillis) {
         for (final Tuple<LabelVars, ThemeLabelSource> label : this.labels) {
-            ((LabelVars)label.func_76341_a()).draw(((ThemeLabelSource)label.func_76340_b()).getLabelText(currentTimeMillis));
+            ((LabelVars)label.getFirst()).draw(((ThemeLabelSource)label.getSecond()).getLabelText(currentTimeMillis));
         }
     }
     

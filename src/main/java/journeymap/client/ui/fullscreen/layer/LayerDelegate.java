@@ -49,7 +49,7 @@ public class LayerDelegate
     
     public void onMouseClicked(final Minecraft mc, final GridRenderer gridRenderer, final Point2D.Double mousePosition, final int button, final float fontScale) {
         this.lastBlockPos = gridRenderer.getBlockAtPixel(mousePosition);
-        final long sysTime = Minecraft.func_71386_F();
+        final long sysTime = Minecraft.getSystemTime();
         final boolean doubleClick = sysTime - this.lastClick < 450L;
         this.lastClick = sysTime;
         this.drawSteps.clear();
@@ -74,10 +74,10 @@ public class LayerDelegate
             final ChunkRenderController crc = Journeymap.getClient().getChunkRenderController();
             if (crc != null) {
                 final ChunkPos chunkCoord = chunkMD.getCoord();
-                final RegionCoord rCoord = RegionCoord.fromChunkPos(FileHandler.getJMWorldDir(mc), gridRenderer.getMapType(), chunkCoord.field_77276_a, chunkCoord.field_77275_b);
+                final RegionCoord rCoord = RegionCoord.fromChunkPos(FileHandler.getJMWorldDir(mc), gridRenderer.getMapType(), chunkCoord.x, chunkCoord.z);
                 final BaseRenderer chunkRenderer = crc.getRenderer(rCoord, gridRenderer.getMapType(), chunkMD);
                 final int blockY = chunkRenderer.getBlockHeight(chunkMD, seaLevel);
-                return new BlockPos(seaLevel.func_177958_n(), blockY, seaLevel.func_177952_p());
+                return new BlockPos(seaLevel.getX(), blockY, seaLevel.getZ());
             }
         }
         return seaLevel;

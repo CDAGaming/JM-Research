@@ -41,7 +41,7 @@ public class WaypointLayer implements LayerDelegate.Layer
         if (this.lastCoord == null) {
             this.lastCoord = blockCoord;
         }
-        final long now = Minecraft.func_71386_F();
+        final long now = Minecraft.getSystemTime();
         final int proximity = (int)Math.max(1.0, 8.0 / gridRenderer.getUIState().blockSize);
         if (this.clickDrawStep.blockCoord != null && !blockCoord.equals((Object)this.clickDrawStep.blockCoord)) {
             this.unclick();
@@ -49,9 +49,9 @@ public class WaypointLayer implements LayerDelegate.Layer
         else {
             this.drawStepList.add(this.clickDrawStep);
         }
-        final AxisAlignedBB area = new AxisAlignedBB((double)(blockCoord.func_177958_n() - proximity), -1.0, (double)(blockCoord.func_177952_p() - proximity), (double)(blockCoord.func_177958_n() + proximity), (double)(mc.field_71441_e.func_72940_L() + 1), (double)(blockCoord.func_177952_p() + proximity));
+        final AxisAlignedBB area = new AxisAlignedBB((double)(blockCoord.getX() - proximity), -1.0, (double)(blockCoord.getZ() - proximity), (double)(blockCoord.getX() + proximity), (double)(mc.world.getActualHeight() + 1), (double)(blockCoord.getZ() + proximity));
         if (!this.lastCoord.equals((Object)blockCoord)) {
-            if (!area.func_72318_a(new Vec3d((double)this.lastCoord.func_177958_n(), 1.0, (double)this.lastCoord.func_177952_p()))) {
+            if (!area.contains(new Vec3d((double)this.lastCoord.getX(), 1.0, (double)this.lastCoord.getZ()))) {
                 this.selected = null;
                 this.lastCoord = blockCoord;
                 this.startHover = now;
@@ -65,11 +65,11 @@ public class WaypointLayer implements LayerDelegate.Layer
         if (now - this.startHover < 100L) {
             return this.drawStepList;
         }
-        final int dimension = mc.field_71439_g.field_71093_bK;
+        final int dimension = mc.player.dimension;
         final Collection<Waypoint> waypoints = DataCache.INSTANCE.getWaypoints(false);
         final ArrayList<Waypoint> proximal = new ArrayList<Waypoint>();
         for (final Waypoint waypoint : waypoints) {
-            if (waypoint.isEnable() && waypoint.isInPlayerDimension() && area.func_72318_a(new Vec3d((double)waypoint.getX(), (double)waypoint.getY(), (double)waypoint.getZ()))) {
+            if (waypoint.isEnable() && waypoint.isInPlayerDimension() && area.contains(new Vec3d((double)waypoint.getX(), (double)waypoint.getY(), (double)waypoint.getZ()))) {
                 proximal.add(waypoint);
             }
         }
@@ -113,8 +113,8 @@ public class WaypointLayer implements LayerDelegate.Layer
             }
             
             private double getDistance(final Waypoint waypoint) {
-                final double dx = waypoint.getX() - blockCoord.func_177958_n();
-                final double dz = waypoint.getZ() - blockCoord.func_177952_p();
+                final double dx = waypoint.getX() - blockCoord.getX();
+                final double dz = waypoint.getZ() - blockCoord.getZ();
                 return Math.sqrt(dx * dx + dz * dz);
             }
         });
