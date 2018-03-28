@@ -262,11 +262,11 @@ public class AboutDialog extends JmUI
         return by;
     }
     
-    protected void func_146284_a(final GuiButton guibutton) {
+    protected void actionPerformed(final GuiButton guibutton) {
     }
     
     @Override
-    protected void func_73869_a(final char c, final int i) {
+    protected void keyTyped(final char c, final int i) {
         switch (i) {
             case 1: {
                 this.closeAndReturn();

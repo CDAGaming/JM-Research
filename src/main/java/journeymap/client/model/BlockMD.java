@@ -134,7 +134,7 @@ public class BlockMD implements Comparable<BlockMD>
                     blockState = chunkMd.getChunk().getBlockState(blockPos);
                 }
                 else {
-                    blockState = JmBlockAccess.INSTANCE.func_180495_p(blockPos);
+                    blockState = JmBlockAccess.INSTANCE.getBlockState(blockPos);
                 }
                 return get(blockState);
             }

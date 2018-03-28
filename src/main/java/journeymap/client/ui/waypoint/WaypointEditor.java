@@ -105,40 +105,40 @@ public class WaypointEditor extends JmUI
     }
     
     @Override
-    public void func_73866_w_() {
+    public void initGui() {
         try {
             final FullMapProperties fullMapProperties = Journeymap.getClient().getFullMapProperties();
             final LocationFormat locationFormat = new LocationFormat();
             this.locationFormatKeys = locationFormat.getFormatKeys(fullMapProperties.locationFormat.get());
-            final String pos = this.locationFormatKeys.format(fullMapProperties.locationFormatVerbose.get(), MathHelper.func_76128_c(this.field_146297_k.field_71439_g.field_70165_t), MathHelper.func_76128_c(this.field_146297_k.field_71439_g.field_70161_v), MathHelper.func_76128_c(this.field_146297_k.field_71439_g.func_174813_aQ().field_72338_b), MathHelper.func_76141_d((float)this.field_146297_k.field_71439_g.field_70162_ai));
+            final String pos = this.locationFormatKeys.format(fullMapProperties.locationFormatVerbose.get(), MathHelper.floor(this.mc.player.posX), MathHelper.floor(this.mc.player.posZ), MathHelper.floor(this.mc.player.getEntityBoundingBox().minY), MathHelper.floor((float)this.mc.player.chunkCoordY));
             this.currentLocation = Constants.getString("jm.waypoint.current_location", " " + pos);
             if (this.fieldList.isEmpty()) {
                 final FontRenderer fr = this.getFontRenderer();
-                (this.fieldName = new TextField(this.originalWaypoint.getName(), fr, 160, 20)).func_146195_b(true);
+                (this.fieldName = new TextField(this.originalWaypoint.getName(), fr, 160, 20)).setFocused(true);
                 if (this.isNew) {
-                    this.fieldName.func_146202_e();
-                    this.fieldName.func_146199_i(0);
+                    this.fieldName.setCursorPositionEnd();
+                    this.fieldName.setSelectionPos(0);
                 }
                 this.fieldList.add(this.fieldName);
-                final int width9chars = this.getFontRenderer().func_78256_a("-30000000") + 10;
-                final int width3chars = this.getFontRenderer().func_78256_a("255") + 10;
+                final int width9chars = this.getFontRenderer().getStringWidth("-30000000") + 10;
+                final int width3chars = this.getFontRenderer().getStringWidth("255") + 10;
                 final int h = 20;
                 (this.fieldX = new TextField(this.originalWaypoint.getX(), fr, width9chars, h, true, true)).setClamp(-30000000, 30000000);
                 this.fieldList.add(this.fieldX);
                 (this.fieldZ = new TextField(this.originalWaypoint.getZ(), fr, width9chars, h, true, true)).setClamp(-30000000, 30000000);
                 this.fieldList.add(this.fieldZ);
                 final int y = this.originalWaypoint.getY();
-                (this.fieldY = new TextField((y < 0) ? "" : y, fr, width3chars, h, true, true)).setClamp(0, this.field_146297_k.field_71441_e.func_72800_K() - 1);
+                (this.fieldY = new TextField((y < 0) ? "" : y, fr, width3chars, h, true, true)).setClamp(0, this.mc.world.getHeight() - 1);
                 this.fieldY.setMinLength(1);
                 this.fieldList.add(this.fieldY);
                 (this.fieldR = new TextField("", fr, width3chars, h, true, false)).setClamp(0, 255);
-                this.fieldR.func_146203_f(3);
+                this.fieldR.setMaxStringLength(3);
                 this.fieldList.add(this.fieldR);
                 (this.fieldG = new TextField("", fr, width3chars, h, true, false)).setClamp(0, 255);
-                this.fieldG.func_146203_f(3);
+                this.fieldG.setMaxStringLength(3);
                 this.fieldList.add(this.fieldG);
                 (this.fieldB = new TextField("", fr, width3chars, h, true, false)).setClamp(0, 255);
-                this.fieldB.func_146203_f(3);
+                this.fieldB.setMaxStringLength(3);
                 this.fieldList.add(this.fieldB);
                 final Collection<Integer> wpDims = this.originalWaypoint.getDimensions();
                 for (final WorldData.DimensionProvider provider : WorldData.getDimensionProviders(WaypointStore.INSTANCE.getLoadedDimensions())) {
@@ -152,9 +152,9 @@ public class WaypointEditor extends JmUI
                     }
                     this.dimButtonList.add(new DimensionButton(0, dim, dimName, wpDims.contains(dim)));
                 }
-                (this.dimScrollPane = new ScrollPane(this.field_146297_k, 0, 0, this.dimButtonList, this.dimButtonList.get(0).getHeight(), 4)).func_193651_b(false);
+                (this.dimScrollPane = new ScrollPane(this.mc, 0, 0, this.dimButtonList, this.dimButtonList.get(0).getHeight(), 4)).setShowSelectionBox(false);
             }
-            if (this.field_146292_n.isEmpty()) {
+            if (this.buttonList.isEmpty()) {
                 final String on = Constants.getString("jm.common.on");
                 final String off = Constants.getString("jm.common.off");
                 final String enableOn = Constants.getString("jm.waypoint.enable", on);
@@ -166,12 +166,12 @@ public class WaypointEditor extends JmUI
                 this.buttonSave = new Button(Constants.getString("jm.waypoint.save"));
                 final String closeLabel = this.isNew ? "jm.waypoint.cancel" : "jm.common.close";
                 this.buttonClose = new Button(Constants.getString(closeLabel));
-                this.field_146292_n.add(this.buttonEnable);
-                this.field_146292_n.add(this.buttonRandomize);
-                this.field_146292_n.add(this.buttonRemove);
-                this.field_146292_n.add(this.buttonReset);
-                this.field_146292_n.add(this.buttonSave);
-                this.field_146292_n.add(this.buttonClose);
+                this.buttonList.add(this.buttonEnable);
+                this.buttonList.add(this.buttonRandomize);
+                this.buttonList.add(this.buttonRemove);
+                this.buttonList.add(this.buttonReset);
+                this.buttonList.add(this.buttonSave);
+                this.buttonList.add(this.buttonClose);
                 (this.bottomButtons = new ButtonList(new Button[] { this.buttonRemove, this.buttonSave, this.buttonClose })).equalizeWidths(this.getFontRenderer());
                 this.setFormColor(this.originalWaypoint.getColor());
                 this.validate();
@@ -186,18 +186,18 @@ public class WaypointEditor extends JmUI
     @Override
     protected void layoutButtons() {
         try {
-            this.func_73866_w_();
+            this.initGui();
             final FontRenderer fr = this.getFontRenderer();
             final int vpad = 5;
-            final int hgap = fr.func_78256_a("X") * 3;
+            final int hgap = fr.getStringWidth("X") * 3;
             final int vgap = this.fieldX.getHeight() + 5;
-            final int startY = Math.max(30, (this.field_146295_m - 200) / 2);
-            int dcw = fr.func_78256_a(this.dimensionsTitle);
+            final int startY = Math.max(30, (this.height - 200) / 2);
+            int dcw = fr.getStringWidth(this.dimensionsTitle);
             dcw = 8 + Math.max(dcw, this.dimScrollPane.getFitWidth(fr));
-            final int leftWidth = hgap * 2 + this.fieldX.func_146200_o() + this.fieldY.func_146200_o() + this.fieldZ.func_146200_o();
+            final int leftWidth = hgap * 2 + this.fieldX.getWidth() + this.fieldY.getWidth() + this.fieldZ.getWidth();
             final int rightWidth = dcw;
             final int totalWidth = leftWidth + 10 + rightWidth;
-            final int leftX = (this.field_146294_l - totalWidth) / 2;
+            final int leftX = (this.width - totalWidth) / 2;
             final int leftXEnd = leftX + leftWidth;
             final int rightX = leftXEnd + 10;
             final int rightXEnd = rightX + rightWidth;
@@ -207,28 +207,28 @@ public class WaypointEditor extends JmUI
             this.fieldName.setWidth(leftWidth);
             this.fieldName.setX(leftX);
             this.fieldName.setY(leftRowY);
-            if (!this.fieldName.func_146206_l()) {
-                this.fieldName.func_146199_i(this.fieldName.func_146179_b().length());
+            if (!this.fieldName.isFocused()) {
+                this.fieldName.setSelectionPos(this.fieldName.getText().length());
             }
-            this.fieldName.func_146194_f();
+            this.fieldName.drawTextBox();
             leftRowY += vgap + 5;
             this.drawLabel(this.locationTitle, leftX, leftRowY);
             leftRowY += 12;
             this.drawLabelAndField(this.labelX, this.fieldX, leftX, leftRowY);
-            this.drawLabelAndField(this.labelZ, this.fieldZ, this.fieldX.getX() + this.fieldX.func_146200_o() + hgap, leftRowY);
-            this.drawLabelAndField(this.labelY, this.fieldY, this.fieldZ.getX() + this.fieldZ.func_146200_o() + hgap, leftRowY);
+            this.drawLabelAndField(this.labelZ, this.fieldZ, this.fieldX.getX() + this.fieldX.getWidth() + hgap, leftRowY);
+            this.drawLabelAndField(this.labelY, this.fieldY, this.fieldZ.getX() + this.fieldZ.getWidth() + hgap, leftRowY);
             leftRowY += vgap + 5;
             this.drawLabel(this.colorTitle, leftX, leftRowY);
             leftRowY += 12;
             this.drawLabelAndField(this.labelR, this.fieldR, leftX, leftRowY);
-            this.drawLabelAndField(this.labelG, this.fieldG, this.fieldR.getX() + this.fieldR.func_146200_o() + hgap, leftRowY);
-            this.drawLabelAndField(this.labelB, this.fieldB, this.fieldG.getX() + this.fieldG.func_146200_o() + hgap, leftRowY);
-            this.buttonRandomize.func_175211_a(4 + Math.max(this.fieldB.getX() + this.fieldB.func_146200_o() - this.fieldR.getX(), 10 + fr.func_78256_a(this.buttonRandomize.field_146126_j)));
+            this.drawLabelAndField(this.labelG, this.fieldG, this.fieldR.getX() + this.fieldR.getWidth() + hgap, leftRowY);
+            this.drawLabelAndField(this.labelB, this.fieldB, this.fieldG.getX() + this.fieldG.getWidth() + hgap, leftRowY);
+            this.buttonRandomize.setWidth(4 + Math.max(this.fieldB.getX() + this.fieldB.getWidth() - this.fieldR.getX(), 10 + fr.getStringWidth(this.buttonRandomize.displayString)));
             this.buttonRandomize.setPosition(this.fieldR.getX() - 2, leftRowY += vgap);
             final int cpY = this.fieldB.getY();
             final int cpSize = this.buttonRandomize.getY() + this.buttonRandomize.getHeight() - cpY - 2;
-            final int cpHAreaX = this.fieldB.getX() + this.fieldB.func_146200_o();
-            final int cpHArea = this.fieldName.getX() + this.fieldName.func_146200_o() - cpHAreaX;
+            final int cpHAreaX = this.fieldB.getX() + this.fieldB.getWidth();
+            final int cpHArea = this.fieldName.getX() + this.fieldName.getWidth() - cpHAreaX;
             final int cpX = cpHAreaX + (cpHArea - cpSize);
             this.drawColorPicker(cpX, cpY, cpSize);
             final int iconX = cpHAreaX + (cpX - cpHAreaX) / 2 - this.wpTexture.getWidth() / 2 + 1;
@@ -236,9 +236,9 @@ public class WaypointEditor extends JmUI
             this.drawWaypoint(iconX, iconY);
             leftRowY += vgap;
             this.buttonEnable.fitWidth(fr);
-            this.buttonEnable.func_175211_a(Math.max(leftWidth / 2, this.buttonEnable.getWidth()));
+            this.buttonEnable.setWidth(Math.max(leftWidth / 2, this.buttonEnable.getWidth()));
             this.buttonEnable.setPosition(leftX - 2, leftRowY);
-            this.buttonReset.func_175211_a(leftWidth - this.buttonEnable.getWidth() - 2);
+            this.buttonReset.setWidth(leftWidth - this.buttonEnable.getWidth() - 2);
             this.buttonReset.setPosition(leftXEnd - this.buttonReset.getWidth() + 2, leftRowY);
             int rightRow = startY;
             this.drawLabel(this.dimensionsTitle, rightX, rightRow);
@@ -255,20 +255,20 @@ public class WaypointEditor extends JmUI
     }
     
     @Override
-    public void func_73863_a(final int x, final int y, final float par3) {
+    public void drawScreen(final int x, final int y, final float par3) {
         try {
-            this.func_146278_c(0);
+            this.drawBackground(0);
             this.validate();
             this.layoutButtons();
-            this.dimScrollPane.func_148128_a(x, y, par3);
-            DrawUtil.drawLabel(this.currentLocation, this.field_146294_l / 2, this.field_146295_m, DrawUtil.HAlign.Center, DrawUtil.VAlign.Above, 0, 1.0f, 12632256, 1.0f, 1.0, true);
-            for (int k = 0; k < this.field_146292_n.size(); ++k) {
-                final GuiButton guibutton = this.field_146292_n.get(k);
-                guibutton.func_191745_a(this.field_146297_k, x, y, 0.0f);
+            this.dimScrollPane.drawScreen(x, y, par3);
+            DrawUtil.drawLabel(this.currentLocation, this.width / 2, this.height, DrawUtil.HAlign.Center, DrawUtil.VAlign.Above, 0, 1.0f, 12632256, 1.0f, 1.0, true);
+            for (int k = 0; k < this.buttonList.size(); ++k) {
+                final GuiButton guibutton = this.buttonList.get(k);
+                guibutton.drawButton(this.mc, x, y, 0.0f);
             }
             if (this.colorPickTooltip != null && this.colorPickRect.contains(x, y)) {
                 this.drawHoveringText(this.colorPickTooltip, x, y, this.getFontRenderer());
-                RenderHelper.func_74518_a();
+                RenderHelper.disableStandardItemLighting();
             }
             this.drawTitle();
             this.drawLogo();
@@ -285,7 +285,7 @@ public class WaypointEditor extends JmUI
     
     protected void drawColorPicker(final int x, final int y, final float size) {
         final int sizeI = (int)size;
-        func_73734_a(x - 1, y - 1, x + sizeI + 1, y + sizeI + 1, -6250336);
+        drawRect(x - 1, y - 1, x + sizeI + 1, y + sizeI + 1, -6250336);
         if (this.colorPickRect.width != size) {
             final Image image = this.colorPickTexture.getImage().getScaledInstance(sizeI, sizeI, 2);
             this.colorPickImg = new BufferedImage(sizeI, sizeI, 1);
@@ -302,17 +302,17 @@ public class WaypointEditor extends JmUI
         field.setX(x);
         field.setY(y);
         final FontRenderer fr = this.getFontRenderer();
-        final int width = fr.func_78256_a(label) + 4;
-        this.func_73731_b(this.getFontRenderer(), label, x - width, y + (field.getHeight() - 8) / 2, Color.cyan.getRGB());
-        field.func_146194_f();
+        final int width = fr.getStringWidth(label) + 4;
+        this.drawString(this.getFontRenderer(), label, x - width, y + (field.getHeight() - 8) / 2, Color.cyan.getRGB());
+        field.drawTextBox();
     }
     
     protected void drawLabel(final String label, final int x, final int y) {
-        this.func_73731_b(this.getFontRenderer(), label, x, y, Color.cyan.getRGB());
+        this.drawString(this.getFontRenderer(), label, x, y, Color.cyan.getRGB());
     }
     
     @Override
-    protected void func_73869_a(final char par1, final int par2) {
+    protected void keyTyped(final char par1, final int par2) {
         switch (par2) {
             case 1: {
                 this.closeAndReturn();
@@ -326,7 +326,7 @@ public class WaypointEditor extends JmUI
             }
             default: {
                 for (final GuiTextField field : this.fieldList) {
-                    final boolean done = field.func_146201_a(par1, par2);
+                    final boolean done = field.textboxKeyTyped(par1, par2);
                     if (done) {
                         break;
                     }
@@ -337,24 +337,24 @@ public class WaypointEditor extends JmUI
         }
     }
     
-    public void func_146274_d() throws IOException {
-        super.func_146274_d();
+    public void handleMouseInput() throws IOException {
+        super.handleMouseInput();
     }
     
-    protected void func_146273_a(final int par1, final int par2, final int par3, final long par4) {
+    protected void mouseClickMove(final int par1, final int par2, final int par3, final long par4) {
         this.checkColorPicker(par1, par2);
     }
     
-    protected void func_73864_a(final int mouseX, final int mouseY, final int mouseButton) throws IOException {
-        super.func_73864_a(mouseX, mouseY, mouseButton);
+    protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton) throws IOException {
+        super.mouseClicked(mouseX, mouseY, mouseButton);
         if (mouseButton == 0) {
             for (final GuiTextField field : this.fieldList) {
-                field.func_146192_a(mouseX, mouseY, mouseButton);
+                field.mouseClicked(mouseX, mouseY, mouseButton);
             }
             this.checkColorPicker(mouseX, mouseY);
             final Button button = this.dimScrollPane.mouseClicked(mouseX, mouseY, mouseButton);
             if (button != null) {
-                this.func_146284_a(button);
+                this.actionPerformed(button);
             }
         }
     }
@@ -370,13 +370,13 @@ public class WaypointEditor extends JmUI
     protected void setFormColor(final Integer color) {
         this.currentColor = color;
         final int[] c = RGB.ints(color);
-        this.fieldR.func_146180_a(Integer.toString(c[0]));
-        this.fieldG.func_146180_a(Integer.toString(c[1]));
-        this.fieldB.func_146180_a(Integer.toString(c[2]));
+        this.fieldR.setText(Integer.toString(c[0]));
+        this.fieldG.setText(Integer.toString(c[1]));
+        this.fieldB.setText(Integer.toString(c[2]));
         this.updateWaypointFromForm();
     }
     
-    protected void func_146284_a(final GuiButton guibutton) {
+    protected void actionPerformed(final GuiButton guibutton) {
         if (this.dimButtonList.contains(guibutton)) {
             final DimensionButton dimButton = (DimensionButton)guibutton;
             dimButton.toggle();
@@ -419,19 +419,19 @@ public class WaypointEditor extends JmUI
         boolean foundFocus = false;
         for (final TextField field : this.fieldList) {
             if (focusNext) {
-                field.func_146195_b(true);
+                field.setFocused(true);
                 foundFocus = true;
                 break;
             }
-            if (!field.func_146206_l()) {
+            if (!field.isFocused()) {
                 continue;
             }
-            field.func_146195_b(false);
+            field.setFocused(false);
             field.clamp();
             focusNext = true;
         }
         if (!foundFocus) {
-            this.fieldList.get(0).func_146195_b(true);
+            this.fieldList.get(0).setFocused(true);
         }
     }
     
@@ -468,15 +468,15 @@ public class WaypointEditor extends JmUI
         this.editedWaypoint = new Waypoint(this.originalWaypoint);
         this.dimButtonList.clear();
         this.fieldList.clear();
-        this.field_146292_n.clear();
-        this.func_73866_w_();
+        this.buttonList.clear();
+        this.initGui();
         this.validate();
     }
     
     protected void updateWaypointFromForm() {
         this.currentColor = RGB.toInteger(this.getSafeColorInt(this.fieldR), this.getSafeColorInt(this.fieldG), this.getSafeColorInt(this.fieldB));
         this.editedWaypoint.setColor(this.currentColor);
-        this.fieldName.func_146193_g((int)this.editedWaypoint.getSafeColor());
+        this.fieldName.setTextColor((int)this.editedWaypoint.getSafeColor());
         final ArrayList<Integer> dims = new ArrayList<Integer>();
         for (final DimensionButton db : this.dimButtonList) {
             if (db.getToggled()) {
@@ -485,13 +485,13 @@ public class WaypointEditor extends JmUI
         }
         this.editedWaypoint.setDimensions(dims);
         this.editedWaypoint.setEnable(this.buttonEnable.getToggled());
-        this.editedWaypoint.setName(this.fieldName.func_146179_b());
-        this.editedWaypoint.setLocation(this.getSafeCoordInt(this.fieldX), this.getSafeCoordInt(this.fieldY), this.getSafeCoordInt(this.fieldZ), this.field_146297_k.field_71439_g.field_71093_bK);
+        this.editedWaypoint.setName(this.fieldName.getText());
+        this.editedWaypoint.setLocation(this.getSafeCoordInt(this.fieldX), this.getSafeCoordInt(this.fieldY), this.getSafeCoordInt(this.fieldZ), this.mc.player.dimension);
     }
     
     protected int getSafeColorInt(final TextField field) {
         field.clamp();
-        final String text = field.func_146179_b();
+        final String text = field.getText();
         if (text == null || text.isEmpty()) {
             return 0;
         }
@@ -504,7 +504,7 @@ public class WaypointEditor extends JmUI
     }
     
     protected int getSafeCoordInt(final TextField field) {
-        final String text = field.func_146179_b();
+        final String text = field.getText();
         if (text == null || text.isEmpty() || text.equals("-")) {
             return 0;
         }

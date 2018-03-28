@@ -169,7 +169,7 @@ public abstract class JmUI extends GuiScreen
         }
     }
     
-    protected void func_73869_a(final char c, final int i) throws IOException {
+    protected void keyTyped(final char c, final int i) throws IOException {
         switch (i) {
             case 1: {
                 this.closeAndReturn();
