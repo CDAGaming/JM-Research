@@ -1,27 +1,31 @@
 package journeymap.client.io;
 
-import javax.imageio.*;
-import journeymap.common.log.*;
-import journeymap.common.*;
-import java.io.*;
-import net.minecraft.util.math.*;
-import journeymap.client.model.*;
-import java.util.*;
-import journeymap.client.render.map.*;
-import journeymap.client.*;
-import java.awt.image.*;
+import journeymap.client.Constants;
+import journeymap.client.model.GridSpec;
+import journeymap.client.model.MapType;
+import journeymap.client.model.RegionCoord;
+import journeymap.client.model.RegionImageCache;
+import journeymap.client.render.map.TileDrawStep;
+import journeymap.client.render.map.TileDrawStepCache;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import net.minecraft.util.math.ChunkPos;
+
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
-public class RegionImageHandler
-{
+public class RegionImageHandler {
     public static File getImageDir(final RegionCoord rCoord, final MapType mapType) {
         final File dimDir = rCoord.dimDir.toFile();
         File subDir = null;
         if (mapType.isUnderground()) {
             subDir = new File(dimDir, Integer.toString(mapType.vSlice));
-        }
-        else {
+        } else {
             subDir = new File(dimDir, mapType.name());
         }
         if (!subDir.exists()) {
@@ -29,7 +33,7 @@ public class RegionImageHandler
         }
         return subDir;
     }
-    
+
     @Deprecated
     public static File getDimensionDir(final File worldDir, final int dimension) {
         final File dimDir = new File(worldDir, "DIM" + dimension);
@@ -38,14 +42,14 @@ public class RegionImageHandler
         }
         return dimDir;
     }
-    
+
     public static File getRegionImageFile(final RegionCoord rCoord, final MapType mapType, final boolean allowLegacy) {
         final StringBuffer sb = new StringBuffer();
         sb.append(rCoord.regionX).append(",").append(rCoord.regionZ).append(".png");
         final File regionFile = new File(getImageDir(rCoord, mapType), sb.toString());
         return regionFile;
     }
-    
+
     public static BufferedImage createBlankImage(final int width, final int height) {
         final BufferedImage img = new BufferedImage(width, height, 2);
         final Graphics2D g = initRenderingHints(img.createGraphics());
@@ -55,32 +59,30 @@ public class RegionImageHandler
         g.dispose();
         return img;
     }
-    
+
     public static BufferedImage readRegionImage(final File regionFile, final boolean returnNull) {
         BufferedImage image = null;
         if (regionFile.canRead()) {
             try {
                 image = ImageIO.read(regionFile);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 final String error = "Region file produced error: " + regionFile + ": " + LogFormatter.toPartialString(e);
                 Journeymap.getLogger().error(error);
             }
         }
         return image;
     }
-    
+
     public static BufferedImage getImage(final File file) {
         try {
             return ImageIO.read(file);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             final String error = "Could not get image from file: " + file + ": " + e.getMessage();
             Journeymap.getLogger().error(error);
             return null;
         }
     }
-    
+
     public static synchronized BufferedImage getMergedChunks(final File worldDir, final ChunkPos startCoord, final ChunkPos endCoord, final MapType mapType, final Boolean useCache, BufferedImage image, final Integer imageWidth, final Integer imageHeight, final boolean allowNullImage, final boolean showGrid) {
         int scale = 1;
         scale = Math.max(scale, 1);
@@ -127,8 +129,7 @@ public class RegionImageHandler
             if (mapType.isDay()) {
                 g2D.setColor(Color.black);
                 g2D.setComposite(AlphaComposite.getInstance(10, 0.25f));
-            }
-            else {
+            } else {
                 g2D.setColor(Color.gray);
                 g2D.setComposite(AlphaComposite.getInstance(10, 0.1f));
             }
@@ -152,7 +153,7 @@ public class RegionImageHandler
         }
         return image;
     }
-    
+
     public static synchronized BufferedImage getMergedChunks(final File worldDir, final ChunkPos startCoord, final ChunkPos endCoord, final MapType mapType, int scale, final boolean showGrid) {
         scale = Math.max(scale, 1);
         final int initialWidth = Math.min(512, (endCoord.x - startCoord.x + 1) * 16 / scale);
@@ -210,7 +211,7 @@ public class RegionImageHandler
         }
         return image;
     }
-    
+
     public static synchronized List<TileDrawStep> getTileDrawSteps(final File worldDir, final ChunkPos startCoord, final ChunkPos endCoord, final MapType mapType, final Integer zoom, final boolean highQuality) {
         final boolean isUnderground = mapType.isUnderground();
         final int rx1 = RegionCoord.getRegionPos(startCoord.x);
@@ -236,7 +237,7 @@ public class RegionImageHandler
         }
         return drawSteps;
     }
-    
+
     public static File getBlank512x512ImageFile() {
         final File dataDir = new File(FileHandler.MinecraftDirectory, Constants.DATA_DIR);
         final File tmpFile = new File(dataDir, "blank512x512.png");
@@ -247,14 +248,13 @@ public class RegionImageHandler
                 ImageIO.write(image, "png", tmpFile);
                 tmpFile.setReadOnly();
                 tmpFile.deleteOnExit();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 Journeymap.getLogger().error("Could not create blank temp file " + tmpFile + ": " + LogFormatter.toString(e));
             }
         }
         return tmpFile;
     }
-    
+
     public static Graphics2D initRenderingHints(final Graphics2D g) {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);

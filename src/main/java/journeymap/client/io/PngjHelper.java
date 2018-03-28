@@ -1,13 +1,16 @@
 package journeymap.client.io;
 
-import java.io.*;
-import journeymap.common.*;
-import java.util.*;
-import ar.com.hjg.pngj.chunks.*;
-import ar.com.hjg.pngj.*;
+import ar.com.hjg.pngj.ImageInfo;
+import ar.com.hjg.pngj.ImageLineInt;
+import ar.com.hjg.pngj.PngReader;
+import ar.com.hjg.pngj.PngWriter;
+import ar.com.hjg.pngj.chunks.ChunkLoadBehaviour;
+import journeymap.common.Journeymap;
 
-public class PngjHelper
-{
+import java.io.File;
+import java.util.Arrays;
+
+public class PngjHelper {
     public static void mergeFiles(final File[] tiles, final File destFile, final int tileColumns, final int tileSize) {
         final int ntiles = tiles.length;
         final int tileRows = (ntiles + tileColumns - 1) / tileColumns;
@@ -27,10 +30,10 @@ public class PngjHelper
             for (int tx = 0; tx < nTilesXcur; ++tx) {
                 (readers[tx] = new PngReader(tiles[tx + ty * tileColumns])).setChunkLoadBehaviour(ChunkLoadBehaviour.LOAD_CHUNK_NEVER);
             }
-        Label_0511:
+            Label_0511:
             for (int srcRow = 0; srcRow < tileSize; ++srcRow, ++destRow) {
                 for (int tx2 = 0; tx2 < nTilesXcur; ++tx2) {
-                    final ImageLineInt srcLine = (ImageLineInt)readers[tx2].readRow(srcRow);
+                    final ImageLineInt srcLine = (ImageLineInt) readers[tx2].readRow(srcRow);
                     final int[] src = srcLine.getScanline();
                     if (showGrid) {
                         for (int skip = (srcRow % 16 == 0) ? 4 : 64, i = 0; i <= src.length - skip; i += skip) {
@@ -44,8 +47,7 @@ public class PngjHelper
                     final int destPos = lineLen * tx2;
                     try {
                         System.arraycopy(src, 0, dest, destPos, lineLen);
-                    }
-                    catch (ArrayIndexOutOfBoundsException e) {
+                    } catch (ArrayIndexOutOfBoundsException e) {
                         Journeymap.getLogger().error("Bad image data. Src len=" + src.length + ", dest len=" + dest.length + ", destPos=" + destPos);
                         break Label_0511;
                     }

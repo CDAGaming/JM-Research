@@ -1,27 +1,29 @@
 package journeymap.client.render.draw;
 
-import journeymap.client.model.*;
-import journeymap.client.render.map.*;
-import net.minecraftforge.fml.client.*;
-import journeymap.common.*;
-import journeymap.client.data.*;
-import journeymap.common.log.*;
-import net.minecraft.client.*;
-import net.minecraft.entity.player.*;
-import net.minecraft.util.math.*;
-import java.util.*;
+import journeymap.client.data.DataCache;
+import journeymap.client.model.Waypoint;
+import journeymap.client.render.map.GridRenderer;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.fml.client.FMLClientHandler;
 
-public class WaypointDrawStepFactory
-{
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+public class WaypointDrawStepFactory {
     final List<DrawWayPointStep> drawStepList;
-    
+
     public WaypointDrawStepFactory() {
         this.drawStepList = new ArrayList<DrawWayPointStep>();
     }
-    
+
     public List<DrawWayPointStep> prepareSteps(final Collection<Waypoint> waypoints, final GridRenderer grid, boolean checkDistance, final boolean showLabel) {
         final Minecraft mc = FMLClientHandler.instance().getClient();
-        final EntityPlayer player = (EntityPlayer)mc.player;
+        final EntityPlayer player = (EntityPlayer) mc.player;
         final int dimension = player.dimension;
         final int maxDistance = Journeymap.getClient().getWaypointProperties().maxDistance.get();
         checkDistance = (checkDistance && maxDistance > 0);
@@ -44,8 +46,7 @@ public class WaypointDrawStepFactory
                     wayPointStep.setShowLabel(showLabel);
                 }
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().error("Error during prepareSteps: " + LogFormatter.toString(t));
         }
         return this.drawStepList;

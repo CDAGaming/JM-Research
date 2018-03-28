@@ -1,21 +1,25 @@
 package journeymap.common.thread;
 
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class JMThreadFactory implements ThreadFactory
-{
+public class JMThreadFactory implements ThreadFactory {
     static final AtomicInteger threadNumber;
     static final String namePrefix = "JM-";
+
+    static {
+        threadNumber = new AtomicInteger(1);
+    }
+
     final ThreadGroup group;
     final String name;
-    
+
     public JMThreadFactory(final String name) {
         this.name = "JM-" + name;
         final SecurityManager securitymanager = System.getSecurityManager();
         this.group = ((securitymanager == null) ? Thread.currentThread().getThreadGroup() : securitymanager.getThreadGroup());
     }
-    
+
     @Override
     public Thread newThread(final Runnable runnable) {
         final String fullName = this.name + "-" + JMThreadFactory.threadNumber.getAndIncrement();
@@ -27,9 +31,5 @@ public class JMThreadFactory implements ThreadFactory
             thread.setPriority(5);
         }
         return thread;
-    }
-    
-    static {
-        threadNumber = new AtomicInteger(1);
     }
 }

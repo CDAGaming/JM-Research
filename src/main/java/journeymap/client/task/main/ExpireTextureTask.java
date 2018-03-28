@@ -1,53 +1,62 @@
 package journeymap.client.task.main;
 
-import org.apache.logging.log4j.*;
-import journeymap.client.render.texture.*;
-import journeymap.common.*;
-import net.minecraft.client.*;
-import journeymap.client.*;
-import java.util.*;
-import org.lwjgl.opengl.*;
-import net.minecraft.client.renderer.*;
-import org.lwjgl.*;
+import journeymap.client.JourneymapClient;
+import journeymap.client.render.texture.TextureImpl;
+import journeymap.common.Journeymap;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
+import org.apache.logging.log4j.Logger;
+import org.lwjgl.LWJGLException;
+import org.lwjgl.opengl.Display;
 
-public class ExpireTextureTask implements IMainThreadTask
-{
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+public class ExpireTextureTask implements IMainThreadTask {
     private static final int MAX_FAILS = 5;
     private static String NAME;
     private static Logger LOGGER;
+
+    static {
+        ExpireTextureTask.NAME = "Tick." + MappingMonitorTask.class.getSimpleName();
+        ExpireTextureTask.LOGGER = Journeymap.getLogger();
+    }
+
     private final List<TextureImpl> textures;
     private final int textureId;
     private volatile int fails;
-    
+
     private ExpireTextureTask(final int textureId) {
         this.textures = null;
         this.textureId = textureId;
     }
-    
+
     private ExpireTextureTask(final TextureImpl texture) {
         (this.textures = new ArrayList<TextureImpl>()).add(texture);
         this.textureId = -1;
     }
-    
+
     private ExpireTextureTask(final Collection<TextureImpl> textureCollection) {
         this.textures = new ArrayList<TextureImpl>(textureCollection);
         this.textureId = -1;
     }
-    
+
     public static void queue(final int textureId) {
         if (textureId != -1) {
             Journeymap.getClient().queueMainThreadTask(new ExpireTextureTask(textureId));
         }
     }
-    
+
     public static void queue(final TextureImpl texture) {
         Journeymap.getClient().queueMainThreadTask(new ExpireTextureTask(texture));
     }
-    
+
     public static void queue(final Collection<TextureImpl> textureCollection) {
         Journeymap.getClient().queueMainThreadTask(new ExpireTextureTask(textureCollection));
     }
-    
+
     @Override
     public IMainThreadTask perform(final Minecraft mc, final JourneymapClient jm) {
         final boolean success = this.deleteTextures();
@@ -60,7 +69,7 @@ public class ExpireTextureTask implements IMainThreadTask
         }
         return null;
     }
-    
+
     private boolean deleteTextures() {
         if (this.textureId != -1) {
             return this.deleteTexture(this.textureId);
@@ -70,8 +79,7 @@ public class ExpireTextureTask implements IMainThreadTask
             final TextureImpl texture = iter.next();
             if (texture == null) {
                 iter.remove();
-            }
-            else {
+            } else {
                 if (!this.deleteTexture(texture)) {
                     break;
                 }
@@ -80,7 +88,7 @@ public class ExpireTextureTask implements IMainThreadTask
         }
         return this.textures.isEmpty();
     }
-    
+
     private boolean deleteTexture(final TextureImpl texture) {
         boolean success = false;
         if (texture.isBound()) {
@@ -90,39 +98,31 @@ public class ExpireTextureTask implements IMainThreadTask
                     texture.clear();
                     success = true;
                 }
-            }
-            catch (LWJGLException t) {
+            } catch (LWJGLException t) {
                 ExpireTextureTask.LOGGER.warn("Couldn't delete texture " + texture + ": " + t);
                 success = false;
             }
-        }
-        else {
+        } else {
             texture.clear();
             success = true;
         }
         return success;
     }
-    
+
     private boolean deleteTexture(final int textureId) {
         try {
             if (Display.isCurrent()) {
                 GlStateManager.deleteTexture(textureId);
                 return true;
             }
-        }
-        catch (LWJGLException t) {
+        } catch (LWJGLException t) {
             ExpireTextureTask.LOGGER.warn("Couldn't delete textureId " + textureId + ": " + t);
         }
         return false;
     }
-    
+
     @Override
     public String getName() {
         return ExpireTextureTask.NAME;
-    }
-    
-    static {
-        ExpireTextureTask.NAME = "Tick." + MappingMonitorTask.class.getSimpleName();
-        ExpireTextureTask.LOGGER = Journeymap.getLogger();
     }
 }

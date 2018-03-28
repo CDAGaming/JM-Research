@@ -1,17 +1,18 @@
 package journeymap.client.ui.theme;
 
-import journeymap.client.ui.component.*;
-import journeymap.client.*;
-import journeymap.common.properties.config.*;
-import journeymap.client.render.texture.*;
-import org.lwjgl.opengl.*;
-import net.minecraft.client.*;
-import journeymap.client.render.draw.*;
-import net.minecraft.client.renderer.*;
-import java.util.*;
+import journeymap.client.Constants;
+import journeymap.client.render.draw.DrawUtil;
+import journeymap.client.render.texture.TextureCache;
+import journeymap.client.render.texture.TextureImpl;
+import journeymap.client.ui.component.BooleanPropertyButton;
+import journeymap.common.properties.config.BooleanField;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.opengl.GL11;
 
-public class ThemeButton extends BooleanPropertyButton
-{
+import java.util.List;
+
+public class ThemeButton extends BooleanPropertyButton {
     protected Theme theme;
     protected Theme.Control.ButtonSpec buttonSpec;
     protected TextureImpl textureOn;
@@ -22,32 +23,32 @@ public class ThemeButton extends BooleanPropertyButton
     protected String iconName;
     protected List<String> additionalTooltips;
     protected boolean staysOn;
-    
+
     public ThemeButton(final Theme theme, final String rawLabel, final String iconName) {
         this(theme, Constants.getString(rawLabel), Constants.getString(rawLabel), false, iconName);
     }
-    
+
     public ThemeButton(final Theme theme, final String labelOn, final String labelOff, final boolean toggled, final String iconName) {
         super(labelOn, labelOff, null);
         this.iconName = iconName;
         this.setToggled(toggled);
         this.updateTheme(theme);
     }
-    
+
     protected ThemeButton(final Theme theme, final String labelOn, final String labelOff, final String iconName, final BooleanField field) {
         super(labelOn, labelOff, field);
         this.iconName = iconName;
         this.updateTheme(theme);
     }
-    
+
     public boolean isStaysOn() {
         return this.staysOn;
     }
-    
+
     public void setStaysOn(final boolean staysOn) {
         this.staysOn = staysOn;
     }
-    
+
     public void updateTheme(final Theme theme) {
         this.theme = theme;
         this.buttonSpec = this.getButtonSpec(theme);
@@ -58,8 +59,7 @@ public class ThemeButton extends BooleanPropertyButton
             this.textureOff = TextureCache.getThemeTexture(theme, String.format(pattern, prefix, "off"));
             this.textureHover = TextureCache.getThemeTexture(theme, String.format(pattern, prefix, "hover"));
             this.textureDisabled = TextureCache.getThemeTexture(theme, String.format(pattern, prefix, "disabled"));
-        }
-        else {
+        } else {
             this.textureOn = null;
             this.textureOff = null;
             this.textureHover = null;
@@ -70,30 +70,30 @@ public class ThemeButton extends BooleanPropertyButton
         this.setHeight(this.buttonSpec.height);
         this.setToggled(false, false);
     }
-    
+
     public boolean hasValidTextures() {
         return !this.buttonSpec.useThemeImages || (GL11.glIsTexture(this.textureOn.getGlTextureId(false)) && GL11.glIsTexture(this.textureOff.getGlTextureId(false)));
     }
-    
+
     protected String getPathPattern() {
         return "control/%sbutton_%s.png";
     }
-    
+
     protected Theme.Control.ButtonSpec getButtonSpec(final Theme theme) {
         return theme.control.button;
     }
-    
+
     public Theme.Control.ButtonSpec getButtonSpec() {
         return this.buttonSpec;
     }
-    
+
     protected TextureImpl getActiveTexture(final boolean isMouseOver) {
         if (!this.isEnabled()) {
             return this.textureDisabled;
         }
         return this.toggled ? this.textureOn : this.textureOff;
     }
-    
+
     protected Theme.ColorSpec getIconColor(final boolean isMouseOver) {
         if (!this.isEnabled()) {
             return this.buttonSpec.iconDisabled;
@@ -103,7 +103,7 @@ public class ThemeButton extends BooleanPropertyButton
         }
         return this.toggled ? this.buttonSpec.iconOn : this.buttonSpec.iconOff;
     }
-    
+
     protected Theme.ColorSpec getButtonColor(final boolean isMouseOver) {
         if (!this.isEnabled()) {
             return this.buttonSpec.buttonDisabled;
@@ -113,7 +113,7 @@ public class ThemeButton extends BooleanPropertyButton
         }
         return this.toggled ? this.buttonSpec.buttonOn : this.buttonSpec.buttonOff;
     }
-    
+
     @Override
     public void drawButton(final Minecraft minecraft, final int mouseX, final int mouseY, final float ticks) {
         if (!this.isVisible()) {
@@ -134,8 +134,7 @@ public class ThemeButton extends BooleanPropertyButton
                 buttonScale = 1.0f * this.buttonSpec.width / activeTexture.getWidth();
             }
             DrawUtil.drawColoredImage(activeTexture, buttonColorSpec.getColor(), buttonColorSpec.alpha, drawX, drawY, buttonScale, 0.0);
-        }
-        else {
+        } else {
             this.drawNativeButton(minecraft, mouseX, mouseY);
         }
         float iconScale = 1.0f;
@@ -147,7 +146,7 @@ public class ThemeButton extends BooleanPropertyButton
         }
         DrawUtil.drawColoredImage(this.textureIcon, iconColorSpec.getColor(), iconColorSpec.alpha, drawX, drawY, iconScale, 0.0);
     }
-    
+
     public void drawNativeButton(final Minecraft minecraft, final int mouseX, final int mouseY) {
         final int magic = 20;
         minecraft.getTextureManager().bindTexture(ThemeButton.BUTTON_TEXTURES);
@@ -160,11 +159,11 @@ public class ThemeButton extends BooleanPropertyButton
         this.mouseDragged(minecraft, mouseX, mouseY);
         final int l = 14737632;
     }
-    
+
     public void setAdditionalTooltips(final List<String> additionalTooltips) {
         this.additionalTooltips = additionalTooltips;
     }
-    
+
     @Override
     public List<String> getTooltip() {
         if (!this.visible) {
@@ -174,8 +173,7 @@ public class ThemeButton extends BooleanPropertyButton
         String style = null;
         if (!this.isEnabled()) {
             style = this.buttonSpec.tooltipDisabledStyle;
-        }
-        else {
+        } else {
             style = (this.toggled ? this.buttonSpec.tooltipOnStyle : this.buttonSpec.tooltipOffStyle);
         }
         list.add(0, style + this.displayString);

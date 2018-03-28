@@ -1,16 +1,16 @@
 package journeymap.client.forge.event;
 
-import net.minecraftforge.fml.relauncher.*;
-import net.minecraftforge.event.world.*;
-import journeymap.client.data.*;
-import journeymap.common.*;
-import journeymap.client.feature.*;
-import net.minecraft.world.*;
-import net.minecraftforge.fml.common.eventhandler.*;
+import journeymap.client.data.DataCache;
+import journeymap.client.feature.FeatureManager;
+import journeymap.common.Journeymap;
+import net.minecraft.world.World;
+import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class WorldEventHandler implements EventHandlerManager.EventHandler
-{
+public class WorldEventHandler implements EventHandlerManager.EventHandler {
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
     public void onUnload(final WorldEvent.Unload event) {
@@ -20,9 +20,8 @@ public class WorldEventHandler implements EventHandlerManager.EventHandler
                 Journeymap.getClient().stopMapping();
                 FeatureManager.INSTANCE.reset();
             }
-        }
-        catch (Exception e) {
-            Journeymap.getLogger().error("Error handling WorldEvent.Unload", (Throwable)e);
+        } catch (Exception e) {
+            Journeymap.getLogger().error("Error handling WorldEvent.Unload", (Throwable) e);
         }
     }
 }

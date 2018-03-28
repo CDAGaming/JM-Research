@@ -1,39 +1,44 @@
 package journeymap.common.properties;
 
-import com.google.common.base.*;
+import com.google.common.base.Objects;
 
-public class Category implements Comparable<Category>
-{
+public class Category implements Comparable<Category> {
     public static final Category Inherit;
     public static final Category Hidden;
+
+    static {
+        Inherit = new Category("Inherit", 0, "", "");
+        Hidden = new Category("Hidden", 0, "", "");
+    }
+
     String name;
     String label;
     String tooltip;
     int order;
-    
+
     public Category(final String name, final int order, final String label, final String tooltip) {
         this.name = name;
         this.order = order;
         this.label = label;
         this.tooltip = tooltip;
     }
-    
+
     public String getName() {
         return this.name;
     }
-    
+
     public String getLabel() {
         return (this.label == null) ? this.getName() : this.label;
     }
-    
+
     public String getTooltip() {
         return (this.tooltip == null) ? this.getLabel() : this.tooltip;
     }
-    
+
     public int getOrder() {
         return this.order;
     }
-    
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -42,20 +47,20 @@ public class Category implements Comparable<Category>
         if (!(o instanceof Category)) {
             return false;
         }
-        final Category category = (Category)o;
-        return Objects.equal((Object)this.getName(), (Object)category.getName());
+        final Category category = (Category) o;
+        return Objects.equal((Object) this.getName(), (Object) category.getName());
     }
-    
+
     @Override
     public int hashCode() {
-        return Objects.hashCode(new Object[] { this.getName() });
+        return Objects.hashCode(new Object[]{this.getName()});
     }
-    
+
     @Override
     public String toString() {
         return this.name;
     }
-    
+
     @Override
     public int compareTo(final Category o) {
         int result = Integer.compare(this.order, o.order);
@@ -63,10 +68,5 @@ public class Category implements Comparable<Category>
             result = this.name.compareTo(o.name);
         }
         return result;
-    }
-    
-    static {
-        Inherit = new Category("Inherit", 0, "", "");
-        Hidden = new Category("Hidden", 0, "", "");
     }
 }

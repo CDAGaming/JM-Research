@@ -2,5 +2,6 @@
 @ParametersAreNonnullByDefault
 package journeymap.client.api.model;
 
-import net.minecraftforge.fml.common.*;
-import javax.annotation.*;
+import net.minecraftforge.fml.common.API;
+
+import javax.annotation.ParametersAreNonnullByDefault;

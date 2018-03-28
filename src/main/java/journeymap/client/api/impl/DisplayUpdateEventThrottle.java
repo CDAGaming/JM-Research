@@ -1,21 +1,23 @@
 package journeymap.client.api.impl;
 
-import journeymap.client.api.event.*;
-import java.util.*;
-import journeymap.client.api.display.*;
+import journeymap.client.api.event.DisplayUpdateEvent;
 
-class DisplayUpdateEventThrottle
-{
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+
+class DisplayUpdateEventThrottle {
     private final Queue fullscreenQueue;
     private final Queue minimapQueue;
     private final Queue[] queues;
     private final ArrayList<DisplayUpdateEvent> readyEvents;
     private final Comparator<DisplayUpdateEvent> comparator;
-    
+
     DisplayUpdateEventThrottle() {
         this.fullscreenQueue = new Queue(1000L);
         this.minimapQueue = new Queue(2000L);
-        this.queues = new Queue[] { this.fullscreenQueue, this.minimapQueue };
+        this.queues = new Queue[]{this.fullscreenQueue, this.minimapQueue};
         this.readyEvents = new ArrayList<DisplayUpdateEvent>(3);
         this.comparator = new Comparator<DisplayUpdateEvent>() {
             @Override
@@ -24,7 +26,7 @@ class DisplayUpdateEventThrottle
             }
         };
     }
-    
+
     public void add(final DisplayUpdateEvent event) {
         switch (event.uiState.ui) {
             case Fullscreen: {
@@ -40,7 +42,7 @@ class DisplayUpdateEventThrottle
             }
         }
     }
-    
+
     public Iterator<DisplayUpdateEvent> iterator() {
         final long now = System.currentTimeMillis();
         for (final Queue queue : this.queues) {
@@ -53,7 +55,7 @@ class DisplayUpdateEventThrottle
         }
         return this.readyEvents.iterator();
     }
-    
+
     public boolean isReady() {
         final long now = System.currentTimeMillis();
         for (final Queue queue : this.queues) {
@@ -63,25 +65,24 @@ class DisplayUpdateEventThrottle
         }
         return false;
     }
-    
-    class Queue
-    {
+
+    class Queue {
         private final long delay;
         private DisplayUpdateEvent lastEvent;
         private boolean throttleNext;
         private long releaseTime;
-        
+
         Queue(final long delay) {
             this.delay = delay;
         }
-        
+
         void offer(final DisplayUpdateEvent event) {
             if (this.releaseTime == 0L && this.lastEvent != null) {
                 this.releaseTime = System.currentTimeMillis() + this.delay;
             }
             this.lastEvent = event;
         }
-        
+
         DisplayUpdateEvent remove() {
             final DisplayUpdateEvent event = this.lastEvent;
             this.lastEvent = null;

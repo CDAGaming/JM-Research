@@ -1,43 +1,52 @@
 package journeymap.server;
 
-import org.apache.logging.log4j.*;
-import journeymap.common.*;
-import net.minecraftforge.fml.relauncher.*;
-import net.minecraftforge.fml.common.*;
-import net.minecraftforge.common.*;
-import journeymap.server.events.*;
-import journeymap.common.network.*;
-import net.minecraftforge.fml.common.event.*;
-import java.util.*;
-import net.minecraft.entity.player.*;
-import journeymap.server.properties.*;
+import journeymap.common.CommonProxy;
+import journeymap.common.Journeymap;
+import journeymap.common.network.PacketHandler;
+import journeymap.server.events.ForgeEvents;
+import journeymap.server.properties.PropertiesManager;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import org.apache.logging.log4j.Logger;
 
-public class JourneymapServer implements CommonProxy
-{
-    private Logger logger;
+import java.util.Map;
+
+public class JourneymapServer implements CommonProxy {
     public static boolean DEV_MODE;
-    
+
+    static {
+        JourneymapServer.DEV_MODE = false;
+    }
+
+    private Logger logger;
+
     public JourneymapServer() {
         this.logger = Journeymap.getLogger();
     }
-    
+
     @SideOnly(Side.SERVER)
     @Mod.EventHandler
     @Override
     public void preInitialize(final FMLPreInitializationEvent event) {
     }
-    
+
     @Override
     public void initialize(final FMLInitializationEvent event) {
-        MinecraftForge.EVENT_BUS.register((Object)new ForgeEvents());
+        MinecraftForge.EVENT_BUS.register((Object) new ForgeEvents());
         PacketHandler.init(Side.SERVER);
     }
-    
+
     @SideOnly(Side.SERVER)
     @Override
     public void postInitialize(final FMLPostInitializationEvent event) {
     }
-    
+
     @Override
     public boolean checkModLists(final Map<String, String> modList, final Side side) {
         this.logger.info(side.toString());
@@ -59,20 +68,16 @@ public class JourneymapServer implements CommonProxy
         }
         return true;
     }
-    
+
     @Override
     public boolean isUpdateCheckEnabled() {
         return false;
     }
-    
+
     @Override
     public void handleWorldIdMessage(final String message, final EntityPlayerMP playerEntity) {
         if (PropertiesManager.getInstance().getGlobalProperties().useWorldId.get()) {
             PacketHandler.sendPlayerWorldID(playerEntity);
         }
-    }
-    
-    static {
-        JourneymapServer.DEV_MODE = false;
     }
 }

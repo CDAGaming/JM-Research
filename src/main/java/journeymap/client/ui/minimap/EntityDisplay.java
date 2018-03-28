@@ -1,24 +1,24 @@
 package journeymap.client.ui.minimap;
 
-import journeymap.client.ui.option.*;
-import journeymap.client.render.texture.*;
-import net.minecraft.util.*;
-import com.google.common.base.*;
-import journeymap.client.*;
+import com.google.common.base.Strings;
+import journeymap.client.Constants;
+import journeymap.client.render.texture.TextureCache;
+import journeymap.client.render.texture.TextureImpl;
+import journeymap.client.ui.option.KeyedEnum;
+import net.minecraft.util.ResourceLocation;
 
-public enum EntityDisplay implements KeyedEnum
-{
-    SmallDots("jm.common.entity_display.small_dots"), 
-    LargeDots("jm.common.entity_display.large_dots"), 
-    SmallIcons("jm.common.entity_display.small_icons"), 
+public enum EntityDisplay implements KeyedEnum {
+    SmallDots("jm.common.entity_display.small_dots"),
+    LargeDots("jm.common.entity_display.large_dots"),
+    SmallIcons("jm.common.entity_display.small_icons"),
     LargeIcons("jm.common.entity_display.large_icons");
-    
+
     public final String key;
-    
+
     private EntityDisplay(final String key) {
         this.key = key;
     }
-    
+
     public static TextureImpl getLocatorTexture(final EntityDisplay entityDisplay, final boolean showHeading) {
         ResourceLocation texLocation = null;
         switch (entityDisplay) {
@@ -41,11 +41,11 @@ public enum EntityDisplay implements KeyedEnum
         }
         return TextureCache.getTexture(texLocation);
     }
-    
+
     public static TextureImpl getEntityTexture(final EntityDisplay entityDisplay) {
-        return getEntityTexture(entityDisplay, (String)null);
+        return getEntityTexture(entityDisplay, (String) null);
     }
-    
+
     public static TextureImpl getEntityTexture(final EntityDisplay entityDisplay, final String playerName) {
         switch (entityDisplay) {
             case LargeDots: {
@@ -62,7 +62,7 @@ public enum EntityDisplay implements KeyedEnum
             }
         }
     }
-    
+
     public static TextureImpl getEntityTexture(final EntityDisplay entityDisplay, final ResourceLocation iconLocation) {
         switch (entityDisplay) {
             case LargeDots: {
@@ -76,21 +76,21 @@ public enum EntityDisplay implements KeyedEnum
             }
         }
     }
-    
+
     @Override
     public String getKey() {
         return this.key;
     }
-    
+
     @Override
     public String toString() {
         return Constants.getString(this.key);
     }
-    
+
     public boolean isDots() {
         return this == EntityDisplay.LargeDots || this == EntityDisplay.SmallDots;
     }
-    
+
     public boolean isLarge() {
         return this == EntityDisplay.LargeDots || this == EntityDisplay.LargeIcons;
     }

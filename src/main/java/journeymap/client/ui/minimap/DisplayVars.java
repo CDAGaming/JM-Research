@@ -1,20 +1,26 @@
 package journeymap.client.ui.minimap;
 
-import java.awt.geom.*;
-import net.minecraft.util.*;
-import journeymap.client.ui.theme.*;
-import journeymap.client.ui.option.*;
-import net.minecraft.client.*;
-import journeymap.client.properties.*;
-import journeymap.client.io.*;
-import journeymap.client.render.draw.*;
-import net.minecraft.client.gui.*;
-import java.util.*;
-import journeymap.client.model.*;
-import journeymap.client.render.texture.*;
+import journeymap.client.io.ThemeLoader;
+import journeymap.client.model.MapType;
+import journeymap.client.properties.MiniMapProperties;
+import journeymap.client.render.draw.DrawUtil;
+import journeymap.client.render.texture.TextureCache;
+import journeymap.client.render.texture.TextureImpl;
+import journeymap.client.ui.option.LocationFormat;
+import journeymap.client.ui.theme.Theme;
+import journeymap.client.ui.theme.ThemeCompassPoints;
+import journeymap.client.ui.theme.ThemeLabelSource;
+import journeymap.client.ui.theme.ThemeMinimapFrame;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.util.Tuple;
 
-public class DisplayVars
-{
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
+
+public class DisplayVars {
     final Position position;
     final Shape shape;
     final Orientation orientation;
@@ -45,7 +51,7 @@ public class DisplayVars
     int marginY;
     MapTypeStatus mapTypeStatus;
     MapPresetStatus mapPresetStatus;
-    
+
     DisplayVars(final Minecraft mc, final MiniMapProperties miniMapProperties) {
         this.labels = new ArrayList<Tuple<LabelVars, ThemeLabelSource>>(4);
         this.scaledResolution = new ScaledResolution(mc);
@@ -59,7 +65,8 @@ public class DisplayVars
         this.locationFormatKeys = new LocationFormat().getFormatKeys(miniMapProperties.locationFormat.get());
         this.locationFormatVerbose = miniMapProperties.locationFormatVerbose.get();
         this.theme = ThemeLoader.getCurrentTheme();
-        Label_0428: {
+        Label_0428:
+        {
             switch (miniMapProperties.shape.get()) {
                 case Rectangle: {
                     if (this.theme.minimap.square != null) {
@@ -67,7 +74,7 @@ public class DisplayVars
                         this.minimapSpec = this.theme.minimap.square;
                         final double ratio = mc.displayWidth * 1.0 / mc.displayHeight;
                         this.minimapHeight = miniMapProperties.getSize();
-                        this.minimapWidth = (int)(this.minimapHeight * ratio);
+                        this.minimapWidth = (int) (this.minimapHeight * ratio);
                         this.reticleSegmentLength = this.minimapWidth / 1.5;
                         break Label_0428;
                     }
@@ -112,12 +119,11 @@ public class DisplayVars
                 final TextureImpl compassPointTex = this.minimapFrame.getCompassPoint();
                 final float compassPointScale = ThemeCompassPoints.getCompassPointScale(compassLabelHeight, this.minimapSpec, compassPointTex);
                 compassPointMargin = compassPointTex.getWidth() / 2 * compassPointScale;
-            }
-            else {
+            } else {
                 compassPointMargin = compassLabelHeight;
             }
-            this.marginX = (int)Math.max(this.marginX, Math.ceil(compassPointMargin));
-            this.marginY = (int)Math.max(this.marginY, Math.ceil(compassPointMargin) + compassLabelHeight / 2);
+            this.marginX = (int) Math.max(this.marginX, Math.ceil(compassPointMargin));
+            this.marginY = (int) Math.max(this.marginY, Math.ceil(compassPointMargin) + compassLabelHeight / 2);
         }
         switch (this.position) {
             case BottomRight: {
@@ -182,12 +188,11 @@ public class DisplayVars
         this.centerPoint = new Point2D.Double(this.textureX + halfWidth, this.textureY + halfHeight);
         this.minimapCompassPoints = new ThemeCompassPoints(this.textureX, this.textureY, halfWidth, halfHeight, this.minimapSpec, miniMapProperties, this.minimapFrame.getCompassPoint(), compassLabelHeight);
         if (this.shape == Shape.Circle) {
-            this.frameRotates = ((Theme.Minimap.MinimapCircle)this.minimapSpec).rotates;
-        }
-        else {
+            this.frameRotates = ((Theme.Minimap.MinimapCircle) this.minimapSpec).rotates;
+        } else {
             this.frameRotates = false;
         }
-        final int centerX = (int)Math.floor(this.textureX + this.minimapWidth / 2);
+        final int centerX = (int) Math.floor(this.textureX + this.minimapWidth / 2);
         if (topInfoLabelsHeight > 0) {
             final int startY = this.minimapSpec.labelTopInside ? (this.textureY + this.minimapSpec.margin) : (this.textureY - this.minimapSpec.margin - topInfoLabelsHeight);
             this.positionLabels(fontRenderer, centerX, startY, this.minimapSpec.labelTop, miniMapProperties.info1Label.get(), miniMapProperties.info2Label.get());
@@ -199,7 +204,7 @@ public class DisplayVars
         }
         ThemeLabelSource.resetCaches();
     }
-    
+
     private int getInfoLabelAreaHeight(final FontRenderer fontRenderer, final Theme.LabelSpec labelSpec, final ThemeLabelSource... themeLabelSources) {
         final int labelHeight = this.getInfoLabelHeight(fontRenderer, labelSpec);
         int areaHeight = 0;
@@ -208,52 +213,51 @@ public class DisplayVars
         }
         return areaHeight;
     }
-    
+
     private int getInfoLabelHeight(final FontRenderer fontRenderer, final Theme.LabelSpec labelSpec) {
-        return (int)((DrawUtil.getLabelHeight(fontRenderer, labelSpec.shadow) + labelSpec.margin) * this.fontScale);
+        return (int) ((DrawUtil.getLabelHeight(fontRenderer, labelSpec.shadow) + labelSpec.margin) * this.fontScale);
     }
-    
+
     private void positionLabels(final FontRenderer fontRenderer, final int centerX, final int startY, final Theme.LabelSpec labelSpec, final ThemeLabelSource... themeLabelSources) {
         final int labelHeight = this.getInfoLabelHeight(fontRenderer, labelSpec);
         int labelY = startY;
         for (final ThemeLabelSource themeLabelSource : themeLabelSources) {
             if (themeLabelSource.isShown()) {
                 final LabelVars labelVars = new LabelVars(this, centerX, labelY, DrawUtil.HAlign.Center, DrawUtil.VAlign.Below, this.fontScale, labelSpec);
-                final Tuple<LabelVars, ThemeLabelSource> tuple = (Tuple<LabelVars, ThemeLabelSource>)new Tuple((Object)labelVars, (Object)themeLabelSource);
+                final Tuple<LabelVars, ThemeLabelSource> tuple = (Tuple<LabelVars, ThemeLabelSource>) new Tuple((Object) labelVars, (Object) themeLabelSource);
                 this.labels.add(tuple);
                 labelY += labelHeight;
             }
         }
     }
-    
+
     public void drawInfoLabels(final long currentTimeMillis) {
         for (final Tuple<LabelVars, ThemeLabelSource> label : this.labels) {
-            ((LabelVars)label.getFirst()).draw(((ThemeLabelSource)label.getSecond()).getLabelText(currentTimeMillis));
+            ((LabelVars) label.getFirst()).draw(((ThemeLabelSource) label.getSecond()).getLabelText(currentTimeMillis));
         }
     }
-    
+
     MapPresetStatus getMapPresetStatus(final MapType mapType, final int miniMapId) {
         if (this.mapPresetStatus == null || !mapType.equals(this.mapPresetStatus.mapType) || miniMapId != this.mapPresetStatus.miniMapId) {
             this.mapPresetStatus = new MapPresetStatus(mapType, miniMapId);
         }
         return this.mapPresetStatus;
     }
-    
+
     MapTypeStatus getMapTypeStatus(final MapType mapType) {
         if (this.mapTypeStatus == null || !mapType.equals(this.mapTypeStatus.mapType)) {
             this.mapTypeStatus = new MapTypeStatus(mapType);
         }
         return this.mapTypeStatus;
     }
-    
-    class MapPresetStatus
-    {
+
+    class MapPresetStatus {
         private int miniMapId;
         private int scale;
         private MapType mapType;
         private String name;
         private Integer color;
-        
+
         MapPresetStatus(final MapType mapType, final int miniMapId) {
             this.scale = 4;
             this.miniMapId = miniMapId;
@@ -261,14 +265,13 @@ public class DisplayVars
             this.color = 16777215;
             this.name = Integer.toString(miniMapId);
         }
-        
+
         void draw(final Point2D.Double mapCenter, final float alpha, final double rotation) {
             DrawUtil.drawLabel(this.name, mapCenter.getX(), mapCenter.getY() + 8.0, DrawUtil.HAlign.Center, DrawUtil.VAlign.Below, 0, 0.0f, this.color, alpha, this.scale, true, rotation);
         }
     }
-    
-    class MapTypeStatus
-    {
+
+    class MapTypeStatus {
         private MapType mapType;
         private String name;
         private TextureImpl tex;
@@ -278,7 +281,7 @@ public class DisplayVars
         private double y;
         private float bgScale;
         private float scaleHeightOffset;
-        
+
         MapTypeStatus(final MapType mapType) {
             this.mapType = mapType;
             this.name = (mapType.isUnderground() ? "caves" : mapType.name());
@@ -288,7 +291,7 @@ public class DisplayVars
             this.bgScale = 1.15f;
             this.scaleHeightOffset = (this.tex.getHeight() * this.bgScale - this.tex.getHeight()) / 2.0f;
         }
-        
+
         void draw(final Point2D.Double mapCenter, final float alpha, final double rotation) {
             this.x = mapCenter.getX() - this.tex.getWidth() / 2;
             this.y = mapCenter.getY() - this.tex.getHeight() - 8.0;

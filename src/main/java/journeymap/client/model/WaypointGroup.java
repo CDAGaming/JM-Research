@@ -1,19 +1,26 @@
 package journeymap.client.model;
 
-import javax.annotation.*;
-import com.google.gson.annotations.*;
-import journeymap.client.cartography.color.*;
-import com.google.common.base.*;
-import journeymap.client.waypoint.*;
-import journeymap.client.*;
-import com.google.gson.*;
+import com.google.common.base.MoreObjects;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.Since;
+import journeymap.client.Constants;
+import journeymap.client.cartography.color.RGB;
+import journeymap.client.waypoint.WaypointGroupStore;
+
+import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public class WaypointGroup implements Comparable<WaypointGroup>
-{
+public class WaypointGroup implements Comparable<WaypointGroup> {
     public static final WaypointGroup DEFAULT;
     public static final double VERSION = 5.2;
     public static final Gson GSON;
+
+    static {
+        DEFAULT = new WaypointGroup("journeymap", Constants.getString("jm.config.category.waypoint")).setEnable(true);
+        GSON = new GsonBuilder().setVersion(5.2).create();
+    }
+
     @Since(5.2)
     protected String name;
     @Since(5.2)
@@ -28,38 +35,42 @@ public class WaypointGroup implements Comparable<WaypointGroup>
     protected int order;
     protected transient boolean dirty;
     protected transient Integer colorInt;
-    
+
     public WaypointGroup(final String origin, final String name) {
         this.setOrigin(origin).setName(name);
     }
-    
+
+    public static WaypointGroup getNamedGroup(final String origin, final String groupName) {
+        return WaypointGroupStore.INSTANCE.get(origin, groupName);
+    }
+
     public String getName() {
         return this.name;
     }
-    
+
     public WaypointGroup setName(final String name) {
         this.name = name;
         return this.setDirty();
     }
-    
+
     public String getOrigin() {
         return this.origin;
     }
-    
+
     public WaypointGroup setOrigin(final String origin) {
         this.origin = origin;
         return this.setDirty();
     }
-    
+
     public String getIcon() {
         return this.icon;
     }
-    
+
     public WaypointGroup setIcon(final String icon) {
         this.icon = icon;
         return this.setDirty();
     }
-    
+
     public int getColor() {
         if (this.colorInt == null) {
             if (this.color == null) {
@@ -69,41 +80,41 @@ public class WaypointGroup implements Comparable<WaypointGroup>
         }
         return this.colorInt;
     }
-    
-    public WaypointGroup setColor(final String color) {
-        this.colorInt = RGB.hexToInt(color);
-        this.color = RGB.toHexString(this.colorInt);
-        return this.setDirty();
-    }
-    
+
     public WaypointGroup setColor(final int color) {
         this.color = RGB.toHexString(color);
         this.colorInt = color;
         return this.setDirty();
     }
-    
+
+    public WaypointGroup setColor(final String color) {
+        this.colorInt = RGB.hexToInt(color);
+        this.color = RGB.toHexString(this.colorInt);
+        return this.setDirty();
+    }
+
     public boolean isEnable() {
         return this.enable;
     }
-    
+
     public WaypointGroup setEnable(final boolean enable) {
         this.enable = enable;
         return this.setDirty();
     }
-    
+
     public boolean isDirty() {
         return this.dirty;
     }
-    
-    public WaypointGroup setDirty() {
-        return this.setDirty(true);
-    }
-    
+
     public WaypointGroup setDirty(final boolean dirty) {
         this.dirty = dirty;
         return this;
     }
-    
+
+    public WaypointGroup setDirty() {
+        return this.setDirty(true);
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -112,17 +123,17 @@ public class WaypointGroup implements Comparable<WaypointGroup>
         if (o == null || this.getClass() != o.getClass()) {
             return false;
         }
-        final WaypointGroup group = (WaypointGroup)o;
+        final WaypointGroup group = (WaypointGroup) o;
         return this.name.equals(group.name) && this.origin.equals(group.origin);
     }
-    
+
     @Override
     public int hashCode() {
         int result = this.name.hashCode();
         result = 31 * result + this.origin.hashCode();
         return result;
     }
-    
+
     @Override
     public int compareTo(final WaypointGroup o) {
         int result = Integer.compare(this.order, o.order);
@@ -131,22 +142,13 @@ public class WaypointGroup implements Comparable<WaypointGroup>
         }
         return result;
     }
-    
+
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper((Object)this).add("name", (Object)this.name).add("origin", (Object)this.origin).toString();
+        return MoreObjects.toStringHelper((Object) this).add("name", (Object) this.name).add("origin", (Object) this.origin).toString();
     }
-    
+
     public String getKey() {
         return String.format("%s:%s", this.origin, this.name);
-    }
-    
-    public static WaypointGroup getNamedGroup(final String origin, final String groupName) {
-        return WaypointGroupStore.INSTANCE.get(origin, groupName);
-    }
-    
-    static {
-        DEFAULT = new WaypointGroup("journeymap", Constants.getString("jm.config.category.waypoint")).setEnable(true);
-        GSON = new GsonBuilder().setVersion(5.2).create();
     }
 }

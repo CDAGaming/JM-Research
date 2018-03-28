@@ -1,18 +1,19 @@
 package journeymap.client;
 
-import com.google.common.collect.*;
-import com.google.common.base.*;
-import net.minecraftforge.fml.client.*;
-import journeymap.common.*;
-import net.minecraft.client.resources.*;
-import journeymap.common.log.*;
-import net.minecraftforge.fml.common.*;
-import java.util.*;
-import java.io.*;
-import java.util.Locale;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Ordering;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.client.resources.ResourcePackRepository;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.ModContainer;
 
-public class Constants
-{
+import java.io.File;
+import java.util.*;
+
+public class Constants {
     public static final Ordering<String> CASE_INSENSITIVE_NULL_SAFE_ORDER;
     public static final TimeZone GMT;
     private static final Joiner path;
@@ -24,23 +25,40 @@ public class Constants
     public static String SP_DATA_DIR;
     public static String MP_DATA_DIR;
     public static String RESOURCE_PACKS_DEFAULT;
-    private static String ICON_DIR;
     public static String ENTITY_ICON_DIR;
     public static String WAYPOINT_ICON_DIR;
     public static String THEME_ICON_DIR;
-    
+    private static String ICON_DIR;
+
+    static {
+        CASE_INSENSITIVE_NULL_SAFE_ORDER = Ordering.from((Comparator) String.CASE_INSENSITIVE_ORDER).nullsLast();
+        GMT = TimeZone.getTimeZone("GMT");
+        path = Joiner.on(File.separator).useForNull("");
+        END = null;
+        Constants.JOURNEYMAP_DIR = "journeymap";
+        Constants.CONFIG_DIR_LEGACY = Constants.path.join((Object) Constants.JOURNEYMAP_DIR, (Object) "config", new Object[0]);
+        Constants.CONFIG_DIR = Constants.path.join((Object) Constants.JOURNEYMAP_DIR, (Object) "config", new Object[]{Journeymap.JM_VERSION.toMajorMinorString(), Constants.END});
+        Constants.DATA_DIR = Constants.path.join((Object) Constants.JOURNEYMAP_DIR, (Object) "data", new Object[0]);
+        Constants.SP_DATA_DIR = Constants.path.join((Object) Constants.DATA_DIR, (Object) WorldType.sp, new Object[]{Constants.END});
+        Constants.MP_DATA_DIR = Constants.path.join((Object) Constants.DATA_DIR, (Object) WorldType.mp, new Object[]{Constants.END});
+        Constants.RESOURCE_PACKS_DEFAULT = "Default";
+        Constants.ICON_DIR = Constants.path.join((Object) Constants.JOURNEYMAP_DIR, (Object) "icon", new Object[0]);
+        Constants.ENTITY_ICON_DIR = Constants.path.join((Object) Constants.ICON_DIR, (Object) "entity", new Object[]{Constants.END});
+        Constants.WAYPOINT_ICON_DIR = Constants.path.join((Object) Constants.ICON_DIR, (Object) "waypoint", new Object[]{Constants.END});
+        Constants.THEME_ICON_DIR = Constants.path.join((Object) Constants.ICON_DIR, (Object) "theme", new Object[]{Constants.END});
+    }
+
     public static Locale getLocale() {
         Locale locale = Locale.getDefault();
         try {
             final String lang = FMLClientHandler.instance().getClient().getLanguageManager().getCurrentLanguage().getLanguageCode();
             locale = new Locale(lang);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Journeymap.getLogger().warn("Couldn't determine locale from game settings, defaulting to " + locale);
         }
         return locale;
     }
-    
+
     public static String getString(final String key) {
         if (FMLClientHandler.instance().getClient() == null) {
             return key;
@@ -51,13 +69,12 @@ public class Constants
                 Journeymap.getLogger().warn("Message key not found: " + key);
             }
             return result;
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().warn(String.format("Message key '%s' threw exception: %s", key, t.getMessage()));
             return key;
         }
     }
-    
+
     public static String getString(final String key, final Object... params) {
         if (FMLClientHandler.instance().getClient() == null) {
             return String.format("%s (%s)", key, Joiner.on(",").join(params));
@@ -68,30 +85,28 @@ public class Constants
                 Journeymap.getLogger().warn("Message key not found: " + key);
             }
             return result;
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().warn(String.format("Message key '%s' threw exception: %s", key, t.getMessage()));
             return key;
         }
     }
-    
+
     public static boolean safeEqual(final String first, final String second) {
         final int result = Constants.CASE_INSENSITIVE_NULL_SAFE_ORDER.compare(first, second);
         return result == 0 && Constants.CASE_INSENSITIVE_NULL_SAFE_ORDER.compare(first, second) == 0;
     }
-    
+
     public static List<ResourcePackRepository.Entry> getResourcePacks() {
         final ArrayList<ResourcePackRepository.Entry> entries = new ArrayList<ResourcePackRepository.Entry>();
         try {
             final ResourcePackRepository resourcepackrepository = FMLClientHandler.instance().getClient().getResourcePackRepository();
             entries.addAll(resourcepackrepository.getRepositoryEntries());
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().error(String.format("Can't get resource pack names: %s", LogFormatter.toString(t)));
         }
         return entries;
     }
-    
+
     public static String getModNames() {
         final ArrayList<String> list = new ArrayList<String>();
         for (final ModContainer mod : Loader.instance().getActiveModList()) {
@@ -100,9 +115,9 @@ public class Constants
             }
         }
         Collections.sort(list);
-        return Joiner.on(", ").join((Iterable)list);
+        return Joiner.on(", ").join((Iterable) list);
     }
-    
+
     public static String birthdayMessage() {
         final Calendar today = Calendar.getInstance();
         final int month = today.get(2);
@@ -115,28 +130,9 @@ public class Constants
         }
         return null;
     }
-    
-    static {
-        CASE_INSENSITIVE_NULL_SAFE_ORDER = Ordering.from((Comparator)String.CASE_INSENSITIVE_ORDER).nullsLast();
-        GMT = TimeZone.getTimeZone("GMT");
-        path = Joiner.on(File.separator).useForNull("");
-        END = null;
-        Constants.JOURNEYMAP_DIR = "journeymap";
-        Constants.CONFIG_DIR_LEGACY = Constants.path.join((Object)Constants.JOURNEYMAP_DIR, (Object)"config", new Object[0]);
-        Constants.CONFIG_DIR = Constants.path.join((Object)Constants.JOURNEYMAP_DIR, (Object)"config", new Object[] { Journeymap.JM_VERSION.toMajorMinorString(), Constants.END });
-        Constants.DATA_DIR = Constants.path.join((Object)Constants.JOURNEYMAP_DIR, (Object)"data", new Object[0]);
-        Constants.SP_DATA_DIR = Constants.path.join((Object)Constants.DATA_DIR, (Object)WorldType.sp, new Object[] { Constants.END });
-        Constants.MP_DATA_DIR = Constants.path.join((Object)Constants.DATA_DIR, (Object)WorldType.mp, new Object[] { Constants.END });
-        Constants.RESOURCE_PACKS_DEFAULT = "Default";
-        Constants.ICON_DIR = Constants.path.join((Object)Constants.JOURNEYMAP_DIR, (Object)"icon", new Object[0]);
-        Constants.ENTITY_ICON_DIR = Constants.path.join((Object)Constants.ICON_DIR, (Object)"entity", new Object[] { Constants.END });
-        Constants.WAYPOINT_ICON_DIR = Constants.path.join((Object)Constants.ICON_DIR, (Object)"waypoint", new Object[] { Constants.END });
-        Constants.THEME_ICON_DIR = Constants.path.join((Object)Constants.ICON_DIR, (Object)"theme", new Object[] { Constants.END });
-    }
-    
-    public enum WorldType
-    {
-        mp, 
+
+    public enum WorldType {
+        mp,
         sp;
     }
 }

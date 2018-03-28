@@ -1,32 +1,37 @@
 package journeymap.client.mod;
 
-import org.apache.logging.log4j.*;
-import journeymap.common.*;
-import journeymap.client.mod.vanilla.*;
-import journeymap.client.mod.impl.*;
-import net.minecraftforge.fml.common.*;
-import journeymap.common.log.*;
-import java.util.*;
-import journeymap.client.model.*;
+import journeymap.client.mod.impl.Bibliocraft;
+import journeymap.client.mod.impl.BiomesOPlenty;
+import journeymap.client.mod.impl.TerraFirmaCraft;
+import journeymap.client.mod.vanilla.VanillaBlockColorProxy;
+import journeymap.client.mod.vanilla.VanillaBlockHandler;
+import journeymap.client.mod.vanilla.VanillaBlockSpriteProxy;
+import journeymap.client.model.BlockMD;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import net.minecraftforge.fml.common.Loader;
+import org.apache.logging.log4j.Logger;
 
-public enum ModBlockDelegate
-{
+import java.util.HashMap;
+import java.util.Map;
+
+public enum ModBlockDelegate {
     INSTANCE;
-    
+
     private final Logger logger;
     private final HashMap<String, Class<? extends IModBlockHandler>> handlerClasses;
     private final HashMap<String, IModBlockHandler> handlers;
     private VanillaBlockHandler commonBlockHandler;
     private IBlockColorProxy defaultBlockColorProxy;
     private IBlockSpritesProxy defaultBlockSpritesProxy;
-    
+
     private ModBlockDelegate() {
         this.logger = Journeymap.getLogger();
         this.handlerClasses = new HashMap<String, Class<? extends IModBlockHandler>>();
         this.handlers = new HashMap<String, IModBlockHandler>(10);
         this.reset();
     }
-    
+
     public void reset() {
         this.commonBlockHandler = new VanillaBlockHandler();
         this.defaultBlockColorProxy = new VanillaBlockColorProxy();
@@ -42,16 +47,15 @@ public enum ModBlockDelegate
             if (Loader.isModLoaded(modId) || Loader.isModLoaded(modId.toLowerCase())) {
                 modId = modId.toLowerCase();
                 try {
-                    this.handlers.put(modId, (IModBlockHandler)handlerClass.newInstance());
+                    this.handlers.put(modId, (IModBlockHandler) handlerClass.newInstance());
                     this.logger.info("Custom modded block handling enabled for " + modId);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     this.logger.error(String.format("Couldn't initialize modded block handler for %s: %s", modId, LogFormatter.toPartialString(e)));
                 }
             }
         }
     }
-    
+
     public void initialize(final BlockMD blockMD) {
         if (this.commonBlockHandler == null) {
             this.reset();
@@ -65,24 +69,23 @@ public enum ModBlockDelegate
         }
         this.commonBlockHandler.postInitialize(blockMD);
     }
-    
+
     private void initialize(final IModBlockHandler handler, final BlockMD blockMD) {
         try {
             handler.initialize(blockMD);
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             this.logger.error(String.format("Couldn't initialize IModBlockHandler '%s' for %s: %s", handler.getClass(), blockMD, LogFormatter.toPartialString(t)));
         }
     }
-    
+
     public IModBlockHandler getCommonBlockHandler() {
         return this.commonBlockHandler;
     }
-    
+
     public IBlockSpritesProxy getDefaultBlockSpritesProxy() {
         return this.defaultBlockSpritesProxy;
     }
-    
+
     public IBlockColorProxy getDefaultBlockColorProxy() {
         return this.defaultBlockColorProxy;
     }

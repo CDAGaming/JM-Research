@@ -1,22 +1,22 @@
 package journeymap.client.cartography;
 
 import journeymap.client.cartography.render.*;
-import journeymap.common.*;
-import journeymap.common.log.*;
 import journeymap.client.model.*;
-import java.awt.image.*;
-import org.apache.logging.log4j.*;
-import journeymap.client.render.*;
+import journeymap.client.render.ComparableBufferedImage;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import org.apache.logging.log4j.Level;
 
-public class ChunkRenderController
-{
+import java.awt.image.BufferedImage;
+
+public class ChunkRenderController {
     private final SurfaceRenderer overWorldSurfaceRenderer;
     private final BaseRenderer netherRenderer;
     private final SurfaceRenderer endSurfaceRenderer;
     private final BaseRenderer endCaveRenderer;
     private final BaseRenderer topoRenderer;
     private final BaseRenderer overWorldCaveRenderer;
-    
+
     public ChunkRenderController() {
         this.overWorldSurfaceRenderer = new SurfaceRenderer();
         this.overWorldCaveRenderer = new CaveRenderer(this.overWorldSurfaceRenderer);
@@ -25,7 +25,7 @@ public class ChunkRenderController
         this.endCaveRenderer = new EndCaveRenderer(this.endSurfaceRenderer);
         this.topoRenderer = new TopoRenderer();
     }
-    
+
     public BaseRenderer getRenderer(final RegionCoord rCoord, final MapType mapType, final ChunkMD chunkMd) {
         try {
             final RegionImageSet regionImageSet = RegionImageCache.INSTANCE.getRegionImageSet(rCoord);
@@ -46,13 +46,12 @@ public class ChunkRenderController
                     }
                 }
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().error("Unexpected error in ChunkRenderController: " + LogFormatter.toPartialString(t));
         }
         return null;
     }
-    
+
     public boolean renderChunk(final RegionCoord rCoord, final MapType mapType, final ChunkMD chunkMd) {
         if (!Journeymap.getClient().isMapping()) {
             return false;
@@ -81,15 +80,13 @@ public class ChunkRenderController
                         regionImageSet.setChunkImage(chunkMd, mapType, chunkSliceImage);
                     }
                 }
-            }
-            else if (mapType.isTopo()) {
+            } else if (mapType.isTopo()) {
                 final ComparableBufferedImage imageTopo = regionImageSet.getChunkImage(chunkMd, MapType.topo(rCoord.dimension));
                 renderOkay = this.topoRenderer.render(imageTopo, chunkMd, null);
                 if (renderOkay) {
                     regionImageSet.setChunkImage(chunkMd, MapType.topo(rCoord.dimension), imageTopo);
                 }
-            }
-            else {
+            } else {
                 final ComparableBufferedImage imageDay = regionImageSet.getChunkImage(chunkMd, MapType.day(rCoord.dimension));
                 final ComparableBufferedImage imageNight = regionImageSet.getChunkImage(chunkMd, MapType.night(rCoord.dimension));
                 renderOkay = this.overWorldSurfaceRenderer.render(imageDay, imageNight, chunkMd);
@@ -98,12 +95,10 @@ public class ChunkRenderController
                     regionImageSet.setChunkImage(chunkMd, MapType.night(rCoord.dimension), imageNight);
                 }
             }
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             Journeymap.getLogger().log(Level.WARN, LogFormatter.toString(e));
             return false;
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().error("Unexpected error in ChunkRenderController: " + LogFormatter.toString(t));
         }
         if (!renderOkay && Journeymap.getLogger().isDebugEnabled()) {

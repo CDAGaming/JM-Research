@@ -1,6 +1,5 @@
 package journeymap.client.ui.option;
 
-public interface KeyedEnum
-{
+public interface KeyedEnum {
     String getKey();
 }

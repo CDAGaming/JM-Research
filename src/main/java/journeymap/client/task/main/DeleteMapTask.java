@@ -1,30 +1,36 @@
 package journeymap.client.task.main;
 
-import org.apache.logging.log4j.*;
-import journeymap.common.*;
-import net.minecraft.client.*;
-import journeymap.client.*;
-import journeymap.client.task.multi.*;
-import journeymap.client.render.map.*;
-import journeymap.client.data.*;
-import journeymap.client.model.*;
-import journeymap.client.ui.fullscreen.*;
-import journeymap.client.log.*;
+import journeymap.client.JourneymapClient;
+import journeymap.client.data.DataCache;
+import journeymap.client.log.ChatLog;
+import journeymap.client.model.RegionImageCache;
+import journeymap.client.render.map.GridRenderer;
+import journeymap.client.task.multi.MapPlayerTask;
+import journeymap.client.task.multi.MapRegionTask;
+import journeymap.client.ui.fullscreen.Fullscreen;
+import journeymap.common.Journeymap;
+import net.minecraft.client.Minecraft;
+import org.apache.logging.log4j.Logger;
 
-public class DeleteMapTask implements IMainThreadTask
-{
+public class DeleteMapTask implements IMainThreadTask {
     private static String NAME;
     private static Logger LOGGER;
+
+    static {
+        DeleteMapTask.NAME = "Tick." + MappingMonitorTask.class.getSimpleName();
+        DeleteMapTask.LOGGER = Journeymap.getLogger();
+    }
+
     boolean allDims;
-    
+
     private DeleteMapTask(final boolean allDims) {
         this.allDims = allDims;
     }
-    
+
     public static void queue(final boolean allDims) {
         Journeymap.getClient().queueMainThreadTask(new DeleteMapTask(allDims));
     }
-    
+
     @Override
     public final IMainThreadTask perform(final Minecraft mc, final JourneymapClient jm) {
         try {
@@ -39,8 +45,7 @@ public class DeleteMapTask implements IMainThreadTask
             final boolean ok = RegionImageCache.INSTANCE.deleteMap(Fullscreen.state(), this.allDims);
             if (ok) {
                 ChatLog.announceI18N("jm.common.deletemap_status_done", new Object[0]);
-            }
-            else {
+            } else {
                 ChatLog.announceI18N("jm.common.deletemap_status_error", new Object[0]);
             }
             if (wasMapping) {
@@ -48,21 +53,15 @@ public class DeleteMapTask implements IMainThreadTask
                 MapPlayerTask.forceNearbyRemap();
             }
             Fullscreen.state().requireRefresh();
-        }
-        finally {
+        } finally {
             GridRenderer.setEnabled(true);
             jm.toggleTask(MapPlayerTask.Manager.class, true, true);
         }
         return null;
     }
-    
+
     @Override
     public String getName() {
         return DeleteMapTask.NAME;
-    }
-    
-    static {
-        DeleteMapTask.NAME = "Tick." + MappingMonitorTask.class.getSimpleName();
-        DeleteMapTask.LOGGER = Journeymap.getLogger();
     }
 }

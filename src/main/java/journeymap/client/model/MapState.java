@@ -1,33 +1,41 @@
 package journeymap.client.model;
 
-import java.util.concurrent.atomic.*;
-
 import com.google.common.base.Objects;
-import journeymap.client.log.*;
-import java.io.*;
-import journeymap.common.properties.config.*;
-import journeymap.common.properties.*;
-import net.minecraft.client.*;
-import net.minecraft.entity.player.*;
-import journeymap.common.*;
-import journeymap.client.io.*;
-import journeymap.client.feature.*;
-import journeymap.client.data.*;
-import journeymap.common.log.*;
-import net.minecraft.world.*;
-import net.minecraft.entity.*;
-import com.google.common.collect.*;
-import com.google.common.base.*;
-import journeymap.client.render.map.*;
-import journeymap.client.api.impl.*;
-import journeymap.client.render.draw.*;
-import java.util.*;
-import journeymap.client.properties.*;
-import journeymap.client.task.multi.*;
-import net.minecraft.util.math.*;
+import com.google.common.collect.Iterables;
+import journeymap.client.api.impl.ClientAPI;
+import journeymap.client.data.DataCache;
+import journeymap.client.feature.Feature;
+import journeymap.client.feature.FeatureManager;
+import journeymap.client.io.FileHandler;
+import journeymap.client.log.StatTimer;
+import journeymap.client.properties.CoreProperties;
+import journeymap.client.properties.InGameMapProperties;
+import journeymap.client.properties.MapProperties;
+import journeymap.client.render.draw.DrawStep;
+import journeymap.client.render.draw.DrawWayPointStep;
+import journeymap.client.render.draw.RadarDrawStepFactory;
+import journeymap.client.render.draw.WaypointDrawStepFactory;
+import journeymap.client.render.map.GridRenderer;
+import journeymap.client.task.multi.MapPlayerTask;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import journeymap.common.properties.Category;
+import journeymap.common.properties.config.IntegerField;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldProviderHell;
 
-public class MapState
-{
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+public class MapState {
     public final int minZoom = 0;
     public final int maxZoom = 5;
     public AtomicBoolean follow;
@@ -52,7 +60,7 @@ public class MapState
     private int lastPlayerChunkY;
     private int lastPlayerChunkZ;
     private boolean highQuality;
-    
+
     public MapState() {
         this.follow = new AtomicBoolean(true);
         this.playerLastPos = "0,0";
@@ -75,9 +83,9 @@ public class MapState
         this.lastPlayerChunkY = 0;
         this.lastPlayerChunkZ = 0;
     }
-    
+
     public void refresh(final Minecraft mc, final EntityPlayer player, final InGameMapProperties mapProperties) {
-        final World world = (World)mc.world;
+        final World world = (World) mc.world;
         if (world == null || world.provider == null) {
             return;
         }
@@ -106,34 +114,30 @@ public class MapState
             if (this.lastMapType != null) {
                 if (player.dimension != this.lastMapType.dimension) {
                     this.lastMapType = null;
-                }
-                else if (this.caveMappingEnabled && this.follow.get() && playerDTO.underground && !this.lastMapType.isUnderground()) {
+                } else if (this.caveMappingEnabled && this.follow.get() && playerDTO.underground && !this.lastMapType.isUnderground()) {
                     this.lastMapType = null;
-                }
-                else if (!this.lastMapType.isAllowed()) {
+                } else if (!this.lastMapType.isAllowed()) {
                     this.lastMapType = null;
                 }
             }
             this.lastMapType = this.getMapType();
             this.updateLastRefresh();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Journeymap.getLogger().error("Error refreshing MapState: " + LogFormatter.toPartialString(e));
-        }
-        finally {
+        } finally {
             this.refreshTimer.stop();
         }
     }
-    
+
     public MapType setMapType(final MapType.Name mapTypeName) {
         return this.setMapType(MapType.from(mapTypeName, DataCache.getPlayer()));
     }
-    
+
     public MapType toggleMapType() {
         final MapType.Name next = this.getNextMapType(this.getMapType().name);
         return this.setMapType(next);
     }
-    
+
     public MapType.Name getNextMapType(final MapType.Name name) {
         final EntityDTO player = DataCache.getPlayer();
         final EntityLivingBase playerEntity = player.entityLivingRef.get();
@@ -155,7 +159,7 @@ public class MapState
             return types.get(0);
         }
         if (types.contains(name)) {
-            final Iterator<MapType.Name> cyclingIterator = Iterables.cycle((Iterable)types).iterator();
+            final Iterator<MapType.Name> cyclingIterator = Iterables.cycle((Iterable) types).iterator();
             while (cyclingIterator.hasNext()) {
                 final MapType.Name current = cyclingIterator.next();
                 if (current == name) {
@@ -165,7 +169,7 @@ public class MapState
         }
         return name;
     }
-    
+
     public MapType setMapType(MapType mapType) {
         if (!mapType.isAllowed()) {
             mapType = MapType.from(this.getNextMapType(mapType.name), DataCache.getPlayer());
@@ -182,15 +186,14 @@ public class MapState
                 this.follow.set(false);
             }
             this.lastSlice.set(mapType.vSlice);
-        }
-        else if (mapType.name != MapType.Name.none && this.lastMapProperties.preferredMapType.get() != mapType.name) {
+        } else if (mapType.name != MapType.Name.none && this.lastMapProperties.preferredMapType.get() != mapType.name) {
             this.lastMapProperties.preferredMapType.set(mapType.name);
             this.lastMapProperties.save();
         }
         this.setLastMapTypeChange(mapType);
         return this.lastMapType;
     }
-    
+
     public MapType getMapType() {
         if (this.lastMapType == null) {
             final EntityDTO player = DataCache.getPlayer();
@@ -198,54 +201,52 @@ public class MapState
             try {
                 if (this.caveMappingEnabled && player.underground) {
                     mapType = MapType.underground(player);
-                }
-                else if (this.follow.get() && this.surfaceMappingAllowed && !player.underground) {
+                } else if (this.follow.get() && this.surfaceMappingAllowed && !player.underground) {
                     mapType = MapType.day(player);
                 }
                 if (mapType == null) {
                     mapType = MapType.from(this.lastMapProperties.preferredMapType.get(), player);
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 mapType = MapType.day(player);
             }
             this.setMapType(mapType);
         }
         return this.lastMapType;
     }
-    
+
     public long getLastMapTypeChange() {
         return this.lastMapTypeChange;
     }
-    
+
     private void setLastMapTypeChange(final MapType mapType) {
-        if (!Objects.equal((Object)mapType, (Object)this.lastMapType)) {
+        if (!Objects.equal((Object) mapType, (Object) this.lastMapType)) {
             this.lastMapTypeChange = System.currentTimeMillis();
             this.requireRefresh();
         }
         this.lastMapType = mapType;
     }
-    
+
     public boolean isUnderground() {
         return this.getMapType().isUnderground();
     }
-    
+
     public File getWorldDir() {
         return this.worldDir;
     }
-    
+
     public String getPlayerBiome() {
         return this.playerBiome;
     }
-    
+
     public List<? extends DrawStep> getDrawSteps() {
         return this.drawStepList;
     }
-    
+
     public List<DrawWayPointStep> getDrawWaypointSteps() {
         return this.drawWaypointStepList;
     }
-    
+
     public void generateDrawSteps(final Minecraft mc, final GridRenderer gridRenderer, final WaypointDrawStepFactory waypointRenderer, final RadarDrawStepFactory radarRenderer, final InGameMapProperties mapProperties, final boolean checkWaypointDistance) {
         this.generateDrawStepsTimer.start();
         this.lastMapProperties = mapProperties;
@@ -275,15 +276,15 @@ public class MapState
         }
         this.generateDrawStepsTimer.stop();
     }
-    
+
     public boolean zoomIn() {
         return this.lastMapProperties.zoomLevel.get() < 5 && this.setZoom(this.lastMapProperties.zoomLevel.get() + 1);
     }
-    
+
     public boolean zoomOut() {
         return this.lastMapProperties.zoomLevel.get() > 0 && this.setZoom(this.lastMapProperties.zoomLevel.get() - 1);
     }
-    
+
     public boolean setZoom(final int zoom) {
         if (zoom > 5 || zoom < 0 || zoom == this.lastMapProperties.zoomLevel.get()) {
             return false;
@@ -292,19 +293,19 @@ public class MapState
         this.requireRefresh();
         return true;
     }
-    
+
     public int getZoom() {
         return this.lastMapProperties.zoomLevel.get();
     }
-    
+
     public void requireRefresh() {
         this.lastRefresh = 0L;
     }
-    
+
     public void updateLastRefresh() {
         this.lastRefresh = System.currentTimeMillis();
     }
-    
+
     public boolean shouldRefresh(final Minecraft mc, final MapProperties mapProperties) {
         if (ClientAPI.INSTANCE.isDrawStepsUpdateNeeded()) {
             return true;
@@ -325,35 +326,35 @@ public class MapState
         final double diff = MathHelper.sqrt(d0 * d0 + d2 * d2 + d3 * d3);
         return diff > 2.0 || (this.lastMapProperties == null || !this.lastMapProperties.equals(mapProperties));
     }
-    
+
     public boolean isHighQuality() {
         return this.highQuality;
     }
-    
+
     public boolean isCaveMappingAllowed() {
         return this.caveMappingAllowed;
     }
-    
+
     public boolean isCaveMappingEnabled() {
         return this.caveMappingEnabled;
     }
-    
+
     public boolean isSurfaceMappingAllowed() {
         return this.surfaceMappingAllowed;
     }
-    
+
     public boolean isTopoMappingAllowed() {
         return this.topoMappingAllowed;
     }
-    
+
     public int getDimension() {
         return this.getMapType().dimension;
     }
-    
+
     public IntegerField getLastSlice() {
         return this.lastSlice;
     }
-    
+
     public void resetMapType() {
         this.lastMapType = null;
     }

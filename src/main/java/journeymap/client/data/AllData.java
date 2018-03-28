@@ -1,13 +1,13 @@
 package journeymap.client.data;
 
-import com.google.common.cache.*;
-import journeymap.common.*;
-import journeymap.client.model.*;
-import com.google.common.collect.*;
+import com.google.common.cache.CacheLoader;
+import com.google.common.collect.ImmutableMap;
+import journeymap.client.model.Waypoint;
+import journeymap.common.Journeymap;
+
 import java.util.*;
 
-public class AllData extends CacheLoader<Long, Map>
-{
+public class AllData extends CacheLoader<Long, Map> {
     public Map load(final Long since) throws Exception {
         final DataCache cache = DataCache.INSTANCE;
         final LinkedHashMap<Key, Object> props = new LinkedHashMap<Key, Object>();
@@ -24,8 +24,7 @@ public class AllData extends CacheLoader<Long, Map>
                 }
             }
             props.put(Key.waypoints, wpMap);
-        }
-        else {
+        } else {
             props.put(Key.waypoints, Collections.emptyMap());
         }
         if (!WorldData.isHardcoreAndMultiplayer()) {
@@ -34,22 +33,21 @@ public class AllData extends CacheLoader<Long, Map>
             props.put(Key.players, Collections.emptyMap());
             props.put(Key.villagers, Collections.emptyMap());
         }
-        return (Map)ImmutableMap.copyOf((Map)props);
+        return (Map) ImmutableMap.copyOf((Map) props);
     }
-    
+
     public long getTTL() {
         return Journeymap.getClient().getCoreProperties().renderDelay.get() * 2000;
     }
-    
-    public enum Key
-    {
-        animals, 
-        images, 
-        mobs, 
-        player, 
-        players, 
-        villagers, 
-        waypoints, 
+
+    public enum Key {
+        animals,
+        images,
+        mobs,
+        player,
+        players,
+        villagers,
+        waypoints,
         world;
     }
 }

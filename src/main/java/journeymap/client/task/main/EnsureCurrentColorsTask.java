@@ -1,22 +1,21 @@
 package journeymap.client.task.main;
 
-import journeymap.client.log.*;
-import net.minecraft.client.*;
-import journeymap.client.*;
-import journeymap.client.data.*;
-import journeymap.client.mod.*;
-import journeymap.client.cartography.color.*;
-import journeymap.client.task.multi.*;
+import journeymap.client.JourneymapClient;
+import journeymap.client.cartography.color.ColorManager;
+import journeymap.client.data.DataCache;
+import journeymap.client.log.ChatLog;
+import journeymap.client.mod.ModBlockDelegate;
+import journeymap.client.task.multi.MapPlayerTask;
+import net.minecraft.client.Minecraft;
 
-public class EnsureCurrentColorsTask implements IMainThreadTask
-{
+public class EnsureCurrentColorsTask implements IMainThreadTask {
     final boolean forceReset;
     final boolean announce;
-    
+
     public EnsureCurrentColorsTask() {
         this(false, false);
     }
-    
+
     public EnsureCurrentColorsTask(final boolean forceReset, final boolean announce) {
         this.forceReset = forceReset;
         this.announce = announce;
@@ -24,7 +23,7 @@ public class EnsureCurrentColorsTask implements IMainThreadTask
             ChatLog.announceI18N("jm.common.colorreset_start", new Object[0]);
         }
     }
-    
+
     @Override
     public IMainThreadTask perform(final Minecraft mc, final JourneymapClient jm) {
         if (this.forceReset) {
@@ -41,7 +40,7 @@ public class EnsureCurrentColorsTask implements IMainThreadTask
         }
         return null;
     }
-    
+
     @Override
     public String getName() {
         return "EnsureCurrentColorsTask";

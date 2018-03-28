@@ -1,35 +1,42 @@
 package journeymap.client.forge.event;
 
-import net.minecraftforge.fml.relauncher.*;
-import net.minecraft.client.*;
-import net.minecraftforge.fml.client.*;
-import net.minecraftforge.fml.common.gameevent.*;
-import journeymap.common.*;
-import journeymap.client.api.impl.*;
-import journeymap.common.log.*;
-import net.minecraftforge.fml.common.eventhandler.*;
-import net.minecraft.util.math.*;
-import journeymap.client.api.event.*;
-import journeymap.client.model.*;
-import journeymap.client.waypoint.*;
-import net.minecraft.entity.player.*;
-import journeymap.client.properties.*;
-import net.minecraft.client.resources.*;
-import net.minecraft.util.text.*;
+import journeymap.client.api.event.DeathWaypointEvent;
+import journeymap.client.api.impl.ClientAPI;
+import journeymap.client.model.Waypoint;
+import journeymap.client.properties.WaypointProperties;
+import journeymap.client.waypoint.WaypointStore;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class StateTickHandler implements EventHandlerManager.EventHandler
-{
+public class StateTickHandler implements EventHandlerManager.EventHandler {
     static boolean javaChecked;
+
+    static {
+        StateTickHandler.javaChecked = false;
+    }
+
     Minecraft mc;
     int counter;
     private boolean deathpointCreated;
-    
+
     public StateTickHandler() {
         this.mc = FMLClientHandler.instance().getClient();
         this.counter = 0;
     }
-    
+
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
     public void onClientTick(final TickEvent.ClientTickEvent event) {
@@ -42,8 +49,7 @@ public class StateTickHandler implements EventHandlerManager.EventHandler
                 this.deathpointCreated = true;
                 this.createDeathpoint();
             }
-        }
-        else {
+        } else {
             this.deathpointCreated = false;
         }
         if (!StateTickHandler.javaChecked && this.mc.player != null && !this.mc.player.isDead) {
@@ -55,36 +61,31 @@ public class StateTickHandler implements EventHandlerManager.EventHandler
                 Journeymap.getClient().performMainThreadTasks();
                 this.counter = 0;
                 this.mc.mcProfiler.endSection();
-            }
-            else if (this.counter == 10) {
+            } else if (this.counter == 10) {
                 this.mc.mcProfiler.startSection("multithreadTasks");
                 if (Journeymap.getClient().isMapping() && this.mc.world != null) {
                     Journeymap.getClient().performMultithreadTasks();
                 }
                 ++this.counter;
                 this.mc.mcProfiler.endSection();
-            }
-            else if (this.counter == 5 || this.counter == 15) {
+            } else if (this.counter == 5 || this.counter == 15) {
                 this.mc.mcProfiler.startSection("clientApiEvents");
                 ClientAPI.INSTANCE.getClientEventManager().fireNextClientEvents();
                 ++this.counter;
                 this.mc.mcProfiler.endSection();
-            }
-            else {
+            } else {
                 ++this.counter;
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().warn("Error during onClientTick: " + LogFormatter.toPartialString(t));
-        }
-        finally {
+        } finally {
             this.mc.mcProfiler.endSection();
         }
     }
-    
+
     private void createDeathpoint() {
         try {
-            final EntityPlayer player = (EntityPlayer)this.mc.player;
+            final EntityPlayer player = (EntityPlayer) this.mc.player;
             if (player == null) {
                 Journeymap.getLogger().error("Lost reference to player before Deathpoint could be created");
                 return;
@@ -100,37 +101,29 @@ public class StateTickHandler implements EventHandlerManager.EventHandler
                 if (!event.isCancelled()) {
                     final Waypoint deathpoint = Waypoint.at(pos, Waypoint.Type.Death, dim);
                     WaypointStore.INSTANCE.save(deathpoint);
-                }
-                else {
+                } else {
                     cancelled = true;
                 }
             }
             Journeymap.getLogger().info(String.format("%s died at %s. Deathpoints enabled: %s. Deathpoint created: %s", player.getName(), pos, enabled, cancelled ? "cancelled" : true));
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().error("Unexpected Error in createDeathpoint(): " + LogFormatter.toString(t));
         }
     }
-    
+
     private void checkJava() {
         StateTickHandler.javaChecked = true;
         try {
             Class.forName("java.util.Objects");
-        }
-        catch (ClassNotFoundException e3) {
+        } catch (ClassNotFoundException e3) {
             try {
                 final String error = I18n.format("jm.error.java6", new Object[0]);
-                FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage((ITextComponent)new TextComponentString(error));
+                FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage((ITextComponent) new TextComponentString(error));
                 Journeymap.getLogger().fatal("JourneyMap requires Java 7 or Java 8. Update your launcher profile to use a newer version of Java.");
-            }
-            catch (Exception e2) {
+            } catch (Exception e2) {
                 e2.printStackTrace();
             }
             Journeymap.getClient().disable();
         }
-    }
-    
-    static {
-        StateTickHandler.javaChecked = false;
     }
 }

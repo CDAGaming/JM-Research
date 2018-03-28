@@ -1,14 +1,19 @@
 package journeymap.client.data;
 
-import com.google.common.cache.*;
-import journeymap.client.feature.*;
-import journeymap.client.model.*;
-import net.minecraft.entity.*;
-import java.util.*;
-import journeymap.common.*;
+import com.google.common.cache.CacheLoader;
+import journeymap.client.feature.Feature;
+import journeymap.client.feature.FeatureManager;
+import journeymap.client.model.EntityDTO;
+import journeymap.client.model.EntityHelper;
+import journeymap.common.Journeymap;
+import net.minecraft.entity.EntityLivingBase;
 
-public class AnimalsData extends CacheLoader<Class, Map<String, EntityDTO>>
-{
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class AnimalsData extends CacheLoader<Class, Map<String, EntityDTO>> {
     public Map<String, EntityDTO> load(final Class aClass) throws Exception {
         if (!FeatureManager.isAllowed(Feature.RadarAnimals)) {
             return new HashMap<String, EntityDTO>();
@@ -19,8 +24,7 @@ public class AnimalsData extends CacheLoader<Class, Map<String, EntityDTO>>
             final EntityLivingBase entityLiving = entityDTO.entityLivingRef.get();
             if (entityLiving == null) {
                 finalList.remove(entityDTO);
-            }
-            else {
+            } else {
                 if (!entityLiving.isBeingRidden()) {
                     continue;
                 }
@@ -29,7 +33,7 @@ public class AnimalsData extends CacheLoader<Class, Map<String, EntityDTO>>
         }
         return EntityHelper.buildEntityIdMap(finalList, true);
     }
-    
+
     public long getTTL() {
         return Math.max(1000, Journeymap.getClient().getCoreProperties().cacheAnimalsData.get());
     }

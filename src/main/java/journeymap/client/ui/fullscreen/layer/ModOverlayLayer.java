@@ -1,18 +1,24 @@
 package journeymap.client.ui.fullscreen.layer;
 
-import net.minecraft.util.math.*;
-import journeymap.client.api.util.*;
-import net.minecraft.client.*;
-import journeymap.client.render.map.*;
-import journeymap.client.api.impl.*;
-import journeymap.client.render.draw.*;
-import journeymap.common.*;
-import java.util.*;
-import journeymap.client.api.display.*;
-import java.awt.geom.*;
+import journeymap.client.api.display.IOverlayListener;
+import journeymap.client.api.display.Overlay;
+import journeymap.client.api.impl.ClientAPI;
+import journeymap.client.api.util.UIState;
+import journeymap.client.render.draw.DrawStep;
+import journeymap.client.render.draw.OverlayDrawStep;
+import journeymap.client.render.map.GridRenderer;
+import journeymap.common.Journeymap;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.math.BlockPos;
 
-public class ModOverlayLayer implements LayerDelegate.Layer
-{
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
+public class ModOverlayLayer implements LayerDelegate.Layer {
     protected List<OverlayDrawStep> allDrawSteps;
     protected List<OverlayDrawStep> visibleSteps;
     protected List<OverlayDrawStep> touchedSteps;
@@ -20,13 +26,13 @@ public class ModOverlayLayer implements LayerDelegate.Layer
     protected Point2D.Double lastMousePosition;
     protected UIState lastUiState;
     protected boolean propagateClick;
-    
+
     public ModOverlayLayer() {
         this.allDrawSteps = new ArrayList<OverlayDrawStep>();
         this.visibleSteps = new ArrayList<OverlayDrawStep>();
         this.touchedSteps = new ArrayList<OverlayDrawStep>();
     }
-    
+
     private void ensureCurrent(final Minecraft mc, final GridRenderer gridRenderer, final Point2D.Double mousePosition, final BlockPos blockCoord) {
         final UIState currentUiState = gridRenderer.getUIState();
         final boolean uiStateChange = !Objects.equals(this.lastUiState, currentUiState);
@@ -39,7 +45,7 @@ public class ModOverlayLayer implements LayerDelegate.Layer
             this.updateOverlayState(gridRenderer, mousePosition, blockCoord, uiStateChange);
         }
     }
-    
+
     @Override
     public List<DrawStep> onMouseMove(final Minecraft mc, final GridRenderer gridRenderer, final Point2D.Double mousePosition, final BlockPos blockCoord, final float fontScale, final boolean isScrolling) {
         this.ensureCurrent(mc, gridRenderer, mousePosition, blockCoord);
@@ -50,15 +56,14 @@ public class ModOverlayLayer implements LayerDelegate.Layer
                     final IOverlayListener listener = overlay.getOverlayListener();
                     this.fireOnMouseMove(listener, mousePosition, blockCoord);
                     overlayDrawStep.setTitlePosition(mousePosition);
-                }
-                catch (Throwable t) {
+                } catch (Throwable t) {
                     Journeymap.getLogger().error(t.getMessage(), t);
                 }
             }
         }
         return Collections.emptyList();
     }
-    
+
     @Override
     public List<DrawStep> onMouseClick(final Minecraft mc, final GridRenderer gridRenderer, final Point2D.Double mousePosition, final BlockPos blockCoord, final int button, final boolean doubleClick, final float fontScale) {
         this.ensureCurrent(mc, gridRenderer, mousePosition, blockCoord);
@@ -78,20 +83,19 @@ public class ModOverlayLayer implements LayerDelegate.Layer
                         break;
                     }
                     continue;
-                }
-                catch (Throwable t) {
+                } catch (Throwable t) {
                     Journeymap.getLogger().error(t.getMessage(), t);
                 }
             }
         }
         return Collections.emptyList();
     }
-    
+
     @Override
     public boolean propagateClick() {
         return this.propagateClick;
     }
-    
+
     private void updateOverlayState(final GridRenderer gridRenderer, final Point2D.Double mousePosition, final BlockPos blockCoord, final boolean uiStateChange) {
         for (final OverlayDrawStep overlayDrawStep : this.allDrawSteps) {
             final Overlay overlay = overlayDrawStep.getOverlay();
@@ -102,8 +106,7 @@ public class ModOverlayLayer implements LayerDelegate.Layer
                 if (!currentlyActive) {
                     this.visibleSteps.add(overlayDrawStep);
                     this.fireActivate(listener);
-                }
-                else if (uiStateChange) {
+                } else if (uiStateChange) {
                     this.fireActivate(listener);
                 }
                 final Rectangle2D.Double bounds = overlayDrawStep.getBounds();
@@ -112,8 +115,7 @@ public class ModOverlayLayer implements LayerDelegate.Layer
                         continue;
                     }
                     this.touchedSteps.add(overlayDrawStep);
-                }
-                else {
+                } else {
                     if (!currentlyTouched) {
                         continue;
                     }
@@ -121,8 +123,7 @@ public class ModOverlayLayer implements LayerDelegate.Layer
                     overlayDrawStep.setTitlePosition(null);
                     this.fireOnMouseOut(listener, mousePosition, blockCoord);
                 }
-            }
-            else {
+            } else {
                 if (currentlyTouched) {
                     this.touchedSteps.remove(overlayDrawStep);
                     overlayDrawStep.setTitlePosition(null);
@@ -137,58 +138,53 @@ public class ModOverlayLayer implements LayerDelegate.Layer
             }
         }
     }
-    
+
     private void fireActivate(final IOverlayListener listener) {
         if (listener != null) {
             try {
                 listener.onActivate(this.lastUiState);
-            }
-            catch (Throwable t) {
+            } catch (Throwable t) {
                 t.printStackTrace();
             }
         }
     }
-    
+
     private void fireDeActivate(final IOverlayListener listener) {
         if (listener != null) {
             try {
                 listener.onDeactivate(this.lastUiState);
-            }
-            catch (Throwable t) {
+            } catch (Throwable t) {
                 t.printStackTrace();
             }
         }
     }
-    
+
     private void fireOnMouseMove(final IOverlayListener listener, final Point2D.Double mousePosition, final BlockPos blockCoord) {
         if (listener != null) {
             try {
                 listener.onMouseMove(this.lastUiState, mousePosition, blockCoord);
-            }
-            catch (Throwable t) {
+            } catch (Throwable t) {
                 t.printStackTrace();
             }
         }
     }
-    
+
     private boolean fireOnMouseClick(final IOverlayListener listener, final Point2D.Double mousePosition, final BlockPos blockCoord, final int button, final boolean doubleClick) {
         if (listener != null) {
             try {
                 return listener.onMouseClick(this.lastUiState, mousePosition, blockCoord, button, doubleClick);
-            }
-            catch (Throwable t) {
+            } catch (Throwable t) {
                 t.printStackTrace();
             }
         }
         return true;
     }
-    
+
     private void fireOnMouseOut(final IOverlayListener listener, final Point2D.Double mousePosition, final BlockPos blockCoord) {
         if (listener != null) {
             try {
                 listener.onMouseOut(this.lastUiState, mousePosition, blockCoord);
-            }
-            catch (Throwable t) {
+            } catch (Throwable t) {
                 t.printStackTrace();
             }
         }

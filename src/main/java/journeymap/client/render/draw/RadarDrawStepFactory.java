@@ -1,20 +1,21 @@
 package journeymap.client.render.draw;
 
-import journeymap.client.model.*;
-import journeymap.client.render.map.*;
-import journeymap.client.properties.*;
-import journeymap.client.ui.minimap.*;
-import net.minecraft.entity.*;
-import com.google.common.base.*;
-import journeymap.client.data.*;
-import net.minecraft.entity.player.*;
-import journeymap.common.*;
-import journeymap.common.log.*;
-import java.util.*;
-import journeymap.client.render.texture.*;
+import com.google.common.base.Strings;
+import journeymap.client.data.DataCache;
+import journeymap.client.model.EntityDTO;
+import journeymap.client.properties.InGameMapProperties;
+import journeymap.client.render.map.GridRenderer;
+import journeymap.client.render.texture.TextureImpl;
+import journeymap.client.ui.minimap.EntityDisplay;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 
-public class RadarDrawStepFactory
-{
+import java.util.ArrayList;
+import java.util.List;
+
+public class RadarDrawStepFactory {
     public List<DrawStep> prepareSteps(final List<EntityDTO> entityDTOs, final GridRenderer grid, final InGameMapProperties mapProperties) {
         final boolean showAnimals = mapProperties.showAnimals.get();
         final boolean showPets = mapProperties.showPets.get();
@@ -54,8 +55,7 @@ public class RadarDrawStepFactory
                         entityIcon = EntityDisplay.getEntityTexture(playerDisplay, entityLiving.getName());
                         drawStep.update(playerDisplay, locatorImg, entityIcon, dto.color, showPlayerHeading, false);
                         drawStepList.add(drawStep);
-                    }
-                    else {
+                    } else {
                         locatorImg = EntityDisplay.getLocatorTexture(mobDisplay, showMobHeading);
                         entityIcon = EntityDisplay.getEntityTexture(mobDisplay, dto.entityIconLocation);
                         EntityDisplay actualDisplay = mobDisplay;
@@ -66,13 +66,11 @@ public class RadarDrawStepFactory
                         drawStep.update(actualDisplay, locatorImg, entityIcon, dto.color, showMobHeading, showEntityNames);
                         drawStepList.add(drawStep);
                     }
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     Journeymap.getLogger().error("Exception during prepareSteps: " + LogFormatter.toString(e));
                 }
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().error("Throwable during prepareSteps: " + LogFormatter.toString(t));
         }
         return drawStepList;

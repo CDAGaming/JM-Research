@@ -1,14 +1,13 @@
 package journeymap.client.render.map;
 
-public class TilePos implements Comparable<TilePos>
-{
+public class TilePos implements Comparable<TilePos> {
     public final int deltaX;
     public final int deltaZ;
     final double startX;
     final double startZ;
     final double endX;
     final double endZ;
-    
+
     TilePos(final int deltaX, final int deltaZ) {
         this.deltaX = deltaX;
         this.deltaZ = deltaZ;
@@ -17,7 +16,7 @@ public class TilePos implements Comparable<TilePos>
         this.endX = this.startX + 512.0;
         this.endZ = this.startZ + 512.0;
     }
-    
+
     @Override
     public int hashCode() {
         final int prime = 37;
@@ -26,7 +25,7 @@ public class TilePos implements Comparable<TilePos>
         result = 37 * result + this.deltaZ;
         return result;
     }
-    
+
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -38,15 +37,15 @@ public class TilePos implements Comparable<TilePos>
         if (this.getClass() != obj.getClass()) {
             return false;
         }
-        final TilePos other = (TilePos)obj;
+        final TilePos other = (TilePos) obj;
         return this.deltaX == other.deltaX && this.deltaZ == other.deltaZ;
     }
-    
+
     @Override
     public String toString() {
         return "TilePos [" + this.deltaX + "," + this.deltaZ + "]";
     }
-    
+
     @Override
     public int compareTo(final TilePos o) {
         int result = new Integer(this.deltaZ).compareTo(Integer.valueOf(o.deltaZ));

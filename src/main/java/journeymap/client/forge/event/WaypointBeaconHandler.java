@@ -1,21 +1,21 @@
 package journeymap.client.forge.event;
 
-import net.minecraft.client.*;
-import net.minecraftforge.fml.client.*;
-import net.minecraftforge.client.event.*;
-import journeymap.common.*;
-import journeymap.client.render.ingame.*;
-import net.minecraftforge.fml.relauncher.*;
-import net.minecraftforge.fml.common.eventhandler.*;
+import journeymap.client.render.ingame.RenderWaypointBeacon;
+import journeymap.common.Journeymap;
+import net.minecraft.client.Minecraft;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class WaypointBeaconHandler implements EventHandlerManager.EventHandler
-{
+public class WaypointBeaconHandler implements EventHandlerManager.EventHandler {
     final Minecraft mc;
-    
+
     public WaypointBeaconHandler() {
         this.mc = FMLClientHandler.instance().getClient();
     }
-    
+
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
     public void onRenderWorldLastEvent(final RenderWorldLastEvent event) {

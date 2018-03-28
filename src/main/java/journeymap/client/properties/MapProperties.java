@@ -1,11 +1,12 @@
 package journeymap.client.properties;
 
-import journeymap.client.model.*;
-import journeymap.common.properties.config.*;
-import journeymap.common.properties.*;
+import journeymap.client.model.MapType;
+import journeymap.common.properties.Category;
+import journeymap.common.properties.config.BooleanField;
+import journeymap.common.properties.config.EnumField;
+import journeymap.common.properties.config.IntegerField;
 
-public abstract class MapProperties extends ClientPropertiesBase implements Comparable<MapProperties>
-{
+public abstract class MapProperties extends ClientPropertiesBase implements Comparable<MapProperties> {
     public final BooleanField showWaypoints;
     public final BooleanField showSelf;
     public final BooleanField showGrid;
@@ -13,7 +14,7 @@ public abstract class MapProperties extends ClientPropertiesBase implements Comp
     public final BooleanField showEntityNames;
     public final EnumField<MapType.Name> preferredMapType;
     public final IntegerField zoomLevel;
-    
+
     public MapProperties() {
         this.showWaypoints = new BooleanField(Category.Inherit, "jm.common.show_waypoints", true);
         this.showSelf = new BooleanField(Category.Inherit, "jm.common.show_self", true);
@@ -23,7 +24,7 @@ public abstract class MapProperties extends ClientPropertiesBase implements Comp
         this.preferredMapType = new EnumField<MapType.Name>(Category.Hidden, "", MapType.Name.day);
         this.zoomLevel = new IntegerField(Category.Hidden, "", 0, 8, 0);
     }
-    
+
     @Override
     public int compareTo(final MapProperties other) {
         return Integer.valueOf(this.hashCode()).compareTo(Integer.valueOf(other.hashCode()));

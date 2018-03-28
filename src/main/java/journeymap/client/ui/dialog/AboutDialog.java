@@ -1,23 +1,30 @@
 package journeymap.client.ui.dialog;
 
-import journeymap.client.ui.component.*;
-import journeymap.client.model.*;
-import journeymap.common.*;
-import journeymap.client.*;
-import journeymap.client.render.texture.*;
-import journeymap.client.io.*;
-import journeymap.client.ui.*;
-import journeymap.common.properties.*;
-import java.util.*;
-import org.lwjgl.input.*;
-import java.awt.geom.*;
-import journeymap.client.render.draw.*;
-import net.minecraft.client.renderer.*;
-import net.minecraft.client.gui.*;
-import net.minecraft.client.*;
+import journeymap.client.Constants;
+import journeymap.client.io.FileHandler;
+import journeymap.client.model.SplashInfo;
+import journeymap.client.model.SplashPerson;
+import journeymap.client.render.draw.DrawUtil;
+import journeymap.client.render.texture.TextureCache;
+import journeymap.client.render.texture.TextureImpl;
+import journeymap.client.ui.UIManager;
+import journeymap.client.ui.component.Button;
+import journeymap.client.ui.component.ButtonList;
+import journeymap.client.ui.component.JmUI;
+import journeymap.common.Journeymap;
+import journeymap.common.properties.Category;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.renderer.GlStateManager;
+import org.lwjgl.input.Mouse;
 
-public class AboutDialog extends JmUI
-{
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class AboutDialog extends JmUI {
     protected TextureImpl patreonLogo;
     protected TextureImpl discordLogo;
     Button buttonClose;
@@ -36,7 +43,7 @@ public class AboutDialog extends JmUI
     private List<SplashPerson> people;
     private List<SplashPerson> devs;
     private SplashInfo info;
-    
+
     public AboutDialog(final JmUI returnDisplay) {
         super(Constants.getString("jm.common.splash_title", Journeymap.JM_VERSION), returnDisplay);
         this.patreonLogo = TextureCache.getTexture(TextureCache.Patreon);
@@ -44,7 +51,7 @@ public class AboutDialog extends JmUI
         this.people = Arrays.asList(new SplashPerson("AlexDurrani", "Sikandar Durrani", "jm.common.splash_patreon"), new SplashPerson("Davkas", "Davkas", "jm.common.splash_patreon"), new SplashPerson("TECH_GEEK10", "TECH_GEEK10", "jm.common.splash_patreon"), new SplashPerson("_TheEndless_", "The Endless", "jm.common.splash_patreon"), new SplashPerson("eladjenkins", "eladjenkins", "jm.common.splash_patreon"));
         this.devs = Arrays.asList(new SplashPerson("mysticdrew", "mysticdrew", "jm.common.splash_developer"), new SplashPerson("techbrew", "techbrew", "jm.common.splash_developer"));
     }
-    
+
     @Override
     public void initGui() {
         Journeymap.getClient().getCoreProperties().splashViewed.set(Journeymap.JM_VERSION.toString());
@@ -101,13 +108,12 @@ public class AboutDialog extends JmUI
         (this.buttonOptions = new Button(Constants.getString("jm.common.options_button"))).addClickListener(button -> {
             if (this.returnDisplay != null && this.returnDisplay instanceof OptionsManager) {
                 this.closeAndReturn();
-            }
-            else {
+            } else {
                 UIManager.INSTANCE.openOptionsManager(this, new Category[0]);
             }
             return true;
         });
-        this.bottomButtons = new ButtonList(new Button[] { this.buttonOptions });
+        this.bottomButtons = new ButtonList(new Button[]{this.buttonOptions});
         if (this.mc.world != null) {
             this.bottomButtons.add(this.buttonClose);
         }
@@ -124,7 +130,7 @@ public class AboutDialog extends JmUI
             FullscreenActions.launchDownloadWebsite();
             return true;
         });
-        (this.linkButtons = new ButtonList(new Button[] { this.buttonWebsite, this.buttonDownload })).equalizeWidths(fr);
+        (this.linkButtons = new ButtonList(new Button[]{this.buttonWebsite, this.buttonDownload})).equalizeWidths(fr);
         this.buttonList.addAll(this.linkButtons);
         final int commonWidth = Math.max(this.bottomButtons.getWidth(0) / this.bottomButtons.size(), this.linkButtons.getWidth(0) / this.linkButtons.size());
         this.bottomButtons.setWidths(commonWidth);
@@ -149,12 +155,12 @@ public class AboutDialog extends JmUI
             FullscreenActions.discord();
             return true;
         });
-        (this.logoButtons = new ButtonList(new Button[] { this.buttonDiscord, this.buttonPatreon })).setLayout(ButtonList.Layout.Horizontal, ButtonList.Direction.LeftToRight);
+        (this.logoButtons = new ButtonList(new Button[]{this.buttonDiscord, this.buttonPatreon})).setLayout(ButtonList.Layout.Horizontal, ButtonList.Direction.LeftToRight);
         this.logoButtons.setHeights(Math.max(this.discordLogo.getHeight(), this.patreonLogo.getHeight()) / this.scaleFactor);
         this.logoButtons.setWidths(Math.max(this.discordLogo.getWidth(), this.patreonLogo.getWidth()) / this.scaleFactor);
         this.buttonList.addAll(this.logoButtons);
     }
-    
+
     @Override
     protected void layoutButtons() {
         if (this.buttonList.isEmpty()) {
@@ -170,7 +176,7 @@ public class AboutDialog extends JmUI
         final int height = this.height;
         this.getClass();
         final int centerHeight = height - 35 - estimatedButtonsHeight;
-        final int lineHeight = (int)(fr.FONT_HEIGHT * 1.4);
+        final int lineHeight = (int) (fr.FONT_HEIGHT * 1.4);
         final int bx = this.width / 2;
         int by = 0;
         final boolean movePeople = System.currentTimeMillis() - this.lastPeopleMove > 20L;
@@ -206,7 +212,7 @@ public class AboutDialog extends JmUI
             this.getClass();
             final int topY;
             by = (topY = 35 + (centerHeight - estimatedInfoHeight) / 2);
-            by += (int)(lineHeight * 1.5);
+            by += (int) (lineHeight * 1.5);
             this.infoButtons.layoutCenteredVertical(bx - this.infoButtons.get(0).getWidth() / 2, by + this.infoButtons.getHeight(0) / 2, true, 0);
             final int listX = this.infoButtons.getLeftX() - 10;
             final int listY = topY - 5;
@@ -226,19 +232,18 @@ public class AboutDialog extends JmUI
         DrawUtil.drawImage(this.patreonLogo, this.buttonPatreon.getX(), this.buttonPatreon.getY(), false, 1.0f / this.scaleFactor, 0.0);
         DrawUtil.drawImage(this.discordLogo, this.buttonDiscord.getX(), this.buttonDiscord.getY(), false, 1.0f / this.scaleFactor, 0.0);
     }
-    
+
     protected int drawPerson(int by, final int lineHeight, final SplashPerson person) {
         final float scale = 1.0f;
         final Button button = person.getButton();
-        final int imgSize = (int)(person.getSkin().getWidth() * scale);
+        final int imgSize = (int) (person.getSkin().getWidth() * scale);
         final int imgY = button.getY() - 2;
         final int imgX = button.getCenterX() - imgSize / 2;
         GlStateManager.enableAlpha();
         if (!(person instanceof SplashPerson.Fake)) {
             DrawUtil.drawGradientRect(imgX - 1, imgY - 1, imgSize + 2, imgSize + 2, 0, 0.4f, 0, 0.8f);
             DrawUtil.drawImage(person.getSkin(), 1.0f, imgX, imgY, false, scale, 0.0);
-        }
-        else {
+        } else {
             final float size = Math.min(person.getSkin().getWidth() * scale, 24.0f * scale);
             DrawUtil.drawQuad(person.getSkin(), 16777215, 1.0f, imgX, imgY, size, size, false, 0.0);
         }
@@ -261,10 +266,10 @@ public class AboutDialog extends JmUI
         by += lineHeight;
         return by;
     }
-    
+
     protected void actionPerformed(final GuiButton guibutton) {
     }
-    
+
     @Override
     protected void keyTyped(final char c, final int i) {
         switch (i) {
@@ -274,16 +279,15 @@ public class AboutDialog extends JmUI
             }
         }
     }
-    
-    class SplashInfoButton extends Button
-    {
+
+    class SplashInfoButton extends Button {
         final SplashInfo.Line infoLine;
-        
+
         public SplashInfoButton(final SplashInfo.Line infoLine) {
             super(infoLine.label);
             this.infoLine = infoLine;
         }
-        
+
         @Override
         public boolean mousePressed(final Minecraft minecraft, final int mouseX, final int mouseY) {
             final boolean pressed = super.mousePressed(minecraft, mouseX, mouseY, false);

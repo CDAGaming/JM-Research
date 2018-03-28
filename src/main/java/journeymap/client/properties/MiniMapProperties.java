@@ -1,13 +1,18 @@
 package journeymap.client.properties;
 
-import journeymap.client.ui.theme.*;
-import journeymap.common.properties.config.*;
-import journeymap.client.ui.minimap.*;
-import journeymap.common.properties.*;
-import net.minecraftforge.fml.client.*;
+import journeymap.client.ui.minimap.Orientation;
+import journeymap.client.ui.minimap.Position;
+import journeymap.client.ui.minimap.ReticleOrientation;
+import journeymap.client.ui.minimap.Shape;
+import journeymap.client.ui.theme.ThemeLabelSource;
+import journeymap.common.properties.Category;
+import journeymap.common.properties.PropertiesBase;
+import journeymap.common.properties.config.BooleanField;
+import journeymap.common.properties.config.EnumField;
+import journeymap.common.properties.config.IntegerField;
+import net.minecraftforge.fml.client.FMLClientHandler;
 
-public class MiniMapProperties extends InGameMapProperties
-{
+public class MiniMapProperties extends InGameMapProperties {
     public final BooleanField enabled;
     public final EnumField<Shape> shape;
     public final EnumField<Position> position;
@@ -26,7 +31,7 @@ public class MiniMapProperties extends InGameMapProperties
     public final EnumField<ReticleOrientation> reticleOrientation;
     protected final transient int id;
     protected boolean active;
-    
+
     public MiniMapProperties(final int id) {
         this.enabled = new BooleanField(Category.Inherit, "jm.minimap.enable_minimap", true, true);
         this.shape = new EnumField<Shape>(Category.Inherit, "jm.minimap.shape", Shape.Circle);
@@ -47,39 +52,39 @@ public class MiniMapProperties extends InGameMapProperties
         this.active = false;
         this.id = id;
     }
-    
+
     @Override
     public String getName() {
         return String.format("minimap%s", (this.id > 1) ? this.id : "");
     }
-    
+
     public boolean isActive() {
         return this.active;
     }
-    
+
     public void setActive(final boolean active) {
         if (this.active != active) {
             this.active = active;
             this.save();
         }
     }
-    
+
     public int getId() {
         return this.id;
     }
-    
+
     @Override
     public <T extends PropertiesBase> void updateFrom(final T otherInstance) {
         super.updateFrom(otherInstance);
         if (otherInstance instanceof MiniMapProperties) {
-            this.setActive(((MiniMapProperties)otherInstance).isActive());
+            this.setActive(((MiniMapProperties) otherInstance).isActive());
         }
     }
-    
+
     public int getSize() {
-        return (int)Math.max(128.0, Math.floor(this.sizePercent.get() / 100.0 * FMLClientHandler.instance().getClient().displayHeight));
+        return (int) Math.max(128.0, Math.floor(this.sizePercent.get() / 100.0 * FMLClientHandler.instance().getClient().displayHeight));
     }
-    
+
     @Override
     protected void postLoad(final boolean isNew) {
         super.postLoad(isNew);
@@ -90,8 +95,7 @@ public class MiniMapProperties extends InGameMapProperties
                     super.fontScale.set(2);
                     this.compassFontScale.set(2);
                 }
-            }
-            else {
+            } else {
                 this.setActive(false);
                 this.position.set(Position.TopRight);
                 this.shape.set(Shape.Rectangle);

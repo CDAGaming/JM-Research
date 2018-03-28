@@ -1,32 +1,45 @@
 package journeymap.client.ui.minimap;
 
-import journeymap.client.render.map.*;
-import net.minecraft.client.*;
-import java.awt.geom.*;
-import net.minecraftforge.fml.client.*;
-import journeymap.client.api.util.*;
-import net.minecraft.entity.player.*;
-import journeymap.common.*;
-import journeymap.client.api.impl.*;
-import net.minecraft.client.renderer.*;
-import journeymap.client.log.*;
+import journeymap.client.api.display.Context;
+import journeymap.client.api.impl.ClientAPI;
+import journeymap.client.api.util.UIState;
+import journeymap.client.data.DataCache;
+import journeymap.client.forge.event.MiniMapOverlayHandler;
+import journeymap.client.log.JMLogger;
+import journeymap.client.log.StatTimer;
+import journeymap.client.model.EntityDTO;
+import journeymap.client.model.MapState;
+import journeymap.client.model.MapType;
+import journeymap.client.properties.CoreProperties;
+import journeymap.client.properties.MiniMapProperties;
 import journeymap.client.render.draw.*;
-import java.util.*;
-import org.lwjgl.opengl.*;
-import journeymap.client.data.*;
-import journeymap.client.model.*;
-import journeymap.client.forge.event.*;
-import journeymap.client.render.texture.*;
-import journeymap.client.properties.*;
-import net.minecraft.util.math.*;
-import journeymap.client.api.display.*;
+import journeymap.client.render.map.GridRenderer;
+import journeymap.client.render.texture.TextureCache;
+import journeymap.client.render.texture.TextureImpl;
+import journeymap.common.Journeymap;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import org.lwjgl.opengl.GL11;
 
-public class MiniMap
-{
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+
+public class MiniMap {
     private static final MapState state;
     private static final float lightmapS = 240.0f;
     private static final float lightmapT = 240.0f;
     private static final GridRenderer gridRenderer;
+
+    static {
+        state = new MapState();
+        gridRenderer = new GridRenderer(Context.UI.Minimap, 3);
+    }
+
     private final Minecraft mc;
     private final WaypointDrawStepFactory waypointRenderer;
     private final RadarDrawStepFactory radarRenderer;
@@ -42,7 +55,7 @@ public class MiniMap
     private long initTime;
     private long lastAutoDayNightTime;
     private Boolean lastPlayerUnderground;
-    
+
     public MiniMap(final MiniMapProperties miniMapProperties) {
         this.mc = FMLClientHandler.instance().getClient();
         this.waypointRenderer = new WaypointDrawStepFactory();
@@ -51,28 +64,28 @@ public class MiniMap
         this.initTime = System.currentTimeMillis();
         this.setMiniMapProperties(miniMapProperties);
     }
-    
+
     public static synchronized MapState state() {
         return MiniMap.state;
     }
-    
+
     public static synchronized UIState uiState() {
         return MiniMap.gridRenderer.getUIState();
     }
-    
+
     public static void updateUIState(final boolean isActive) {
         if (FMLClientHandler.instance().getClient().world != null) {
             MiniMap.gridRenderer.updateUIState(isActive);
         }
     }
-    
+
     private void initGridRenderer() {
         MiniMap.gridRenderer.clear();
         MiniMap.state.requireRefresh();
         if (this.mc.player == null || this.mc.player.isDead) {
             return;
         }
-        MiniMap.state.refresh(this.mc, (EntityPlayer)this.mc.player, this.miniMapProperties);
+        MiniMap.state.refresh(this.mc, (EntityPlayer) this.mc.player, this.miniMapProperties);
         final MapType mapType = MiniMap.state.getMapType();
         final int gridSize = (this.miniMapProperties.getSize() <= 768) ? 3 : 5;
         MiniMap.gridRenderer.setGridSize(gridSize);
@@ -81,25 +94,25 @@ public class MiniMap
         final boolean highQuality = Journeymap.getClient().getCoreProperties().tileHighDisplayQuality.get();
         MiniMap.gridRenderer.updateTiles(MiniMap.state.getMapType(), MiniMap.state.getZoom(), highQuality, this.mc.displayWidth, this.mc.displayHeight, true, 0.0, 0.0);
     }
-    
+
     public void resetInitTime() {
         this.initTime = System.currentTimeMillis();
     }
-    
+
     public void setMiniMapProperties(final MiniMapProperties miniMapProperties) {
         this.miniMapProperties = miniMapProperties;
         state().requireRefresh();
         this.reset();
     }
-    
+
     public MiniMapProperties getCurrentMinimapProperties() {
         return this.miniMapProperties;
     }
-    
+
     public void drawMap() {
         this.drawMap(false);
     }
-    
+
     public void drawMap(final boolean preview) {
         StatTimer timer = this.drawTimer;
         RenderHelper.disableStandardItemLighting();
@@ -114,11 +127,10 @@ public class MiniMap
                 this.autoDayNight();
                 MiniMap.gridRenderer.setContext(MiniMap.state.getWorldDir(), MiniMap.state.getMapType());
                 if (!preview) {
-                    MiniMap.state.refresh(this.mc, (EntityPlayer)this.mc.player, this.miniMapProperties);
+                    MiniMap.state.refresh(this.mc, (EntityPlayer) this.mc.player, this.miniMapProperties);
                 }
                 ClientAPI.INSTANCE.flagOverlaysForRerender();
-            }
-            else {
+            } else {
                 timer.start();
             }
             final boolean moved = MiniMap.gridRenderer.center(MiniMap.state.getWorldDir(), MiniMap.state.getMapType(), this.mc.player.posX, this.mc.player.posZ, this.miniMapProperties.zoomLevel.get());
@@ -159,7 +171,7 @@ public class MiniMap
             }
             this.startMapRotation(rotation);
             try {
-                GlStateManager.translate((float)this.dv.translateX, (float)this.dv.translateY, 0.0f);
+                GlStateManager.translate((float) this.dv.translateX, (float) this.dv.translateY, 0.0f);
                 MiniMap.gridRenderer.draw(this.dv.terrainAlpha, 0.0, 0.0, this.miniMapProperties.showGrid.get());
                 MiniMap.gridRenderer.draw(MiniMap.state.getDrawSteps(), 0.0, 0.0, this.dv.fontScale, rotation);
                 this.centerPoint = MiniMap.gridRenderer.getPixel(this.mc.player.posX, this.mc.player.posZ);
@@ -169,14 +181,13 @@ public class MiniMap
                     DrawUtil.drawColoredEntity(this.centerPoint.getX(), this.centerPoint.getY(), this.playerArrowBg, 16777215, 1.0f, 1.0f, this.mc.player.rotationYawHead);
                     DrawUtil.drawColoredEntity(this.centerPoint.getX(), this.centerPoint.getY(), this.playerArrowFg, this.playerArrowColor, 1.0f, 1.0f, this.mc.player.rotationYawHead);
                 }
-                GlStateManager.translate((float)(-this.dv.translateX), (float)(-this.dv.translateY), 0.0f);
+                GlStateManager.translate((float) (-this.dv.translateX), (float) (-this.dv.translateY), 0.0f);
                 ReticleOrientation reticleOrientation = null;
                 if (this.dv.showReticle) {
                     reticleOrientation = this.dv.minimapFrame.getReticleOrientation();
                     if (reticleOrientation == ReticleOrientation.Compass) {
                         this.dv.minimapFrame.drawReticle();
-                    }
-                    else {
+                    } else {
                         this.startMapRotation(this.mc.player.rotationYawHead);
                         this.dv.minimapFrame.drawReticle();
                         this.stopMapRotation(this.mc.player.rotationYawHead);
@@ -185,20 +196,20 @@ public class MiniMap
                 final long lastMapChangeTime = MiniMap.state.getLastMapTypeChange();
                 if (now - lastMapChangeTime <= 1000L) {
                     this.stopMapRotation(rotation);
-                    GlStateManager.translate((float)this.dv.translateX, (float)this.dv.translateY, 0.0f);
+                    GlStateManager.translate((float) this.dv.translateX, (float) this.dv.translateY, 0.0f);
                     final float alpha = Math.min(255L, Math.max(0L, 1100L - (now - lastMapChangeTime))) / 255.0f;
                     final Point2D.Double windowCenter = MiniMap.gridRenderer.getWindowPosition(this.centerPoint);
                     this.dv.getMapTypeStatus(MiniMap.state.getMapType()).draw(windowCenter, alpha, 0.0);
-                    GlStateManager.translate((float)(-this.dv.translateX), (float)(-this.dv.translateY), 0.0f);
+                    GlStateManager.translate((float) (-this.dv.translateX), (float) (-this.dv.translateY), 0.0f);
                     this.startMapRotation(rotation);
                 }
                 if (now - this.initTime <= 1000L) {
                     this.stopMapRotation(rotation);
-                    GlStateManager.translate((float)this.dv.translateX, (float)this.dv.translateY, 0.0f);
+                    GlStateManager.translate((float) this.dv.translateX, (float) this.dv.translateY, 0.0f);
                     final float alpha = Math.min(255L, Math.max(0L, 1100L - (now - this.initTime))) / 255.0f;
                     final Point2D.Double windowCenter = MiniMap.gridRenderer.getWindowPosition(this.centerPoint);
                     this.dv.getMapPresetStatus(MiniMap.state.getMapType(), this.miniMapProperties.getId()).draw(windowCenter, alpha, 0.0);
-                    GlStateManager.translate((float)(-this.dv.translateX), (float)(-this.dv.translateY), 0.0f);
+                    GlStateManager.translate((float) (-this.dv.translateX), (float) (-this.dv.translateY), 0.0f);
                     this.startMapRotation(rotation);
                 }
                 this.endStencil();
@@ -212,29 +223,26 @@ public class MiniMap
                 if (this.dv.showCompass) {
                     this.dv.minimapCompassPoints.drawPoints(rotation);
                 }
-                GlStateManager.translate((float)this.dv.translateX, (float)this.dv.translateY, 0.0f);
+                GlStateManager.translate((float) this.dv.translateX, (float) this.dv.translateY, 0.0f);
                 this.drawOffMapWaypoints(rotation);
                 if (this.dv.showCompass) {
-                    GlStateManager.translate((float)(-this.dv.translateX), (float)(-this.dv.translateY), 0.0f);
+                    GlStateManager.translate((float) (-this.dv.translateX), (float) (-this.dv.translateY), 0.0f);
                     this.dv.minimapCompassPoints.drawLabels(rotation);
                 }
-            }
-            finally {
+            } finally {
                 GlStateManager.popMatrix();
             }
             this.dv.drawInfoLabels(now);
             DrawUtil.sizeDisplay(this.dv.scaledResolution.getScaledWidth_double(), this.dv.scaledResolution.getScaledHeight_double());
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             JMLogger.logOnce("Error during MiniMap.drawMap(): " + t.getMessage(), t);
-        }
-        finally {
+        } finally {
             this.cleanup();
             timer.stop();
             MiniMap.gridRenderer.clearGlErrors(true);
         }
     }
-    
+
     private void drawOnMapWaypoints(final double rotation) {
         final boolean showLabel = this.miniMapProperties.showWaypointLabels.get();
         for (final DrawStep.Pass pass : DrawStep.Pass.values()) {
@@ -244,8 +252,7 @@ public class MiniMap
                     final Point2D.Double waypointPos = drawWayPointStep.getPosition(0.0, 0.0, MiniMap.gridRenderer, true);
                     onScreen = this.isOnScreen(waypointPos, this.centerPoint, this.centerRect);
                     drawWayPointStep.setOnScreen(onScreen);
-                }
-                else {
+                } else {
                     onScreen = drawWayPointStep.isOnScreen();
                 }
                 if (onScreen) {
@@ -255,7 +262,7 @@ public class MiniMap
             }
         }
     }
-    
+
     private void drawOffMapWaypoints(final double rotation) {
         for (final DrawWayPointStep drawWayPointStep : MiniMap.state.getDrawWaypointSteps()) {
             if (!drawWayPointStep.isOnScreen()) {
@@ -264,31 +271,31 @@ public class MiniMap
             }
         }
     }
-    
+
     private void startMapRotation(final double rotation) {
         GlStateManager.pushMatrix();
         if (rotation % 360.0 != 0.0) {
             final double width = this.dv.displayWidth / 2 + this.dv.translateX;
             final double height = this.dv.displayHeight / 2 + this.dv.translateY;
             GlStateManager.translate(width, height, 0.0);
-            GlStateManager.rotate((float)rotation, 0.0f, 0.0f, 1.0f);
+            GlStateManager.rotate((float) rotation, 0.0f, 0.0f, 1.0f);
             GlStateManager.translate(-width, -height, 0.0);
         }
         MiniMap.gridRenderer.updateRotation(rotation);
     }
-    
+
     private void stopMapRotation(final double rotation) {
         GlStateManager.popMatrix();
         MiniMap.gridRenderer.updateRotation(rotation);
     }
-    
+
     private boolean isOnScreen(final Point2D.Double objectPixel, final Point2D centerPixel, final Rectangle2D.Double centerRect) {
         if (this.dv.shape == Shape.Circle) {
             return centerPixel.distance(objectPixel) < this.dv.minimapWidth / 2;
         }
         return centerRect.contains(MiniMap.gridRenderer.getWindowPosition(objectPixel));
     }
-    
+
     private Point2D.Double getPointOnFrame(final Point2D.Double objectPixel, final Point2D centerPixel, final double offset) {
         if (this.dv.shape == Shape.Circle) {
             final double bearing = Math.atan2(objectPixel.getY() - centerPixel.getY(), objectPixel.getX() - centerPixel.getX());
@@ -298,19 +305,17 @@ public class MiniMap
         final Rectangle2D.Double rect = new Rectangle2D.Double(this.dv.textureX - this.dv.translateX, this.dv.textureY - this.dv.translateY, this.dv.minimapWidth, this.dv.minimapHeight);
         if (objectPixel.x > rect.getMaxX()) {
             objectPixel.x = rect.getMaxX();
-        }
-        else if (objectPixel.x < rect.getMinX()) {
+        } else if (objectPixel.x < rect.getMinX()) {
             objectPixel.x = rect.getMinX();
         }
         if (objectPixel.y > rect.getMaxY()) {
             objectPixel.y = rect.getMaxY();
-        }
-        else if (objectPixel.y < rect.getMinY()) {
+        } else if (objectPixel.y < rect.getMinY()) {
             objectPixel.y = rect.getMinY();
         }
         return objectPixel;
     }
-    
+
     private void beginStencil() {
         try {
             this.cleanup();
@@ -321,21 +326,19 @@ public class MiniMap
             DrawUtil.zLevel = 0.0;
             GlStateManager.depthMask(false);
             GlStateManager.depthFunc(516);
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             JMLogger.logOnce("Error during MiniMap.beginStencil()", t);
         }
     }
-    
+
     private void endStencil() {
         try {
             GlStateManager.disableDepth();
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             JMLogger.logOnce("Error during MiniMap.endStencil()", t);
         }
     }
-    
+
     private void cleanup() {
         try {
             DrawUtil.zLevel = 0.0;
@@ -346,12 +349,11 @@ public class MiniMap
             GlStateManager.enableAlpha();
             GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
             GlStateManager.clearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             JMLogger.logOnce("Error during MiniMap.cleanup()", t);
         }
     }
-    
+
     private void autoDayNight() {
         if (this.mc.world != null) {
             boolean wasInCaves = false;
@@ -363,8 +365,7 @@ public class MiniMap
                     this.lastPlayerUnderground = playerUnderground;
                     if (playerUnderground) {
                         MiniMap.state.setMapType(MapType.underground(player));
-                    }
-                    else {
+                    } else {
                         MiniMap.state.setMapType(MapType.from(this.miniMapProperties.preferredMapType.get(), player));
                         wasInCaves = true;
                     }
@@ -381,15 +382,14 @@ public class MiniMap
                 if (worldTime >= 13800L && (neverChecked2 || this.lastAutoDayNightTime < 13800L)) {
                     this.lastAutoDayNightTime = worldTime;
                     MiniMap.state.setMapType(MapType.night(this.mc.world.provider.getDimension()));
-                }
-                else if (worldTime < 13800L && (neverChecked2 || this.lastAutoDayNightTime >= 13800L)) {
+                } else if (worldTime < 13800L && (neverChecked2 || this.lastAutoDayNightTime >= 13800L)) {
                     this.lastAutoDayNightTime = worldTime;
                     MiniMap.state.setMapType(MapType.day(this.mc.world.provider.getDimension()));
                 }
             }
         }
     }
-    
+
     public void reset() {
         this.initTime = System.currentTimeMillis();
         this.lastAutoDayNightTime = -1L;
@@ -402,19 +402,18 @@ public class MiniMap
         if (this.miniMapProperties.playerDisplay.get().isLarge()) {
             this.playerArrowBg = TextureCache.getTexture(TextureCache.PlayerArrowBG_Large);
             this.playerArrowFg = TextureCache.getTexture(TextureCache.PlayerArrow_Large);
-        }
-        else {
+        } else {
             this.playerArrowBg = TextureCache.getTexture(TextureCache.PlayerArrowBG);
             this.playerArrowFg = TextureCache.getTexture(TextureCache.PlayerArrow);
         }
     }
-    
+
     public void updateDisplayVars(final boolean force) {
         if (this.dv != null) {
             this.updateDisplayVars(this.dv.shape, this.dv.position, force);
         }
     }
-    
+
     public void updateDisplayVars(Shape shape, Position position, final boolean force) {
         if (this.dv != null && !force && this.mc.displayHeight == this.dv.displayHeight && this.mc.displayWidth == this.dv.displayWidth && this.dv.shape == shape && this.dv.position == position && this.dv.fontScale == this.miniMapProperties.fontScale.get()) {
             return;
@@ -440,20 +439,15 @@ public class MiniMap
         MiniMap.gridRenderer.setViewPort(viewPort);
         updateUIState(true);
     }
-    
+
     public String getLocation() {
         final int playerX = MathHelper.floor(this.mc.player.posX);
         final int playerZ = MathHelper.floor(this.mc.player.posZ);
         final int playerY = MathHelper.floor(this.mc.player.getEntityBoundingBox().minY);
         return this.dv.locationFormatKeys.format(this.dv.locationFormatVerbose, playerX, playerZ, playerY, this.mc.player.chunkCoordY);
     }
-    
+
     public String getBiome() {
         return MiniMap.state.getPlayerBiome();
-    }
-    
-    static {
-        state = new MapState();
-        gridRenderer = new GridRenderer(Context.UI.Minimap, 3);
     }
 }

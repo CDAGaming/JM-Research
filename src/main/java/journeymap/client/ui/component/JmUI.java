@@ -1,33 +1,38 @@
 package journeymap.client.ui.component;
 
-import org.apache.logging.log4j.*;
-import journeymap.common.*;
-import journeymap.client.render.texture.*;
-import net.minecraft.client.*;
-import journeymap.client.render.draw.*;
-import net.minecraft.client.gui.*;
+import journeymap.client.render.draw.DrawUtil;
+import journeymap.client.render.texture.TextureCache;
+import journeymap.client.render.texture.TextureImpl;
+import journeymap.client.ui.UIManager;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
+import org.apache.logging.log4j.Logger;
+import org.lwjgl.opengl.GL11;
+
 import java.awt.*;
-import journeymap.common.log.*;
-import journeymap.client.ui.*;
-import java.io.*;
-import org.lwjgl.opengl.*;
-import net.minecraft.client.renderer.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
-public abstract class JmUI extends GuiScreen
-{
+public abstract class JmUI extends GuiScreen {
     protected final String title;
     protected final int headerHeight = 35;
     protected final Logger logger;
     protected GuiScreen returnDisplay;
     protected int scaleFactor;
     protected TextureImpl logo;
-    
+
     public JmUI(final String title) {
         this(title, null);
     }
-    
+
     public JmUI(final String title, final GuiScreen returnDisplay) {
         this.logger = Journeymap.getLogger();
         this.scaleFactor = 1;
@@ -35,41 +40,41 @@ public abstract class JmUI extends GuiScreen
         this.title = title;
         this.returnDisplay = returnDisplay;
         if (this.returnDisplay != null && this.returnDisplay instanceof JmUI) {
-            final JmUI jmReturnDisplay = (JmUI)this.returnDisplay;
+            final JmUI jmReturnDisplay = (JmUI) this.returnDisplay;
             if (jmReturnDisplay.returnDisplay instanceof JmUI) {
                 jmReturnDisplay.returnDisplay = null;
             }
         }
     }
-    
+
     public Minecraft getMinecraft() {
         return this.mc;
     }
-    
+
     public void setWorldAndResolution(final Minecraft minecraft, final int width, final int height) {
         super.setWorldAndResolution(minecraft, width, height);
         this.scaleFactor = new ScaledResolution(minecraft).getScaleFactor();
     }
-    
+
     public boolean doesGuiPauseGame() {
         return true;
     }
-    
+
     public FontRenderer getFontRenderer() {
         return this.fontRenderer;
     }
-    
+
     public void sizeDisplay(final boolean scaled) {
         final int glwidth = scaled ? this.width : this.mc.displayWidth;
         final int glheight = scaled ? this.height : this.mc.displayHeight;
         DrawUtil.sizeDisplay(glwidth, glheight);
     }
-    
+
     protected boolean isMouseOverButton(final int mouseX, final int mouseY) {
         for (int k = 0; k < this.buttonList.size(); ++k) {
             final GuiButton guibutton = this.buttonList.get(k);
             if (guibutton instanceof Button) {
-                final Button button = (Button)guibutton;
+                final Button button = (Button) guibutton;
                 if (button.mouseOver(mouseX, mouseY)) {
                     return true;
                 }
@@ -77,11 +82,11 @@ public abstract class JmUI extends GuiScreen
         }
         return false;
     }
-    
+
     protected void mouseReleased(final int mouseX, final int mouseY, final int mouseEvent) {
         super.mouseReleased(mouseX, mouseY, mouseEvent);
     }
-    
+
     protected void drawLogo() {
         if (this.logo.isDefunct()) {
             this.logo = TextureCache.getTexture(TextureCache.Logo);
@@ -90,33 +95,32 @@ public abstract class JmUI extends GuiScreen
         DrawUtil.drawImage(this.logo, 8.0, 8.0, false, 0.5f, 0.0);
         DrawUtil.sizeDisplay(this.width, this.height);
     }
-    
+
     protected void drawTitle() {
         DrawUtil.drawRectangle(0.0, 0.0, this.width, 35.0, 0, 0.4f);
         DrawUtil.drawLabel(this.title, this.width / 2, 17.0, DrawUtil.HAlign.Center, DrawUtil.VAlign.Middle, 0, 0.0f, Color.CYAN.getRGB(), 1.0f, 1.0, true, 0.0);
         final String apiVersion = "API v1.4";
         DrawUtil.drawLabel(apiVersion, this.width - 10, 17.0, DrawUtil.HAlign.Left, DrawUtil.VAlign.Middle, 0, 0.0f, 13421772, 1.0f, 0.5, true, 0.0);
     }
-    
+
     public void initGui() {
         this.buttonList.clear();
     }
-    
+
     public void drawBackground(final int tint) {
         if (this.mc.world == null) {
             this.drawGradientRect(0, 0, this.width, this.height, -1072689136, -804253680);
-        }
-        else {
+        } else {
             this.drawDefaultBackground();
         }
     }
-    
+
     protected abstract void layoutButtons();
-    
+
     public List getButtonList() {
         return this.buttonList;
     }
-    
+
     public void drawScreen(final int x, final int y, final float par3) {
         try {
             this.drawBackground(0);
@@ -128,7 +132,7 @@ public abstract class JmUI extends GuiScreen
                 final GuiButton guibutton = this.buttonList.get(k);
                 guibutton.drawButton(this.mc, x, y, 0.0f);
                 if (tooltip == null && guibutton instanceof Button) {
-                    final Button button = (Button)guibutton;
+                    final Button button = (Button) guibutton;
                     if (button.mouseOver(x, y)) {
                         tooltip = button.getTooltip();
                     }
@@ -138,37 +142,34 @@ public abstract class JmUI extends GuiScreen
                 this.drawHoveringText(tooltip, x, y, this.getFontRenderer());
                 RenderHelper.disableStandardItemLighting();
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().error("Error in UI: " + LogFormatter.toString(t));
             this.closeAndReturn();
         }
     }
-    
+
     public void drawGradientRect(final int left, final int top, final int right, final int bottom, final int startColor, final int endColor) {
         super.drawGradientRect(left, top, right, bottom, startColor, endColor);
     }
-    
+
     public void close() {
     }
-    
+
     protected void closeAndReturn() {
         if (this.returnDisplay == null) {
             if (this.mc.world != null) {
                 UIManager.INSTANCE.openFullscreenMap();
-            }
-            else {
+            } else {
                 UIManager.INSTANCE.closeAll();
             }
-        }
-        else {
+        } else {
             if (this.returnDisplay instanceof JmUI) {
-                ((JmUI)this.returnDisplay).returnDisplay = null;
+                ((JmUI) this.returnDisplay).returnDisplay = null;
             }
             UIManager.INSTANCE.open(this.returnDisplay);
         }
     }
-    
+
     protected void keyTyped(final char c, final int i) throws IOException {
         switch (i) {
             case 1: {
@@ -177,15 +178,15 @@ public abstract class JmUI extends GuiScreen
             }
         }
     }
-    
+
     public void drawHoveringText(final String[] tooltip, final int mouseX, final int mouseY) {
         this.drawHoveringText(Arrays.asList(tooltip), mouseX, mouseY, this.getFontRenderer());
     }
-    
+
     public GuiScreen getReturnDisplay() {
         return this.returnDisplay;
     }
-    
+
     public void drawHoveringText(final List tooltip, final int mouseX, final int mouseY, final FontRenderer fontRenderer) {
         if (!tooltip.isEmpty()) {
             GL11.glDisable(32826);
@@ -196,7 +197,7 @@ public abstract class JmUI extends GuiScreen
             for (final Object line : tooltip) {
                 int lineWidth = fontRenderer.getStringWidth(line.toString());
                 if (fontRenderer.getBidiFlag()) {
-                    lineWidth = (int)Math.ceil(lineWidth * 1.25);
+                    lineWidth = (int) Math.ceil(lineWidth * 1.25);
                 }
                 if (lineWidth > maxLineWidth) {
                     maxLineWidth = lineWidth;
@@ -231,11 +232,10 @@ public abstract class JmUI extends GuiScreen
             for (int i2 = 0; i2 < tooltip.size(); ++i2) {
                 final String line2 = (String) tooltip.get(i2);
                 if (fontRenderer.getBidiFlag()) {
-                    final int lineWidth2 = (int)Math.ceil(fontRenderer.getStringWidth(line2) * 1.1);
-                    fontRenderer.drawStringWithShadow(line2, (float)(drawX + maxLineWidth - lineWidth2), (float)drawY, -1);
-                }
-                else {
-                    fontRenderer.drawStringWithShadow(line2, (float)drawX, (float)drawY, -1);
+                    final int lineWidth2 = (int) Math.ceil(fontRenderer.getStringWidth(line2) * 1.1);
+                    fontRenderer.drawStringWithShadow(line2, (float) (drawX + maxLineWidth - lineWidth2), (float) drawY, -1);
+                } else {
+                    fontRenderer.drawStringWithShadow(line2, (float) drawX, (float) drawY, -1);
                 }
                 if (i2 == 0) {
                     drawY += 2;

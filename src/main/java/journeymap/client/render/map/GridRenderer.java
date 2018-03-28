@@ -1,34 +1,48 @@
 package journeymap.client.render.map;
 
-import org.apache.logging.log4j.*;
-import journeymap.client.api.display.*;
-import journeymap.client.log.*;
-import journeymap.client.api.util.*;
-import java.awt.geom.*;
-import java.io.*;
-import java.nio.*;
-import journeymap.common.*;
-import net.minecraftforge.fml.client.*;
-import org.lwjgl.*;
-import java.awt.image.*;
-import net.minecraft.client.*;
+import journeymap.client.api.display.Context;
+import journeymap.client.api.event.ClientEvent;
+import journeymap.client.api.event.DisplayUpdateEvent;
+import journeymap.client.api.impl.ClientAPI;
+import journeymap.client.api.impl.ClientEventManager;
+import journeymap.client.api.util.UIState;
+import journeymap.client.data.DataCache;
+import journeymap.client.log.StatTimer;
+import journeymap.client.model.GridSpec;
+import journeymap.client.model.MapType;
+import journeymap.client.model.RegionImageCache;
+import journeymap.client.render.draw.DrawStep;
+import journeymap.client.render.draw.DrawUtil;
+import journeymap.common.Journeymap;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import org.apache.logging.log4j.Logger;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.glu.GLU;
+
 import java.awt.*;
-import net.minecraft.util.math.*;
-import journeymap.client.data.*;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.*;
 import java.util.List;
 
-import journeymap.client.render.draw.*;
-import journeymap.client.model.*;
-import org.lwjgl.opengl.*;
-import journeymap.client.api.event.*;
-import journeymap.client.api.impl.*;
-import org.lwjgl.util.glu.*;
-
-public class GridRenderer
-{
+public class GridRenderer {
     private static boolean enabled;
     private static HashMap<String, String> messages;
+
+    static {
+        GridRenderer.enabled = true;
+        GridRenderer.messages = new HashMap<String, String>();
+    }
+
     private final TilePos centerPos;
     private final Logger logger;
     private final boolean debug;
@@ -59,7 +73,7 @@ public class GridRenderer
     private FloatBuffer projMatrixBuf;
     private FloatBuffer winPosBuf;
     private FloatBuffer objPosBuf;
-    
+
     public GridRenderer(final Context.UI contextUi, final int gridSize) {
         this.centerPos = new TilePos(0, 0);
         this.logger = Journeymap.getLogger();
@@ -84,35 +98,35 @@ public class GridRenderer
         this.objPosBuf = BufferUtils.createFloatBuffer(16);
         this.setGridSize(gridSize);
     }
-    
+
     public static void addDebugMessage(final String key, final String message) {
         GridRenderer.messages.put(key, message);
     }
-    
+
     public static void removeDebugMessage(final String key, final String message) {
         GridRenderer.messages.remove(key);
     }
-    
+
     public static void clearDebugMessages() {
         GridRenderer.messages.clear();
     }
-    
+
     public static void setEnabled(final boolean enabled) {
         if (!(GridRenderer.enabled = enabled)) {
             TileDrawStepCache.clear();
         }
     }
-    
+
     public Context.UI getDisplay() {
         return this.contextUi;
     }
-    
+
     public void setViewPort(final Rectangle2D.Double viewPort) {
         this.viewPort = viewPort;
         this.screenBounds = null;
         this.updateBounds(this.lastWidth, this.lastHeight);
     }
-    
+
     private void populateGrid(final Tile centerTile) {
         final int endRow = (this.gridSize - 1) / 2;
         final int endCol = (this.gridSize - 1) / 2;
@@ -126,28 +140,28 @@ public class GridRenderer
             }
         }
     }
-    
+
     public void move(final int deltaBlockX, final int deltaBlockZ) {
         this.center(this.worldDir, this.mapType, this.centerBlockX + deltaBlockX, this.centerBlockZ + deltaBlockZ, this.zoom);
     }
-    
+
     public boolean center() {
         return this.center(this.worldDir, this.mapType, this.centerBlockX, this.centerBlockZ, this.zoom);
     }
-    
+
     public boolean hasUnloadedTile() {
         return this.hasUnloadedTile(false);
     }
-    
+
     public int getGridSize() {
         return this.gridSize;
     }
-    
+
     public void setGridSize(final int gridSize) {
         this.gridSize = gridSize;
         this.srcSize = gridSize * 512;
     }
-    
+
     public boolean hasUnloadedTile(final boolean preview) {
         for (final Map.Entry<TilePos, Tile> entry : this.grid.entrySet()) {
             if (this.isOnScreen(entry.getKey())) {
@@ -160,7 +174,7 @@ public class GridRenderer
         }
         return false;
     }
-    
+
     public boolean center(final File worldDir, final MapType mapType, final double blockX, final double blockZ, final int zoom) {
         final boolean mapTypeChanged = !Objects.equals(worldDir, this.worldDir) || !Objects.equals(mapType, this.mapType);
         if (!Objects.equals(worldDir, this.worldDir)) {
@@ -175,8 +189,8 @@ public class GridRenderer
         this.centerBlockX = blockX;
         this.centerBlockZ = blockZ;
         this.zoom = zoom;
-        final int tileX = Tile.blockPosToTile((int)Math.floor(blockX), this.zoom);
-        final int tileZ = Tile.blockPosToTile((int)Math.floor(blockZ), this.zoom);
+        final int tileX = Tile.blockPosToTile((int) Math.floor(blockX), this.zoom);
+        final int tileZ = Tile.blockPosToTile((int) Math.floor(blockZ), this.zoom);
         final String newCenterKey = Tile.toCacheKey(tileX, tileZ, zoom);
         final boolean centerTileChanged = !newCenterKey.equals(this.centerTileKey);
         this.centerTileKey = newCenterKey;
@@ -197,7 +211,7 @@ public class GridRenderer
         this.updateUIState(true);
         return true;
     }
-    
+
     public void updateTiles(final MapType mapType, final int zoom, final boolean highQuality, final int width, final int height, final boolean fullUpdate, final double xOffset, final double yOffset) {
         this.updateTilesTimer1.start();
         this.mapType = mapType;
@@ -205,8 +219,8 @@ public class GridRenderer
         this.updateBounds(width, height);
         Tile centerTile = this.grid.get(this.centerPos);
         if (centerTile == null || centerTile.zoom != this.zoom) {
-            final int tileX = Tile.blockPosToTile((int)Math.floor(this.centerBlockX), this.zoom);
-            final int tileZ = Tile.blockPosToTile((int)Math.floor(this.centerBlockZ), this.zoom);
+            final int tileX = Tile.blockPosToTile((int) Math.floor(this.centerBlockX), this.zoom);
+            final int tileZ = Tile.blockPosToTile((int) Math.floor(this.centerBlockZ), this.zoom);
             centerTile = this.findTile(tileX, tileZ, this.zoom);
             this.populateGrid(centerTile);
         }
@@ -216,15 +230,13 @@ public class GridRenderer
         double displayOffsetX = xOffset + magic - (this.srcSize - this.lastWidth) / 2.0;
         if (this.centerBlockX < 0.0) {
             displayOffsetX -= blockSizeOffset;
-        }
-        else {
+        } else {
             displayOffsetX += blockSizeOffset;
         }
         double displayOffsetY = yOffset + magic - (this.srcSize - this.lastHeight) / 2.0;
         if (this.centerBlockZ < 0.0) {
             displayOffsetY -= blockSizeOffset;
-        }
-        else {
+        } else {
             displayOffsetY += blockSizeOffset;
         }
         this.centerPixelOffset.setLocation(displayOffsetX + blockPixelOffset.getX(), displayOffsetY + blockPixelOffset.getY());
@@ -246,15 +258,15 @@ public class GridRenderer
         }
         this.updateTilesTimer2.stop();
     }
-    
+
     public Point2D.Double getCenterPixelOffset() {
         return this.centerPixelOffset;
     }
-    
+
     public AxisAlignedBB getBlockBounds() {
         return this.blockBounds;
     }
-    
+
     public BlockPos getBlockAtPixel(final Point2D.Double pixel) {
         final double centerPixelX = this.lastWidth / 2.0;
         final double centerPixelZ = this.lastHeight / 2.0;
@@ -265,34 +277,33 @@ public class GridRenderer
         int y = 0;
         if (DataCache.getPlayer().underground) {
             y = MathHelper.floor(DataCache.getPlayer().posY);
-        }
-        else {
+        } else {
             y = FMLClientHandler.instance().getClient().world.getSeaLevel();
         }
         return new BlockPos(x, y, z);
     }
-    
+
     public Point2D.Double getBlockPixelInGrid(final BlockPos pos) {
         return this.getBlockPixelInGrid(pos.getX(), pos.getZ());
     }
-    
+
     public Point2D.Double getBlockPixelInGrid(final double blockX, final double blockZ) {
         final Minecraft mc = FMLClientHandler.instance().getClient();
         final double localBlockX = blockX - this.centerBlockX;
         final double localBlockZ = blockZ - this.centerBlockZ;
-        final int blockSize = (int)Math.pow(2.0, this.zoom);
+        final int blockSize = (int) Math.pow(2.0, this.zoom);
         final double pixelOffsetX = mc.displayWidth / 2.0 + localBlockX * blockSize;
         final double pixelOffsetZ = mc.displayHeight / 2.0 + localBlockZ * blockSize;
         return new Point2D.Double(pixelOffsetX, pixelOffsetZ);
     }
-    
+
     public void draw(final List<? extends DrawStep> drawStepList, final double xOffset, final double yOffset, final double fontScale, final double rotation) {
         if (!GridRenderer.enabled || drawStepList == null || drawStepList.isEmpty()) {
             return;
         }
-        this.draw(xOffset, yOffset, fontScale, rotation, (DrawStep[])drawStepList.toArray(new DrawStep[drawStepList.size()]));
+        this.draw(xOffset, yOffset, fontScale, rotation, (DrawStep[]) drawStepList.toArray(new DrawStep[drawStepList.size()]));
     }
-    
+
     public void draw(final double xOffset, final double yOffset, final double fontScale, final double rotation, final DrawStep... drawSteps) {
         if (GridRenderer.enabled) {
             for (final DrawStep.Pass pass : DrawStep.Pass.values()) {
@@ -302,7 +313,7 @@ public class GridRenderer
             }
         }
     }
-    
+
     public void draw(final float alpha, final double offsetX, final double offsetZ, final boolean showGrid) {
         if (GridRenderer.enabled && !this.grid.isEmpty()) {
             final double centerX = offsetX + this.centerPixelOffset.x;
@@ -332,7 +343,7 @@ public class GridRenderer
             }
         }
     }
-    
+
     public void clearGlErrors(final boolean report) {
         int err;
         while ((err = GL11.glGetError()) != 0) {
@@ -340,14 +351,13 @@ public class GridRenderer
                 ++this.glErrors;
                 if (this.glErrors < 20) {
                     this.logger.warn("GL Error occurred during JourneyMap draw: " + err);
-                }
-                else {
+                } else {
                     this.logger.warn("GL Error reporting during JourneyMap will be suppressed after max errors: 20");
                 }
             }
         }
     }
-    
+
     public Point2D.Double getPixel(final double blockX, final double blockZ) {
         final Point2D.Double pixel = this.getBlockPixelInGrid(blockX, blockZ);
         if (this.isOnScreen(pixel)) {
@@ -355,7 +365,7 @@ public class GridRenderer
         }
         return null;
     }
-    
+
     public void ensureOnScreen(final Point2D pixel) {
         if (this.screenBounds == null) {
             return;
@@ -363,40 +373,38 @@ public class GridRenderer
         double x = pixel.getX();
         if (x < this.screenBounds.x) {
             x = this.screenBounds.x;
-        }
-        else if (x > this.screenBounds.getMaxX()) {
+        } else if (x > this.screenBounds.getMaxX()) {
             x = this.screenBounds.getMaxX();
         }
         double y = pixel.getY();
         if (y < this.screenBounds.y) {
             y = this.screenBounds.y;
-        }
-        else if (y > this.screenBounds.getMaxY()) {
+        } else if (y > this.screenBounds.getMaxY()) {
             y = this.screenBounds.getMaxY();
         }
         pixel.setLocation(x, y);
     }
-    
+
     private boolean isOnScreen(final TilePos pos) {
         return true;
     }
-    
+
     public boolean isOnScreen(final Point2D.Double pixel) {
         return this.screenBounds.contains(pixel);
     }
-    
+
     public boolean isOnScreen(final Rectangle2D.Double bounds) {
         return this.screenBounds.intersects(bounds);
     }
-    
+
     public boolean isOnScreen(final double x, final double y) {
         return this.screenBounds.contains(x, y);
     }
-    
+
     public boolean isOnScreen(final double startX, final double startY, final int width, final int height) {
         return this.screenBounds != null && this.screenBounds.intersects(startX, startY, width, height);
     }
-    
+
     private void updateBounds(final int width, final int height) {
         if (this.screenBounds == null || this.lastWidth != width || this.lastHeight != height || this.blockBounds == null) {
             this.lastWidth = width;
@@ -404,14 +412,13 @@ public class GridRenderer
             if (this.viewPort == null) {
                 final int pad = 32;
                 this.screenBounds = new Rectangle2D.Double(-pad, -pad, width + pad, height + pad);
-            }
-            else {
+            } else {
                 this.screenBounds = new Rectangle2D.Double((width - this.viewPort.width) / 2.0, (height - this.viewPort.height) / 2.0, this.viewPort.width, this.viewPort.height);
             }
             ClientAPI.INSTANCE.flagOverlaysForRerender();
         }
     }
-    
+
     public void updateUIState(final boolean isActive) {
         if (isActive && this.screenBounds == null) {
             return;
@@ -425,12 +432,10 @@ public class GridRenderer
             this.blockBounds = new AxisAlignedBB(upperLeft.add(-pad, 0, -pad), lowerRight.add(pad, worldHeight, pad));
             try {
                 newState = new UIState(this.contextUi, true, this.mapType.dimension, this.zoom, this.mapType.apiMapType, new BlockPos(this.centerBlockX, 0.0, this.centerBlockZ), this.mapType.vSlice, this.blockBounds, this.screenBounds);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-        else {
+        } else {
             newState = UIState.newInactive(this.uiState);
         }
         if (!newState.equals(this.uiState)) {
@@ -441,98 +446,93 @@ public class GridRenderer
             }
         }
     }
-    
+
     private Tile findNeighbor(final Tile tile, final TilePos pos) {
         if (pos.deltaX == 0 && pos.deltaZ == 0) {
             return tile;
         }
         return this.findTile(tile.tileX + pos.deltaX, tile.tileZ + pos.deltaZ, tile.zoom);
     }
-    
+
     private Tile findTile(final int tileX, final int tileZ, final int zoom) {
         return Tile.create(tileX, tileZ, zoom, this.worldDir, this.mapType, Journeymap.getClient().getCoreProperties().tileHighDisplayQuality.get());
     }
-    
+
     public void setContext(final File worldDir, final MapType mapType) {
         TileDrawStepCache.setContext(this.worldDir = worldDir, this.mapType = mapType);
     }
-    
+
     public void updateRotation(final double rotation) {
         this.currentRotation = rotation;
         GL11.glGetInteger(2978, this.viewportBuf);
         GL11.glGetFloat(2982, this.modelMatrixBuf);
         GL11.glGetFloat(2983, this.projMatrixBuf);
     }
-    
+
     public Point2D shiftWindowPosition(final double x, final double y, final int shiftX, final int shiftY) {
         if (this.currentRotation % 360.0 == 0.0) {
             return new Point2D.Double(x + shiftX, y + shiftY);
         }
-        GLU.gluProject((float)x, (float)y, 0.0f, this.modelMatrixBuf, this.projMatrixBuf, this.viewportBuf, this.winPosBuf);
+        GLU.gluProject((float) x, (float) y, 0.0f, this.modelMatrixBuf, this.projMatrixBuf, this.viewportBuf, this.winPosBuf);
         GLU.gluUnProject(this.winPosBuf.get(0) + shiftX, this.winPosBuf.get(1) + shiftY, 0.0f, this.modelMatrixBuf, this.projMatrixBuf, this.viewportBuf, this.objPosBuf);
         return new Point2D.Float(this.objPosBuf.get(0), this.objPosBuf.get(1));
     }
-    
+
     public Point2D.Double getWindowPosition(final Point2D.Double matrixPixel) {
         if (this.currentRotation % 360.0 == 0.0) {
             return matrixPixel;
         }
-        GLU.gluProject((float)matrixPixel.getX(), (float)matrixPixel.getY(), 0.0f, this.modelMatrixBuf, this.projMatrixBuf, this.viewportBuf, this.winPosBuf);
+        GLU.gluProject((float) matrixPixel.getX(), (float) matrixPixel.getY(), 0.0f, this.modelMatrixBuf, this.projMatrixBuf, this.viewportBuf, this.winPosBuf);
         return new Point2D.Double(this.winPosBuf.get(0), this.winPosBuf.get(1));
     }
-    
+
     public Point2D.Double getMatrixPosition(final Point2D.Double windowPixel) {
-        GLU.gluUnProject((float)windowPixel.x, (float)windowPixel.y, 0.0f, this.modelMatrixBuf, this.projMatrixBuf, this.viewportBuf, this.objPosBuf);
+        GLU.gluUnProject((float) windowPixel.x, (float) windowPixel.y, 0.0f, this.modelMatrixBuf, this.projMatrixBuf, this.viewportBuf, this.objPosBuf);
         return new Point2D.Double(this.objPosBuf.get(0), this.objPosBuf.get(1));
     }
-    
+
     public double getCenterBlockX() {
         return this.centerBlockX;
     }
-    
+
     public double getCenterBlockZ() {
         return this.centerBlockZ;
     }
-    
+
     public File getWorldDir() {
         return this.worldDir;
     }
-    
+
     public MapType getMapType() {
         return this.mapType;
     }
-    
+
     public int getZoom() {
         return this.zoom;
     }
-    
+
     public boolean setZoom(final int zoom) {
         return this.center(this.worldDir, this.mapType, this.centerBlockX, this.centerBlockZ, zoom);
     }
-    
+
     public int getRenderSize() {
         return this.gridSize * 512;
     }
-    
+
     public void clear() {
         this.grid.clear();
         GridRenderer.messages.clear();
     }
-    
+
     public int getWidth() {
         return this.lastWidth;
     }
-    
+
     public int getHeight() {
         return this.lastHeight;
     }
-    
+
     public UIState getUIState() {
         return this.uiState;
-    }
-    
-    static {
-        GridRenderer.enabled = true;
-        GridRenderer.messages = new HashMap<String, String>();
     }
 }

@@ -1,26 +1,35 @@
 package journeymap.client.service;
 
-import journeymap.client.*;
-import journeymap.common.*;
-import se.rupy.http.*;
-import net.minecraft.util.*;
-import journeymap.client.log.*;
-import journeymap.client.io.*;
-import journeymap.client.ui.theme.*;
-import net.minecraft.client.*;
-import journeymap.common.log.*;
-import journeymap.client.cartography.color.*;
-import java.awt.image.*;
-import net.minecraft.client.resources.*;
-import java.net.*;
-import journeymap.client.render.texture.*;
-import java.util.zip.*;
-import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
+import journeymap.client.JourneymapClient;
+import journeymap.client.cartography.color.ColorManager;
+import journeymap.client.cartography.color.ColorPalette;
+import journeymap.client.io.ThemeLoader;
+import journeymap.client.log.JMLogger;
+import journeymap.client.render.texture.TextureCache;
+import journeymap.client.render.texture.TextureImpl;
+import journeymap.client.ui.theme.ThemePresets;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.IResource;
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.util.ResourceLocation;
+import se.rupy.http.Event;
 
-public class FileService extends BaseService
-{
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.net.URI;
+import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+
+public class FileService extends BaseService {
     private static final long serialVersionUID = 2L;
     protected final String resourcePath;
     final String COLOR_PALETTE_JSON = "/colorpalette.json";
@@ -30,14 +39,13 @@ public class FileService extends BaseService
     final String SKIN_PREFIX = "/skin/";
     private boolean useZipEntry;
     private File zipFile;
-    
+
     public FileService() {
         final URL resourceDir = JourneymapClient.class.getResource("/assets/journeymap/ui");
         String testPath = null;
         if (resourceDir == null) {
             Journeymap.getLogger().error("Can't determine path to webroot!");
-        }
-        else {
+        } else {
             testPath = resourceDir.getPath();
             if (testPath.endsWith("/")) {
                 testPath = testPath.substring(0, testPath.length() - 1);
@@ -48,19 +56,18 @@ public class FileService extends BaseService
             try {
                 testPath = new File("../src/main/resources/assets/journeymap/ui").getCanonicalPath();
                 Journeymap.getLogger().info("Dev environment detected, serving source files from " + testPath);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         this.resourcePath = testPath;
     }
-    
+
     @Override
     public String path() {
         return null;
     }
-    
+
     @Override
     public void filter(final Event event) throws Event, Exception {
         String path = null;
@@ -81,8 +88,7 @@ public class FileService extends BaseService
                         fileStream = new FileInputStream(jsonFile);
                     }
                 }
-            }
-            else if (path.startsWith("/colorpalette.html")) {
+            } else if (path.startsWith("/colorpalette.html")) {
                 final ColorPalette colorPalette = ColorManager.INSTANCE.getCurrentPalette();
                 if (colorPalette != null) {
                     final File htmlFile = colorPalette.getOriginHtml(true, false);
@@ -91,20 +97,17 @@ public class FileService extends BaseService
                         fileStream = new FileInputStream(htmlFile);
                     }
                 }
-            }
-            else if (path.startsWith("/entity_icon")) {
+            } else if (path.startsWith("/entity_icon")) {
                 final String location = event.query().parameters().split("location=")[1];
                 final BufferedImage image = TextureCache.resolveImage(new ResourceLocation(location));
                 if (image == null) {
                     JMLogger.logOnce("Path not found: " + path, null);
                     this.throwEventException(404, "Unknown: " + path, event, true);
-                }
-                else {
+                } else {
                     ResponseHeader.on(event).contentType(ContentType.png).noCache();
                     this.serveImage(event, image);
                 }
-            }
-            else if (path.startsWith("/theme/")) {
+            } else if (path.startsWith("/theme/")) {
                 final String themeIconPath = path.split("/theme/")[1].replace('/', File.separatorChar);
                 final File themeDir = new File(ThemeLoader.getThemeIconDir(), ThemePresets.getDefault().directory);
                 final File iconFile = new File(themeDir, themeIconPath);
@@ -120,51 +123,43 @@ public class FileService extends BaseService
                         final IResourceManager resourceManager = Minecraft.getMinecraft().getResourceManager();
                         final IResource resource = resourceManager.getResource(new ResourceLocation("journeymap", resourcePath));
                         fileStream = resource.getInputStream();
-                    }
-                    catch (FileNotFoundException e2) {
+                    } catch (FileNotFoundException e2) {
                         JMLogger.logOnce("Resource not found: " + resourcePath, null);
                         this.throwEventException(404, "Unknown: " + path, event, true);
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         JMLogger.logOnce("Resource not usable: " + resourcePath, e);
                         this.throwEventException(415, "Not an image: " + path, event, true);
                     }
-                }
-                else {
+                } else {
                     if (event != null) {
                         ResponseHeader.on(event).content(iconFile);
                     }
                     fileStream = new FileInputStream(iconFile);
                 }
-            }
-            else {
+            } else {
                 fileStream = this.getStream(path, event);
             }
             if (fileStream == null) {
                 JMLogger.logOnce("Path not found: " + path, null);
                 this.throwEventException(404, "Unknown: " + path, event, true);
-            }
-            else {
+            } else {
                 this.serveStream(fileStream, event);
             }
-        }
-        catch (Event eventEx) {
+        } catch (Event eventEx) {
             throw eventEx;
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().error(LogFormatter.toString(t));
             this.throwEventException(500, "Error: " + path, event, true);
         }
     }
-    
+
     protected InputStream getStream(final String path, final Event event) {
         InputStream in = null;
         try {
             String requestPath = null;
             if ("/".equals(path)) {
                 requestPath = this.resourcePath + "/index.html";
-            }
-            else {
+            } else {
                 requestPath = this.resourcePath + path;
             }
             if (this.useZipEntry) {
@@ -195,43 +190,39 @@ public class FileService extends BaseService
                     fis.close();
                     in = null;
                 }
-            }
-            else {
+            } else {
                 final File file = new File(requestPath);
                 if (file.exists()) {
                     if (event != null) {
                         ResponseHeader.on(event).content(file);
                     }
                     in = new FileInputStream(file);
-                }
-                else {
+                } else {
                     in = null;
                 }
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().error(LogFormatter.toString(t));
         }
         return in;
     }
-    
+
     public void serveSkin(final String username, final Event event) throws Exception {
         ResponseHeader.on(event).contentType(ContentType.png);
         final TextureImpl tex = TextureCache.getPlayerSkin(username);
         final BufferedImage img = tex.getImage();
         if (img != null) {
             this.serveImage(event, img);
-        }
-        else {
+        } else {
             event.reply().code("404 Not Found");
         }
     }
-    
+
     public void serveFile(final File sourceFile, final Event event) throws Event, IOException {
         ResponseHeader.on(event).content(sourceFile);
         this.serveStream(new FileInputStream(sourceFile), event);
     }
-    
+
     public void serveStream(final InputStream input, final Event event) throws Event, IOException {
         ReadableByteChannel inputChannel = null;
         WritableByteChannel outputChannel = null;
@@ -252,18 +243,16 @@ public class FileService extends BaseService
             final byte[] gzbytes = bout.toByteArray();
             ResponseHeader.on(event).contentLength(gzbytes.length).setHeader("Content-encoding", "gzip");
             event.output().write(gzbytes);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             Journeymap.getLogger().error(LogFormatter.toString(e));
             throw event;
-        }
-        finally {
+        } finally {
             if (input != null) {
                 input.close();
             }
         }
     }
-    
+
     @Override
     protected byte[] gzip(final String data) {
         ByteArrayOutputStream bout = null;
@@ -275,8 +264,7 @@ public class FileService extends BaseService
             output.close();
             bout.close();
             return bout.toByteArray();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             Journeymap.getLogger().warn("Failed to gzip encode: " + data);
             return null;
         }

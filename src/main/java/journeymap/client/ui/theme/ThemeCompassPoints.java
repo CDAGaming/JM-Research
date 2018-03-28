@@ -1,13 +1,13 @@
 package journeymap.client.ui.theme;
 
-import java.awt.geom.*;
-import journeymap.client.render.texture.*;
-import journeymap.client.properties.*;
-import journeymap.client.*;
-import journeymap.client.render.draw.*;
+import journeymap.client.Constants;
+import journeymap.client.properties.MiniMapProperties;
+import journeymap.client.render.draw.DrawUtil;
+import journeymap.client.render.texture.TextureImpl;
 
-public class ThemeCompassPoints
-{
+import java.awt.geom.Point2D;
+
+public class ThemeCompassPoints {
     final String textNorth;
     final String textSouth;
     final String textEast;
@@ -32,7 +32,7 @@ public class ThemeCompassPoints
     final int labelShiftVert;
     private double x;
     private double y;
-    
+
     public ThemeCompassPoints(final int x, final int y, final int halfWidth, final int halfHeight, final Theme.Minimap.MinimapSpec minimapSpec, final MiniMapProperties miniMapProperties, final TextureImpl compassPointTex, final int labelHeight) {
         this.textNorth = Constants.getString("jm.minimap.compass.n");
         this.textSouth = Constants.getString("jm.minimap.compass.s");
@@ -56,10 +56,9 @@ public class ThemeCompassPoints
             this.pointSouth.setLocation(this.pointSouth.getX(), this.pointSouth.getY() + this.shiftVert);
             this.pointWest.setLocation(this.pointWest.getX() - this.shiftHorz, this.pointWest.getY());
             this.pointEast.setLocation(this.pointEast.getX() + this.shiftHorz, this.pointEast.getY());
-            this.xOffset = (int)(compassPointTex.getWidth() * this.fontScale / 2.0f);
-            this.yOffset = (int)(compassPointTex.getHeight() * this.fontScale / 2.0f);
-        }
-        else {
+            this.xOffset = (int) (compassPointTex.getWidth() * this.fontScale / 2.0f);
+            this.yOffset = (int) (compassPointTex.getHeight() * this.fontScale / 2.0f);
+        } else {
             this.xOffset = 0;
             this.yOffset = 0;
             this.shiftHorz = 0.0;
@@ -71,16 +70,16 @@ public class ThemeCompassPoints
         this.showEast = minimapSpec.compassShowEast;
         this.showWest = minimapSpec.compassShowWest;
     }
-    
+
     public static float getCompassPointScale(final int compassLabelHeight, final Theme.Minimap.MinimapSpec minimapSpec, final TextureImpl compassPointTex) {
         return (compassLabelHeight + minimapSpec.compassPointLabelPad) / (compassPointTex.getHeight() * 1.0f);
     }
-    
+
     public void setPosition(final double x, final double y) {
         this.x = x;
         this.y = y;
     }
-    
+
     public void drawPoints(final double rotation) {
         if (this.compassPointTex != null) {
             final int color = this.compassPoint.getColor();
@@ -99,7 +98,7 @@ public class ThemeCompassPoints
             }
         }
     }
-    
+
     public void drawLabels(final double rotation) {
         if (this.showNorth) {
             DrawUtil.drawLabel(this.textNorth, this.compassLabel, this.pointNorth.getX(), this.pointNorth.getY() + this.labelShiftVert, DrawUtil.HAlign.Center, DrawUtil.VAlign.Middle, this.fontScale, rotation);

@@ -1,36 +1,47 @@
 package journeymap.client.io;
 
-import java.io.*;
-import journeymap.common.*;
-import journeymap.client.*;
-import journeymap.client.log.*;
-import journeymap.common.log.*;
-import journeymap.client.model.*;
-import net.minecraftforge.fml.client.*;
-import java.util.*;
-import journeymap.client.data.*;
-import com.google.common.base.*;
-import org.apache.logging.log4j.*;
-import net.minecraft.client.*;
-import java.util.regex.*;
-import java.text.*;
+import com.google.common.base.Joiner;
+import journeymap.client.Constants;
+import journeymap.client.data.WorldData;
+import journeymap.client.log.ChatLog;
+import journeymap.client.log.StatTimer;
+import journeymap.client.model.MapType;
+import journeymap.client.model.RegionCoord;
+import journeymap.client.model.RegionImageCache;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import net.minecraft.client.Minecraft;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import org.apache.logging.log4j.Level;
 
-public class MapSaver
-{
+import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class MapSaver {
     private static final DateFormat dateFormat;
+
+    static {
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
+    }
+
     final File worldDir;
     final MapType mapType;
     File saveFile;
     int outputColumns;
     int outputRows;
     ArrayList<File> files;
-    
+
     public MapSaver(final File worldDir, final MapType mapType) {
         this.worldDir = worldDir;
         this.mapType = mapType;
         this.prepareFiles();
     }
-    
+
     public File saveMap() {
         final StatTimer timer = StatTimer.get("MapSaver.saveMap");
         try {
@@ -46,41 +57,39 @@ public class MapSaver
             Journeymap.getLogger().info("Map filesize:" + this.saveFile.length());
             final String message = Constants.getString("jm.common.map_saved", this.saveFile);
             ChatLog.announceFile(message, this.saveFile);
-        }
-        catch (OutOfMemoryError e) {
+        } catch (OutOfMemoryError e) {
             final String error = "Out Of Memory: Increase Java Heap Size for Minecraft to save large maps.";
             Journeymap.getLogger().error(error);
             ChatLog.announceError(error);
             timer.cancel();
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().error(LogFormatter.toString(t));
             timer.cancel();
             return null;
         }
         return this.saveFile;
     }
-    
+
     public String getSaveFileName() {
         return this.saveFile.getName();
     }
-    
+
     public boolean isValid() {
         return this.files != null && this.files.size() > 0;
     }
-    
+
     private File getImageDir() {
         final RegionCoord fakeRc = new RegionCoord(this.worldDir, 0, 0, this.mapType.dimension);
         return RegionImageHandler.getImageDir(fakeRc, this.mapType);
     }
-    
+
     private void prepareFiles() {
         try {
             final Minecraft mc = FMLClientHandler.instance().getClient();
             final String date = MapSaver.dateFormat.format(new Date());
             final String worldName = WorldData.getWorldName(mc, false);
             final String dimName = WorldData.getSafeDimensionName(new WorldData.WrappedProvider(mc.world.provider));
-            final String fileName = Joiner.on("_").skipNulls().join((Object)date, (Object)worldName, new Object[] { dimName, this.mapType.name, this.mapType.vSlice }) + ".png";
+            final String fileName = Joiner.on("_").skipNulls().join((Object) date, (Object) worldName, new Object[]{dimName, this.mapType.name, this.mapType.vSlice}) + ".png";
             final File screenshotsDir = new File(FileHandler.getMinecraftDirectory(), "screenshots");
             if (!screenshotsDir.exists()) {
                 screenshotsDir.mkdir();
@@ -127,19 +136,13 @@ public class MapSaver
                     final File rfile = RegionImageHandler.getRegionImageFile(rc, this.mapType, true);
                     if (rfile.canRead()) {
                         this.files.add(rfile);
-                    }
-                    else {
+                    } else {
                         this.files.add(RegionImageHandler.getBlank512x512ImageFile());
                     }
                 }
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().log(Level.ERROR, LogFormatter.toString(t));
         }
-    }
-    
-    static {
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
     }
 }

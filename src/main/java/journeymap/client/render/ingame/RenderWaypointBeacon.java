@@ -1,36 +1,44 @@
 package journeymap.client.render.ingame;
 
-import net.minecraft.util.*;
-import net.minecraft.client.*;
-import net.minecraft.client.renderer.entity.*;
-import journeymap.client.properties.*;
-import journeymap.common.*;
-import journeymap.client.waypoint.*;
-import journeymap.client.model.*;
-import journeymap.common.log.*;
-import java.util.*;
-import net.minecraft.util.text.*;
-import net.minecraft.client.renderer.*;
-import org.lwjgl.opengl.*;
-import journeymap.client.render.draw.*;
-import journeymap.client.render.texture.*;
-import net.minecraft.util.math.*;
-import journeymap.client.cartography.color.*;
-import net.minecraftforge.fml.client.*;
-import journeymap.client.*;
-import java.io.*;
+import journeymap.client.Constants;
+import journeymap.client.cartography.color.RGB;
+import journeymap.client.model.Waypoint;
+import journeymap.client.properties.WaypointProperties;
+import journeymap.client.render.draw.DrawUtil;
+import journeymap.client.render.texture.TextureImpl;
+import journeymap.client.waypoint.WaypointStore;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import org.lwjgl.opengl.GL11;
 
-public class RenderWaypointBeacon
-{
+import java.util.Collection;
+
+public class RenderWaypointBeacon {
     static final ResourceLocation beam;
     static Minecraft mc;
     static RenderManager renderManager;
     static String distanceLabel;
     static WaypointProperties waypointProperties;
-    
+
+    static {
+        beam = new ResourceLocation("textures/entity/beacon_beam.png");
+        RenderWaypointBeacon.mc = FMLClientHandler.instance().getClient();
+        RenderWaypointBeacon.renderManager = RenderWaypointBeacon.mc.getRenderManager();
+        RenderWaypointBeacon.distanceLabel = Constants.getString("jm.waypoint.distance_meters", "%1.0f");
+    }
+
     public static void resetStatTimers() {
     }
-    
+
     public static void renderAll() {
         try {
             RenderWaypointBeacon.waypointProperties = Journeymap.getClient().getWaypointProperties();
@@ -40,18 +48,16 @@ public class RenderWaypointBeacon
                 if (wp.isEnable() && wp.getDimensions().contains(playerDim)) {
                     try {
                         doRender(wp);
-                    }
-                    catch (Throwable t) {
+                    } catch (Throwable t) {
                         Journeymap.getLogger().error("EntityWaypoint failed to render for " + wp + ": " + LogFormatter.toString(t));
                     }
                 }
             }
-        }
-        catch (Throwable t2) {
+        } catch (Throwable t2) {
             Journeymap.getLogger().error("Error rendering waypoints: " + LogFormatter.toString(t2));
         }
     }
-    
+
     static void doRender(final Waypoint waypoint) {
         if (RenderWaypointBeacon.renderManager.renderViewEntity == null) {
             return;
@@ -68,11 +74,11 @@ public class RenderWaypointBeacon
             float fadeAlpha = 1.0f;
             final int minDistance = RenderWaypointBeacon.waypointProperties.minDistance.get();
             if (minDistance > 0) {
-                if ((int)actualDistance <= minDistance) {
+                if ((int) actualDistance <= minDistance) {
                     return;
                 }
-                if ((int)actualDistance <= minDistance + 4) {
-                    fadeAlpha = (float)(actualDistance - minDistance) / 3.0f;
+                if ((int) actualDistance <= minDistance + 4) {
+                    fadeAlpha = (float) (actualDistance - minDistance) / 3.0f;
                 }
             }
             double viewDistance = actualDistance;
@@ -164,8 +170,7 @@ public class RenderWaypointBeacon
                 DrawUtil.drawColoredImage(texture, waypoint.getColor(), fadeAlpha, 0 - texture.getWidth() / 2 + 0.5, 0.0 - halfTexHeight + 0.2, 0.0);
                 GlStateManager.popMatrix();
             }
-        }
-        finally {
+        } finally {
             GlStateManager.depthMask(true);
             GlStateManager.enableDepth();
             GlStateManager.enableLighting();
@@ -176,7 +181,7 @@ public class RenderWaypointBeacon
             RenderHelper.disableStandardItemLighting();
         }
     }
-    
+
     static void renderBeam(double x, final double y, double z, final Integer color, final float alpha, final boolean staticBeam, final boolean rotatingBeam) {
         RenderWaypointBeacon.mc.renderEngine.bindTexture(RenderWaypointBeacon.beam);
         GL11.glTexParameterf(3553, 10242, 10497.0f);
@@ -262,12 +267,5 @@ public class RenderWaypointBeacon
         GlStateManager.enableTexture2D();
         GlStateManager.enableLighting();
         GlStateManager.enableDepth();
-    }
-    
-    static {
-        beam = new ResourceLocation("textures/entity/beacon_beam.png");
-        RenderWaypointBeacon.mc = FMLClientHandler.instance().getClient();
-        RenderWaypointBeacon.renderManager = RenderWaypointBeacon.mc.getRenderManager();
-        RenderWaypointBeacon.distanceLabel = Constants.getString("jm.waypoint.distance_meters", "%1.0f");
     }
 }

@@ -1,14 +1,16 @@
 package journeymap.client.waypoint;
 
-import journeymap.client.model.*;
-import java.util.*;
-import java.io.*;
-import journeymap.common.*;
-import java.nio.charset.*;
-import com.google.common.io.*;
+import com.google.common.io.Files;
+import journeymap.client.model.Waypoint;
+import journeymap.common.Journeymap;
 
-public class JmReader
-{
+import java.io.File;
+import java.io.FilenameFilter;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collection;
+
+public class JmReader {
     public Collection<Waypoint> loadWaypoints(final File waypointDir) {
         final ArrayList<Waypoint> waypoints = new ArrayList<Waypoint>();
         final File[] files = waypointDir.listFiles(new FilenameFilter() {
@@ -36,17 +38,16 @@ public class JmReader
         }
         return waypoints;
     }
-    
+
     private void remove(final File waypointFile) {
         try {
             waypointFile.delete();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Journeymap.getLogger().warn(String.format("Can't delete waypoint file %s: %s", waypointFile, e.getMessage()));
             waypointFile.deleteOnExit();
         }
     }
-    
+
     private Waypoint load(final File waypointFile) {
         String waypointString = null;
         Waypoint waypoint = null;
@@ -54,8 +55,7 @@ public class JmReader
             waypointString = Files.toString(waypointFile, Charset.forName("UTF-8"));
             waypoint = Waypoint.fromString(waypointString);
             return waypoint;
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             Journeymap.getLogger().error(String.format("Can't load waypoint file %s with contents: %s because %s", waypointFile, waypointString, e.getMessage()));
             return waypoint;
         }

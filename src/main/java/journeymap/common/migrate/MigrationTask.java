@@ -1,9 +1,9 @@
 package journeymap.common.migrate;
 
-import java.util.concurrent.*;
-import journeymap.common.version.*;
+import journeymap.common.version.Version;
 
-public interface MigrationTask extends Callable<Boolean>
-{
+import java.util.concurrent.Callable;
+
+public interface MigrationTask extends Callable<Boolean> {
     boolean isActive(final Version p0);
 }

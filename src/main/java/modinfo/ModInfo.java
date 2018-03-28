@@ -1,19 +1,30 @@
 package modinfo;
 
-import net.minecraft.client.*;
-import java.security.*;
-import java.util.*;
-import net.minecraft.client.resources.*;
+import modinfo.mp.v1.Client;
+import modinfo.mp.v1.Message;
+import modinfo.mp.v1.Payload;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.Language;
 import net.minecraft.client.resources.Locale;
-import org.lwjgl.opengl.*;
-import net.minecraft.server.integrated.*;
-import modinfo.mp.v1.*;
-import org.apache.logging.log4j.*;
+import net.minecraft.server.integrated.IntegratedServer;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.DisplayMode;
 
-public class ModInfo
-{
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
+
+public class ModInfo {
     public static final String VERSION = "0.2";
     public static final Logger LOGGER;
+
+    static {
+        LOGGER = LogManager.getLogger("modinfo");
+    }
+
     private final Minecraft minecraft;
     private final String trackingId;
     private final String modId;
@@ -22,7 +33,7 @@ public class ModInfo
     private Locale reportingLocale;
     private Config config;
     private Client client;
-    
+
     public ModInfo(final String trackingId, final String reportingLanguageCode, final String modId, final String modName, final String modVersion, final boolean singleUse) {
         this.minecraft = Minecraft.getMinecraft();
         this.trackingId = trackingId;
@@ -35,30 +46,25 @@ public class ModInfo
             this.client = this.createClient();
             if (singleUse) {
                 this.singleUse();
-            }
-            else if (this.config.isEnabled()) {
+            } else if (this.config.isEnabled()) {
                 if (Config.generateStatusString(modId, false).equals(this.config.getStatus())) {
                     this.optIn();
-                }
-                else {
+                } else {
                     this.config.confirmStatus();
                 }
-            }
-            else {
+            } else {
                 this.optOut();
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             ModInfo.LOGGER.log(Level.ERROR, "Unable to configure ModInfo", t);
         }
     }
-    
+
     static UUID createUUID(final String... parts) {
         MessageDigest md;
         try {
             md = MessageDigest.getInstance("MD5");
-        }
-        catch (NoSuchAlgorithmException nsae) {
+        } catch (NoSuchAlgorithmException nsae) {
             throw new InternalError("MD5 not supported");
         }
         for (final String part : parts) {
@@ -76,7 +82,7 @@ public class ModInfo
         array2[n3] &= 0x3F;
         final byte[] array3 = md5Bytes;
         final int n4 = 8;
-        array3[n4] |= (byte)128;
+        array3[n4] |= (byte) 128;
         long msb = 0L;
         long lsb = 0L;
         for (int i = 0; i < 8; ++i) {
@@ -87,11 +93,11 @@ public class ModInfo
         }
         return new UUID(msb, lsb);
     }
-    
+
     public final boolean isEnabled() {
         return this.client != null;
     }
-    
+
     public void reportAppView() {
         try {
             if (this.isEnabled()) {
@@ -100,12 +106,11 @@ public class ModInfo
                 payload.add(this.minecraftParams());
                 this.client.send(payload);
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             ModInfo.LOGGER.log(Level.ERROR, t.getMessage(), t);
         }
     }
-    
+
     public void reportException(final Throwable e) {
         try {
             if (this.isEnabled()) {
@@ -150,12 +155,11 @@ public class ModInfo
                 }
                 this.reportEvent(category, action.toString(), label.toString());
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             ModInfo.LOGGER.log(Level.ERROR, t.getMessage(), t);
         }
     }
-    
+
     public void reportEvent(final String category, final String action, final String label) {
         try {
             if (this.isEnabled()) {
@@ -166,12 +170,11 @@ public class ModInfo
                 payload.put(Payload.Parameter.EventLabel, label);
                 this.client.send(payload);
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             ModInfo.LOGGER.log(Level.ERROR, t.getMessage(), t);
         }
     }
-    
+
     public void keepAlive() {
         try {
             if (this.isEnabled()) {
@@ -181,12 +184,11 @@ public class ModInfo
                 payload.put(Payload.Parameter.NonInteractionHit, "1");
                 this.client.send(payload);
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             ModInfo.LOGGER.log(Level.ERROR, t.getMessage(), t);
         }
     }
-    
+
     private Locale getLocale(final String languageCode) {
         final String english = "en_US";
         final List<String> langs = Arrays.asList(english);
@@ -194,21 +196,21 @@ public class ModInfo
             langs.add(languageCode);
         }
         final Locale locale = new Locale();
-        locale.loadLocaleDataFiles(this.minecraft.getResourceManager(), (List)langs);
+        locale.loadLocaleDataFiles(this.minecraft.getResourceManager(), (List) langs);
         return locale;
     }
-    
+
     private String I18n(final String translationKey, final Object... parms) {
         return this.reportingLocale.formatMessage(translationKey, parms);
     }
-    
+
     private Client createClient() {
         final String salt = this.config.getSalt();
         final String username = this.minecraft.getSession().getUsername();
         final UUID clientId = createUUID(salt, username, this.modId);
         return new Client(this.trackingId, clientId, this.config, Minecraft.getMinecraft().getLanguageManager().getCurrentLanguage().getLanguageCode());
     }
-    
+
     private Map<Payload.Parameter, String> minecraftParams() {
         final Map<Payload.Parameter, String> map = new HashMap<Payload.Parameter, String>();
         final Language language = this.minecraft.getLanguageManager().getCurrentLanguage();
@@ -224,14 +226,14 @@ public class ModInfo
         map.put(Payload.Parameter.ContentDescription, desc.toString());
         return map;
     }
-    
+
     private Map<Payload.Parameter, String> appViewParams() {
         final Map<Payload.Parameter, String> map = new HashMap<Payload.Parameter, String>();
         map.put(Payload.Parameter.ApplicationName, this.modName);
         map.put(Payload.Parameter.ApplicationVersion, this.modVersion);
         return map;
     }
-    
+
     private void optIn() {
         final Payload payload = new Payload(Payload.Type.Event);
         payload.put(Payload.Parameter.EventCategory, "ModInfo");
@@ -246,7 +248,7 @@ public class ModInfo
             }
         });
     }
-    
+
     public void singleUse() {
         if (Config.isConfirmedDisabled(this.config)) {
             return;
@@ -254,12 +256,11 @@ public class ModInfo
         this.reportAppView();
         this.config.disable();
     }
-    
+
     private void optOut() {
         if (Config.isConfirmedDisabled(this.config)) {
             ModInfo.LOGGER.info("ModInfo for " + this.modId + " is disabled");
-        }
-        else if (!this.config.isEnabled()) {
+        } else if (!this.config.isEnabled()) {
             final Payload payload = new Payload(Payload.Type.Event);
             payload.put(Payload.Parameter.EventCategory, "ModInfo");
             payload.put(Payload.Parameter.EventAction, "Opt Out");
@@ -273,9 +274,5 @@ public class ModInfo
                 }
             });
         }
-    }
-    
-    static {
-        LOGGER = LogManager.getLogger("modinfo");
     }
 }

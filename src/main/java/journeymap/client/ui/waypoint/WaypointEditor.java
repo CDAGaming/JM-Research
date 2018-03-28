@@ -1,37 +1,41 @@
 package journeymap.client.ui.waypoint;
 
-import journeymap.client.model.*;
+import journeymap.client.Constants;
+import journeymap.client.cartography.color.RGB;
+import journeymap.client.data.WorldData;
+import journeymap.client.log.JMLogger;
+import journeymap.client.model.Waypoint;
+import journeymap.client.properties.FullMapProperties;
+import journeymap.client.render.draw.DrawUtil;
+import journeymap.client.render.texture.TextureCache;
+import journeymap.client.render.texture.TextureImpl;
+import journeymap.client.ui.UIManager;
 import journeymap.client.ui.component.Button;
+import journeymap.client.ui.component.*;
 import journeymap.client.ui.component.ScrollPane;
 import journeymap.client.ui.component.TextField;
-import journeymap.client.ui.option.*;
-import java.awt.geom.*;
-import journeymap.client.ui.component.*;
-import journeymap.client.*;
-import journeymap.client.render.texture.*;
-import org.lwjgl.input.*;
-import journeymap.common.*;
-import journeymap.common.log.*;
-import journeymap.client.ui.*;
-import net.minecraft.util.math.*;
-import journeymap.client.waypoint.*;
-import journeymap.client.data.*;
-import journeymap.client.log.*;
-import journeymap.client.properties.*;
-import java.util.*;
-import journeymap.client.render.draw.*;
-import net.minecraft.client.renderer.*;
-import java.awt.image.*;
+import journeymap.client.ui.fullscreen.Fullscreen;
+import journeymap.client.ui.option.LocationFormat;
+import journeymap.client.waypoint.WaypointStore;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.util.math.MathHelper;
+import org.lwjgl.input.Keyboard;
+
 import java.awt.*;
-import net.minecraft.client.gui.*;
-import java.io.*;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
-import journeymap.client.cartography.color.*;
-import journeymap.client.ui.fullscreen.*;
-
-public class WaypointEditor extends JmUI
-{
+public class WaypointEditor extends JmUI {
     private final TextureImpl wpTexture;
     private final TextureImpl colorPickTexture;
     private final Waypoint originalWaypoint;
@@ -70,7 +74,7 @@ public class WaypointEditor extends JmUI
     private List<String> colorPickTooltip;
     private Waypoint editedWaypoint;
     private ButtonList bottomButtons;
-    
+
     public WaypointEditor(final Waypoint waypoint, final boolean isNew, final JmUI returnDisplay) {
         super(Constants.getString(isNew ? "jm.waypoint.new_title" : "jm.waypoint.edit_title"), returnDisplay);
         this.labelName = Constants.getString("jm.waypoint.name");
@@ -97,20 +101,19 @@ public class WaypointEditor extends JmUI
             this.colorPickRect = new Rectangle2D.Double(0.0, 0.0, this.colorPickTexture.getWidth(), this.colorPickTexture.getHeight());
             this.colorPickImg = this.colorPickTexture.getImage();
             Keyboard.enableRepeatEvents(true);
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().error("Error during WaypointEditor ctor: " + LogFormatter.toPartialString(t));
             UIManager.INSTANCE.closeAll();
         }
     }
-    
+
     @Override
     public void initGui() {
         try {
             final FullMapProperties fullMapProperties = Journeymap.getClient().getFullMapProperties();
             final LocationFormat locationFormat = new LocationFormat();
             this.locationFormatKeys = locationFormat.getFormatKeys(fullMapProperties.locationFormat.get());
-            final String pos = this.locationFormatKeys.format(fullMapProperties.locationFormatVerbose.get(), MathHelper.floor(this.mc.player.posX), MathHelper.floor(this.mc.player.posZ), MathHelper.floor(this.mc.player.getEntityBoundingBox().minY), MathHelper.floor((float)this.mc.player.chunkCoordY));
+            final String pos = this.locationFormatKeys.format(fullMapProperties.locationFormatVerbose.get(), MathHelper.floor(this.mc.player.posX), MathHelper.floor(this.mc.player.posZ), MathHelper.floor(this.mc.player.getEntityBoundingBox().minY), MathHelper.floor((float) this.mc.player.chunkCoordY));
             this.currentLocation = Constants.getString("jm.waypoint.current_location", " " + pos);
             if (this.fieldList.isEmpty()) {
                 final FontRenderer fr = this.getFontRenderer();
@@ -146,8 +149,7 @@ public class WaypointEditor extends JmUI
                     String dimName = Integer.toString(dim);
                     try {
                         dimName = WorldData.getSafeDimensionName(provider);
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         JMLogger.logOnce("Can't get dimension name from provider: ", e);
                     }
                     this.dimButtonList.add(new DimensionButton(0, dim, dimName, wpDims.contains(dim)));
@@ -172,17 +174,16 @@ public class WaypointEditor extends JmUI
                 this.buttonList.add(this.buttonReset);
                 this.buttonList.add(this.buttonSave);
                 this.buttonList.add(this.buttonClose);
-                (this.bottomButtons = new ButtonList(new Button[] { this.buttonRemove, this.buttonSave, this.buttonClose })).equalizeWidths(this.getFontRenderer());
+                (this.bottomButtons = new ButtonList(new Button[]{this.buttonRemove, this.buttonSave, this.buttonClose})).equalizeWidths(this.getFontRenderer());
                 this.setFormColor(this.originalWaypoint.getColor());
                 this.validate();
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().error(LogFormatter.toString(t));
             UIManager.INSTANCE.closeAll();
         }
     }
-    
+
     @Override
     protected void layoutButtons() {
         try {
@@ -247,13 +248,12 @@ public class WaypointEditor extends JmUI
             this.dimScrollPane.setDimensions(dcw, scrollHeight, 0, 0, rightX, rightRow);
             final int totalRow = Math.max(leftRowY + vgap, rightRow + vgap);
             this.bottomButtons.layoutFilledHorizontal(fr, leftX - 2, totalRow, rightXEnd + 2, 4, true);
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().error("Error during WaypointEditor layout: " + LogFormatter.toPartialString(t));
             UIManager.INSTANCE.closeAll();
         }
     }
-    
+
     @Override
     public void drawScreen(final int x, final int y, final float par3) {
         try {
@@ -272,19 +272,18 @@ public class WaypointEditor extends JmUI
             }
             this.drawTitle();
             this.drawLogo();
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().error("Error during WaypointEditor layout: " + LogFormatter.toPartialString(t));
             UIManager.INSTANCE.closeAll();
         }
     }
-    
+
     protected void drawWaypoint(final int x, final int y) {
         DrawUtil.drawColoredImage(this.wpTexture, this.currentColor, 1.0f, x, y - this.wpTexture.getHeight() / 2, 0.0);
     }
-    
+
     protected void drawColorPicker(final int x, final int y, final float size) {
-        final int sizeI = (int)size;
+        final int sizeI = (int) size;
         drawRect(x - 1, y - 1, x + sizeI + 1, y + sizeI + 1, -6250336);
         if (this.colorPickRect.width != size) {
             final Image image = this.colorPickTexture.getImage().getScaledInstance(sizeI, sizeI, 2);
@@ -297,7 +296,7 @@ public class WaypointEditor extends JmUI
         final float scale = size / this.colorPickTexture.getWidth();
         DrawUtil.drawImage(this.colorPickTexture, x, y, false, scale, 0.0);
     }
-    
+
     protected void drawLabelAndField(final String label, final TextField field, final int x, final int y) {
         field.setX(x);
         field.setY(y);
@@ -306,11 +305,11 @@ public class WaypointEditor extends JmUI
         this.drawString(this.getFontRenderer(), label, x - width, y + (field.getHeight() - 8) / 2, Color.cyan.getRGB());
         field.drawTextBox();
     }
-    
+
     protected void drawLabel(final String label, final int x, final int y) {
         this.drawString(this.getFontRenderer(), label, x, y, Color.cyan.getRGB());
     }
-    
+
     @Override
     protected void keyTyped(final char par1, final int par2) {
         switch (par2) {
@@ -336,15 +335,15 @@ public class WaypointEditor extends JmUI
             }
         }
     }
-    
+
     public void handleMouseInput() throws IOException {
         super.handleMouseInput();
     }
-    
+
     protected void mouseClickMove(final int par1, final int par2, final int par3, final long par4) {
         this.checkColorPicker(par1, par2);
     }
-    
+
     protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton) throws IOException {
         super.mouseClicked(mouseX, mouseY, mouseButton);
         if (mouseButton == 0) {
@@ -358,15 +357,15 @@ public class WaypointEditor extends JmUI
             }
         }
     }
-    
+
     protected void checkColorPicker(final int mouseX, final int mouseY) {
         if (this.colorPickRect.contains(mouseX, mouseY)) {
-            final int x = mouseX - (int)this.colorPickRect.x;
-            final int y = mouseY - (int)this.colorPickRect.y;
+            final int x = mouseX - (int) this.colorPickRect.x;
+            final int y = mouseY - (int) this.colorPickRect.y;
             this.setFormColor(this.colorPickImg.getRGB(x, y));
         }
     }
-    
+
     protected void setFormColor(final Integer color) {
         this.currentColor = color;
         final int[] c = RGB.ints(color);
@@ -375,14 +374,13 @@ public class WaypointEditor extends JmUI
         this.fieldB.setText(Integer.toString(c[2]));
         this.updateWaypointFromForm();
     }
-    
+
     protected void actionPerformed(final GuiButton guibutton) {
         if (this.dimButtonList.contains(guibutton)) {
-            final DimensionButton dimButton = (DimensionButton)guibutton;
+            final DimensionButton dimButton = (DimensionButton) guibutton;
             dimButton.toggle();
             this.updateWaypointFromForm();
-        }
-        else {
+        } else {
             if (guibutton == this.buttonRandomize) {
                 this.setRandomColor();
                 return;
@@ -408,12 +406,12 @@ public class WaypointEditor extends JmUI
             }
         }
     }
-    
+
     protected void setRandomColor() {
         this.editedWaypoint.setRandomColor();
         this.setFormColor(this.editedWaypoint.getColor());
     }
-    
+
     protected void onTab() {
         boolean focusNext = false;
         boolean foundFocus = false;
@@ -434,7 +432,7 @@ public class WaypointEditor extends JmUI
             this.fieldList.get(0).setFocused(true);
         }
     }
-    
+
     protected boolean validate() {
         boolean valid = true;
         if (this.fieldName != null) {
@@ -448,12 +446,12 @@ public class WaypointEditor extends JmUI
         }
         return valid;
     }
-    
+
     protected void remove() {
         WaypointStore.INSTANCE.remove(this.originalWaypoint);
         this.refreshAndClose(null);
     }
-    
+
     protected void save() {
         if (!this.validate()) {
             return;
@@ -463,7 +461,7 @@ public class WaypointEditor extends JmUI
         WaypointStore.INSTANCE.save(this.editedWaypoint);
         this.refreshAndClose(this.editedWaypoint);
     }
-    
+
     protected void resetForm() {
         this.editedWaypoint = new Waypoint(this.originalWaypoint);
         this.dimButtonList.clear();
@@ -472,11 +470,11 @@ public class WaypointEditor extends JmUI
         this.initGui();
         this.validate();
     }
-    
+
     protected void updateWaypointFromForm() {
         this.currentColor = RGB.toInteger(this.getSafeColorInt(this.fieldR), this.getSafeColorInt(this.fieldG), this.getSafeColorInt(this.fieldB));
         this.editedWaypoint.setColor(this.currentColor);
-        this.fieldName.setTextColor((int)this.editedWaypoint.getSafeColor());
+        this.fieldName.setTextColor((int) this.editedWaypoint.getSafeColor());
         final ArrayList<Integer> dims = new ArrayList<Integer>();
         for (final DimensionButton db : this.dimButtonList) {
             if (db.getToggled()) {
@@ -488,7 +486,7 @@ public class WaypointEditor extends JmUI
         this.editedWaypoint.setName(this.fieldName.getText());
         this.editedWaypoint.setLocation(this.getSafeCoordInt(this.fieldX), this.getSafeCoordInt(this.fieldY), this.getSafeCoordInt(this.fieldZ), this.mc.player.dimension);
     }
-    
+
     protected int getSafeColorInt(final TextField field) {
         field.clamp();
         final String text = field.getText();
@@ -498,11 +496,11 @@ public class WaypointEditor extends JmUI
         int val = 0;
         try {
             val = Integer.parseInt(text);
+        } catch (NumberFormatException ex) {
         }
-        catch (NumberFormatException ex) {}
         return Math.max(0, Math.min(255, val));
     }
-    
+
     protected int getSafeCoordInt(final TextField field) {
         final String text = field.getText();
         if (text == null || text.isEmpty() || text.equals("-")) {
@@ -511,11 +509,11 @@ public class WaypointEditor extends JmUI
         int val = 0;
         try {
             val = Integer.parseInt(text);
+        } catch (NumberFormatException ex) {
         }
-        catch (NumberFormatException ex) {}
         return val;
     }
-    
+
     protected void refreshAndClose(final Waypoint focusWaypoint) {
         if (this.returnDisplay != null && this.returnDisplay instanceof WaypointManager) {
             UIManager.INSTANCE.openWaypointManager(focusWaypoint, new Fullscreen());
@@ -524,21 +522,19 @@ public class WaypointEditor extends JmUI
         Fullscreen.state().requireRefresh();
         this.closeAndReturn();
     }
-    
+
     @Override
     protected void closeAndReturn() {
         if (this.returnDisplay == null) {
             UIManager.INSTANCE.closeAll();
-        }
-        else {
+        } else {
             UIManager.INSTANCE.open(this.returnDisplay);
         }
     }
-    
-    class DimensionButton extends OnOffButton
-    {
+
+    class DimensionButton extends OnOffButton {
         public final int dimension;
-        
+
         DimensionButton(final int id, final int dimension, final String dimensionName, final boolean toggled) {
             super(id, String.format("%s: %s", dimensionName, Constants.getString("jm.common.on")), String.format("%s: %s", dimensionName, Constants.getString("jm.common.off")), toggled);
             this.dimension = dimension;

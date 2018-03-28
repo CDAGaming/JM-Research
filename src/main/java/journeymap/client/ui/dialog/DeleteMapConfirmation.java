@@ -1,24 +1,24 @@
 package journeymap.client.ui.dialog;
 
-import journeymap.client.ui.component.*;
-import journeymap.client.*;
-import net.minecraft.client.gui.*;
-import journeymap.client.task.main.*;
+import journeymap.client.Constants;
+import journeymap.client.task.main.DeleteMapTask;
+import journeymap.client.ui.component.Button;
+import journeymap.client.ui.component.JmUI;
+import net.minecraft.client.gui.GuiButton;
 
-public class DeleteMapConfirmation extends JmUI
-{
+public class DeleteMapConfirmation extends JmUI {
     Button buttonAll;
     Button buttonCurrent;
     Button buttonClose;
-    
+
     public DeleteMapConfirmation() {
-        this((JmUI)null);
+        this((JmUI) null);
     }
-    
+
     public DeleteMapConfirmation(final JmUI returnDisplay) {
         super(Constants.getString("jm.common.deletemap_dialog"), returnDisplay);
     }
-    
+
     @Override
     public void initGui() {
         this.buttonList.clear();
@@ -29,7 +29,7 @@ public class DeleteMapConfirmation extends JmUI
         this.buttonList.add(this.buttonCurrent);
         this.buttonList.add(this.buttonClose);
     }
-    
+
     @Override
     protected void layoutButtons() {
         if (this.buttonList.isEmpty()) {
@@ -43,7 +43,7 @@ public class DeleteMapConfirmation extends JmUI
         this.buttonCurrent.centerHorizontalOn(x).below(this.buttonAll, 3);
         this.buttonClose.centerHorizontalOn(x).below(this.buttonCurrent, 12);
     }
-    
+
     protected void actionPerformed(final GuiButton guibutton) {
         if (guibutton == this.buttonAll || guibutton == this.buttonCurrent) {
             DeleteMapTask.queue(guibutton == this.buttonAll);
@@ -53,7 +53,7 @@ public class DeleteMapConfirmation extends JmUI
             this.closeAndReturn();
         }
     }
-    
+
     @Override
     protected void keyTyped(final char c, final int i) {
         switch (i) {

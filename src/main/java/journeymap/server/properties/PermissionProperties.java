@@ -1,9 +1,8 @@
 package journeymap.server.properties;
 
-import journeymap.common.properties.config.*;
+import journeymap.common.properties.config.BooleanField;
 
-public abstract class PermissionProperties extends ServerPropertiesBase
-{
+public abstract class PermissionProperties extends ServerPropertiesBase {
     public final BooleanField opSurfaceMappingEnabled;
     public final BooleanField surfaceMappingEnabled;
     public final BooleanField opTopoMappingEnabled;
@@ -16,7 +15,7 @@ public abstract class PermissionProperties extends ServerPropertiesBase
     public final BooleanField villagerRadarEnabled;
     public final BooleanField animalRadarEnabled;
     public final BooleanField mobRadarEnabled;
-    
+
     protected PermissionProperties(final String displayName, final String description) {
         super(displayName, description);
         this.opSurfaceMappingEnabled = new BooleanField(ServerCategory.Surface, "Enable Op surface maps", true);

@@ -1,26 +1,37 @@
 package journeymap.client.task.multi;
 
-import java.text.*;
-import net.minecraft.client.*;
-import net.minecraft.entity.player.*;
-import journeymap.client.model.*;
-import net.minecraft.util.math.*;
-import journeymap.common.*;
-import journeymap.client.properties.*;
-import com.google.common.collect.*;
-import journeymap.client.data.*;
-import java.util.*;
-import java.util.concurrent.*;
-import journeymap.client.*;
-import journeymap.client.ui.option.*;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
+import journeymap.client.Constants;
+import journeymap.client.data.DataCache;
+import journeymap.client.model.MapType;
+import journeymap.client.properties.CoreProperties;
+import journeymap.client.ui.option.KeyedEnum;
+import journeymap.common.Journeymap;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.ChunkPos;
 
-public class RenderSpec
-{
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+public class RenderSpec {
     private static DecimalFormat decFormat;
     private static volatile RenderSpec lastSurfaceRenderSpec;
     private static volatile RenderSpec lastTopoRenderSpec;
     private static volatile RenderSpec lastUndergroundRenderSpec;
     private static Minecraft minecraft;
+
+    static {
+        RenderSpec.decFormat = new DecimalFormat("##.#");
+        RenderSpec.minecraft = Minecraft.getMinecraft();
+    }
+
     private final EntityPlayer player;
     private final MapType mapType;
     private final int primaryRenderDistance;
@@ -34,10 +45,10 @@ public class RenderSpec
     private long lastTaskTime;
     private int lastTaskChunks;
     private double lastTaskAvgChunkTime;
-    
+
     private RenderSpec(final Minecraft minecraft, final MapType mapType) {
         this.offsets = null;
-        this.player = (EntityPlayer)minecraft.player;
+        this.player = (EntityPlayer) minecraft.player;
         final CoreProperties props = Journeymap.getClient().getCoreProperties();
         final int gameRenderDistance = Math.max(1, minecraft.gameSettings.renderDistanceChunks - 1);
         final int mapRenderDistanceMin;
@@ -54,19 +65,19 @@ public class RenderSpec
         this.lastPlayerCoord = new ChunkPos(minecraft.player.chunkCoordX, minecraft.player.chunkCoordZ);
         this.lastSecondaryRenderDistance = this.primaryRenderDistance;
     }
-    
+
     private static Double blockDistance(final ChunkPos playerCoord, final ChunkPos coord) {
         final int x = (playerCoord.x << 4) + 8 - ((coord.x << 4) + 8);
         final int z = (playerCoord.z << 4) + 8 - ((coord.z << 4) + 8);
         return Math.sqrt(x * x + z * z);
     }
-    
+
     private static Double chunkDistance(final ChunkPos playerCoord, final ChunkPos coord) {
         final int x = playerCoord.x - coord.x;
         final int z = playerCoord.z - coord.z;
         return Math.sqrt(x * x + z * z);
     }
-    
+
     static boolean inRange(final ChunkPos playerCoord, final ChunkPos coord, final int renderDistance, final RevealShape revealShape) {
         if (revealShape == RevealShape.Circle) {
             final double distance = blockDistance(playerCoord, coord);
@@ -77,7 +88,7 @@ public class RenderSpec
         final float z = Math.abs(playerCoord.z - coord.z);
         return x <= renderDistance && z <= renderDistance;
     }
-    
+
     private static ListMultimap<Integer, Offset> calculateOffsets(final int minOffset, final int maxOffset, final RevealShape revealShape) {
         final ListMultimap<Integer, Offset> multimap = ArrayListMultimap.create();
         int offset = maxOffset;
@@ -94,7 +105,7 @@ public class RenderSpec
                 }
             }
             if (offset < maxOffset) {
-                final List<Offset> oneUp = (List<Offset>)multimap.get((offset + 1));
+                final List<Offset> oneUp = (List<Offset>) multimap.get((offset + 1));
                 oneUp.removeAll(multimap.get(offset));
             }
             --offset;
@@ -102,9 +113,9 @@ public class RenderSpec
         for (int i = minOffset; i <= maxOffset; ++i) {
             multimap.get(i).sort((o1, o2) -> Double.compare(o1.distance(), o2.distance()));
         }
-        return (ListMultimap<Integer, Offset>)new ImmutableListMultimap.Builder().putAll((Multimap)multimap).build();
+        return (ListMultimap<Integer, Offset>) new ImmutableListMultimap.Builder().putAll((Multimap) multimap).build();
     }
-    
+
     public static RenderSpec getSurfaceSpec() {
         if (RenderSpec.lastSurfaceRenderSpec == null || RenderSpec.lastSurfaceRenderSpec.lastPlayerCoord.x != RenderSpec.minecraft.player.chunkCoordX || RenderSpec.lastSurfaceRenderSpec.lastPlayerCoord.z != RenderSpec.minecraft.player.chunkCoordZ) {
             final RenderSpec newSpec = new RenderSpec(RenderSpec.minecraft, MapType.day(DataCache.getPlayer()));
@@ -113,7 +124,7 @@ public class RenderSpec
         }
         return RenderSpec.lastSurfaceRenderSpec;
     }
-    
+
     public static RenderSpec getTopoSpec() {
         if (RenderSpec.lastTopoRenderSpec == null || RenderSpec.lastTopoRenderSpec.lastPlayerCoord.x != RenderSpec.minecraft.player.chunkCoordX || RenderSpec.lastTopoRenderSpec.lastPlayerCoord.z != RenderSpec.minecraft.player.chunkCoordZ) {
             final RenderSpec newSpec = new RenderSpec(RenderSpec.minecraft, MapType.topo(DataCache.getPlayer()));
@@ -122,7 +133,7 @@ public class RenderSpec
         }
         return RenderSpec.lastTopoRenderSpec;
     }
-    
+
     public static RenderSpec getUndergroundSpec() {
         if (RenderSpec.lastUndergroundRenderSpec == null || RenderSpec.lastUndergroundRenderSpec.lastPlayerCoord.x != RenderSpec.minecraft.player.chunkCoordX || RenderSpec.lastUndergroundRenderSpec.lastPlayerCoord.z != RenderSpec.minecraft.player.chunkCoordZ) {
             final RenderSpec newSpec = new RenderSpec(RenderSpec.minecraft, MapType.underground(DataCache.getPlayer()));
@@ -131,13 +142,13 @@ public class RenderSpec
         }
         return RenderSpec.lastUndergroundRenderSpec;
     }
-    
+
     public static void resetRenderSpecs() {
         RenderSpec.lastUndergroundRenderSpec = null;
         RenderSpec.lastSurfaceRenderSpec = null;
         RenderSpec.lastTopoRenderSpec = null;
     }
-    
+
     protected List<ChunkPos> getRenderAreaCoords() {
         if (this.offsets == null) {
             this.offsets = calculateOffsets(this.primaryRenderDistance, this.maxSecondaryRenderDistance, this.revealShape);
@@ -149,7 +160,7 @@ public class RenderSpec
         }
         this.lastPlayerCoord = new ChunkPos(RenderSpec.minecraft.player.chunkCoordX, RenderSpec.minecraft.player.chunkCoordZ);
         if (this.primaryRenderCoords == null || this.primaryRenderCoords.isEmpty()) {
-            final List<Offset> primaryOffsets = (List<Offset>)this.offsets.get(this.primaryRenderDistance);
+            final List<Offset> primaryOffsets = (List<Offset>) this.offsets.get(this.primaryRenderDistance);
             this.primaryRenderCoords = new ArrayList<ChunkPos>(primaryOffsets.size());
             for (final Offset offset : primaryOffsets) {
                 final ChunkPos primaryCoord = offset.from(this.lastPlayerCoord);
@@ -164,7 +175,7 @@ public class RenderSpec
             this.lastSecondaryRenderDistance = this.primaryRenderDistance;
         }
         ++this.lastSecondaryRenderDistance;
-        final List<Offset> secondaryOffsets = (List<Offset>)this.offsets.get(this.lastSecondaryRenderDistance);
+        final List<Offset> secondaryOffsets = (List<Offset>) this.offsets.get(this.lastSecondaryRenderDistance);
         final ArrayList<ChunkPos> renderCoords = new ArrayList<ChunkPos>(this.primaryRenderCoords.size() + secondaryOffsets.size());
         for (final Offset offset2 : secondaryOffsets) {
             final ChunkPos secondaryCoord = offset2.from(this.lastPlayerCoord);
@@ -174,56 +185,56 @@ public class RenderSpec
         renderCoords.addAll(0, this.primaryRenderCoords);
         return renderCoords;
     }
-    
+
     public Boolean isUnderground() {
         return this.mapType.isUnderground();
     }
-    
+
     public Boolean isTopo() {
         return this.mapType.isTopo();
     }
-    
+
     public Boolean getSurface() {
         return this.mapType.isSurface();
     }
-    
+
     public int getPrimaryRenderDistance() {
         return this.primaryRenderDistance;
     }
-    
+
     public int getMaxSecondaryRenderDistance() {
         return this.maxSecondaryRenderDistance;
     }
-    
+
     public int getLastSecondaryRenderDistance() {
         return this.lastSecondaryRenderDistance;
     }
-    
+
     public RevealShape getRevealShape() {
         return this.revealShape;
     }
-    
+
     public int getLastSecondaryRenderSize() {
         if (this.primaryRenderDistance == this.maxSecondaryRenderDistance) {
             return 0;
         }
         return (this.offsets == null) ? 0 : this.offsets.get(this.lastSecondaryRenderDistance).size();
     }
-    
+
     public int getPrimaryRenderSize() {
         return (this.offsets == null) ? 0 : this.offsets.get(this.primaryRenderDistance).size();
     }
-    
+
     public void setLastTaskInfo(final int chunks, final long elapsedNs) {
         this.lastTaskChunks = chunks;
         this.lastTaskTime = TimeUnit.NANOSECONDS.toMillis(elapsedNs);
         this.lastTaskAvgChunkTime = elapsedNs / Math.max(1, chunks) / 1000000.0;
     }
-    
+
     public int getLastTaskChunks() {
         return this.lastTaskChunks;
     }
-    
+
     public void copyLastStatsFrom(final RenderSpec other) {
         if (other != null) {
             this.lastTaskChunks = other.lastTaskChunks;
@@ -231,22 +242,20 @@ public class RenderSpec
             this.lastTaskAvgChunkTime = other.lastTaskAvgChunkTime;
         }
     }
-    
+
     public String getDebugStats() {
         String debugString;
         if (this.isUnderground()) {
             debugString = "jm.common.renderstats_debug_cave";
-        }
-        else if (this.isTopo()) {
+        } else if (this.isTopo()) {
             debugString = "jm.common.renderstats_debug_topo";
-        }
-        else {
+        } else {
             debugString = "jm.common.renderstats_debug_surface";
         }
         debugString += "_simple";
         return Constants.getString(debugString, this.primaryRenderDistance, this.lastTaskChunks, this.lastTaskTime, RenderSpec.decFormat.format(this.lastTaskAvgChunkTime));
     }
-    
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -255,10 +264,10 @@ public class RenderSpec
         if (o == null || this.getClass() != o.getClass()) {
             return false;
         }
-        final RenderSpec that = (RenderSpec)o;
+        final RenderSpec that = (RenderSpec) o;
         return this.maxSecondaryRenderDistance == that.maxSecondaryRenderDistance && this.primaryRenderDistance == that.primaryRenderDistance && this.revealShape == that.revealShape && this.mapType.equals(that.mapType);
     }
-    
+
     @Override
     public int hashCode() {
         int result = this.mapType.hashCode();
@@ -267,48 +276,41 @@ public class RenderSpec
         result = 31 * result + this.revealShape.hashCode();
         return result;
     }
-    
-    static {
-        RenderSpec.decFormat = new DecimalFormat("##.#");
-        RenderSpec.minecraft = Minecraft.getMinecraft();
-    }
-    
-    public enum RevealShape implements KeyedEnum
-    {
-        Square("jm.minimap.shape_square"), 
+
+    public enum RevealShape implements KeyedEnum {
+        Square("jm.minimap.shape_square"),
         Circle("jm.minimap.shape_circle");
-        
+
         public final String key;
-        
+
         private RevealShape(final String key) {
             this.key = key;
         }
-        
+
         @Override
         public String getKey() {
             return this.key;
         }
-        
+
         @Override
         public String toString() {
             return Constants.getString(this.key);
         }
     }
-    
-    private static class Offset
-    {
+
+    private static class Offset {
         final int x;
         final int z;
-        
+
         private Offset(final int x, final int z) {
             this.x = x;
             this.z = z;
         }
-        
+
         ChunkPos from(final ChunkPos coord) {
             return new ChunkPos(coord.x + this.x, coord.z + this.z);
         }
-        
+
         @Override
         public boolean equals(final Object o) {
             if (this == o) {
@@ -317,14 +319,14 @@ public class RenderSpec
             if (o == null || this.getClass() != o.getClass()) {
                 return false;
             }
-            final Offset offset = (Offset)o;
+            final Offset offset = (Offset) o;
             return this.x == offset.x && this.z == offset.z;
         }
-        
+
         public double distance() {
             return Math.sqrt(this.x * this.x + this.z * this.z);
         }
-        
+
         @Override
         public int hashCode() {
             int result = this.x;

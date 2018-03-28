@@ -1,25 +1,29 @@
 package journeymap.client.task.main;
 
-import org.apache.logging.log4j.*;
-import journeymap.common.*;
-import net.minecraft.client.*;
-import journeymap.client.*;
-import journeymap.client.ui.fullscreen.*;
-import journeymap.client.log.*;
-import journeymap.common.log.*;
+import journeymap.client.JourneymapClient;
+import journeymap.client.log.ChatLog;
+import journeymap.client.ui.fullscreen.Fullscreen;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
+import org.apache.logging.log4j.Logger;
 
-public class MappingMonitorTask implements IMainThreadTask
-{
+public class MappingMonitorTask implements IMainThreadTask {
     private static String NAME;
+
+    static {
+        MappingMonitorTask.NAME = "Tick." + MappingMonitorTask.class.getSimpleName();
+    }
+
     Logger logger;
     private int lastDimension;
-    
+
     public MappingMonitorTask() {
         this.logger = Journeymap.getLogger();
         this.lastDimension = 0;
     }
-    
+
     @Override
     public IMainThreadTask perform(final Minecraft mc, final JourneymapClient jm) {
         try {
@@ -43,8 +47,7 @@ public class MappingMonitorTask implements IMainThreadTask
                 if (jm.isMapping()) {
                     jm.stopMapping();
                 }
-            }
-            else if (!jm.isMapping() && !isDead && Journeymap.getClient().getCoreProperties().mappingEnabled.get()) {
+            } else if (!jm.isMapping() && !isDead && Journeymap.getClient().getCoreProperties().mappingEnabled.get()) {
                 jm.startMapping();
             }
             final boolean isGamePaused = mc.currentScreen != null && !(mc.currentScreen instanceof Fullscreen);
@@ -57,19 +60,14 @@ public class MappingMonitorTask implements IMainThreadTask
             if (!jm.isMapping() && Journeymap.getClient().getCoreProperties().mappingEnabled.get()) {
                 jm.startMapping();
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             this.logger.error("Error in JourneyMap.performMainThreadTasks(): " + LogFormatter.toString(t));
         }
         return this;
     }
-    
+
     @Override
     public String getName() {
         return MappingMonitorTask.NAME;
-    }
-    
-    static {
-        MappingMonitorTask.NAME = "Tick." + MappingMonitorTask.class.getSimpleName();
     }
 }

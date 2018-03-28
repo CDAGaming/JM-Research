@@ -1,12 +1,14 @@
 package journeymap.client.properties;
 
-import journeymap.client.ui.minimap.*;
-import journeymap.common.properties.config.*;
-import journeymap.common.properties.*;
-import journeymap.client.ui.option.*;
+import journeymap.client.ui.minimap.EntityDisplay;
+import journeymap.client.ui.option.LocationFormat;
+import journeymap.common.properties.Category;
+import journeymap.common.properties.config.BooleanField;
+import journeymap.common.properties.config.EnumField;
+import journeymap.common.properties.config.IntegerField;
+import journeymap.common.properties.config.StringField;
 
-public abstract class InGameMapProperties extends MapProperties
-{
+public abstract class InGameMapProperties extends MapProperties {
     public final EnumField<EntityDisplay> playerDisplay;
     public final BooleanField showPlayerHeading;
     public final EnumField<EntityDisplay> mobDisplay;
@@ -20,7 +22,7 @@ public abstract class InGameMapProperties extends MapProperties
     public final BooleanField showWaypointLabels;
     public final BooleanField locationFormatVerbose;
     public final StringField locationFormat;
-    
+
     protected InGameMapProperties() {
         this.playerDisplay = new EnumField<EntityDisplay>(Category.Inherit, "jm.minimap.player_display", EntityDisplay.SmallDots);
         this.showPlayerHeading = new BooleanField(Category.Inherit, "jm.minimap.player_heading", true);

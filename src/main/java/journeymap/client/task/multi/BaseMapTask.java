@@ -1,24 +1,34 @@
 package journeymap.client.task.multi;
 
-import org.apache.logging.log4j.*;
-import net.minecraft.util.math.*;
-import net.minecraft.world.*;
-import journeymap.client.cartography.*;
-import net.minecraft.client.*;
-import journeymap.client.*;
-import java.io.*;
-import journeymap.client.log.*;
-import net.minecraftforge.fml.client.*;
-import journeymap.client.data.*;
-import journeymap.common.*;
-import journeymap.common.log.*;
-import java.util.*;
-import journeymap.client.model.*;
+import journeymap.client.JourneymapClient;
+import journeymap.client.cartography.ChunkRenderController;
+import journeymap.client.data.DataCache;
+import journeymap.client.log.StatTimer;
+import journeymap.client.model.ChunkMD;
+import journeymap.client.model.MapType;
+import journeymap.client.model.RegionCoord;
+import journeymap.client.model.RegionImageCache;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import org.apache.logging.log4j.Logger;
 
-public abstract class BaseMapTask implements ITask
-{
+import java.io.File;
+import java.util.Collection;
+import java.util.Iterator;
+
+public abstract class BaseMapTask implements ITask {
     static final Logger logger;
     protected static ChunkPos[] keepAliveOffsets;
+
+    static {
+        logger = Journeymap.getLogger();
+        BaseMapTask.keepAliveOffsets = new ChunkPos[]{new ChunkPos(0, -1), new ChunkPos(-1, 0), new ChunkPos(-1, -1)};
+    }
+
     final World world;
     final Collection<ChunkPos> chunkCoords;
     final boolean flushCacheWhenDone;
@@ -26,7 +36,7 @@ public abstract class BaseMapTask implements ITask
     final int elapsedLimit;
     final MapType mapType;
     final boolean asyncFileWrites;
-    
+
     public BaseMapTask(final ChunkRenderController renderController, final World world, final MapType mapType, final Collection<ChunkPos> chunkCoords, final boolean flushCacheWhenDone, final boolean asyncFileWrites, final int elapsedLimit) {
         this.renderController = renderController;
         this.world = world;
@@ -36,10 +46,10 @@ public abstract class BaseMapTask implements ITask
         this.flushCacheWhenDone = flushCacheWhenDone;
         this.elapsedLimit = elapsedLimit;
     }
-    
+
     public void initTask(final Minecraft mc, final JourneymapClient jm, final File jmWorldDir, final boolean threadLogging) throws InterruptedException {
     }
-    
+
     @Override
     public void performTask(final Minecraft mc, final JourneymapClient jm, final File jmWorldDir, final boolean threadLogging) throws InterruptedException {
         if (!this.mapType.isAllowed()) {
@@ -89,8 +99,7 @@ public abstract class BaseMapTask implements ITask
                         continue;
                     }
                     ++count;
-                }
-                catch (Throwable t) {
+                } catch (Throwable t) {
                     BaseMapTask.logger.warn("Error rendering chunk " + chunkMd + ": " + t.getMessage());
                 }
             }
@@ -110,34 +119,26 @@ public abstract class BaseMapTask implements ITask
             this.chunkCoords.clear();
             this.complete(count, false, false);
             timer.stop();
-        }
-        catch (InterruptedException t2) {
+        } catch (InterruptedException t2) {
             Journeymap.getLogger().warn("Task thread interrupted: " + this);
             timer.cancel();
             throw t2;
-        }
-        catch (Throwable t3) {
+        } catch (Throwable t3) {
             final String error = "Unexpected error in BaseMapTask: " + LogFormatter.toString(t3);
             Journeymap.getLogger().error(error);
             this.complete(count, false, true);
             timer.cancel();
-        }
-        finally {
+        } finally {
             if (threadLogging) {
                 timer.report();
             }
         }
     }
-    
+
     protected abstract void complete(final int p0, final boolean p1, final boolean p2);
-    
+
     @Override
     public String toString() {
         return this.getClass().getSimpleName() + "{world=" + this.world + ", mapType=" + this.mapType + ", chunkCoords=" + this.chunkCoords + ", flushCacheWhenDone=" + this.flushCacheWhenDone + '}';
-    }
-    
-    static {
-        logger = Journeymap.getLogger();
-        BaseMapTask.keepAliveOffsets = new ChunkPos[] { new ChunkPos(0, -1), new ChunkPos(-1, 0), new ChunkPos(-1, -1) };
     }
 }

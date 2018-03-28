@@ -1,24 +1,25 @@
 package journeymap.client.ui.waypoint;
 
+import journeymap.client.Constants;
+import journeymap.client.command.CmdTeleportWaypoint;
+import journeymap.client.log.JMLogger;
+import journeymap.client.model.Waypoint;
+import journeymap.client.properties.ClientCategory;
+import journeymap.client.ui.UIManager;
 import journeymap.client.ui.component.*;
-import journeymap.client.model.*;
-import journeymap.client.*;
-import journeymap.client.command.*;
-import net.minecraftforge.fml.client.*;
-import net.minecraft.entity.player.*;
-import journeymap.client.log.*;
-import java.io.*;
-import journeymap.client.ui.option.*;
-import net.minecraft.client.gui.*;
-import journeymap.client.ui.*;
-import journeymap.common.properties.*;
-import journeymap.client.properties.*;
-import journeymap.client.waypoint.*;
-import journeymap.client.ui.fullscreen.*;
+import journeymap.client.ui.fullscreen.Fullscreen;
+import journeymap.client.ui.option.SlotMetadata;
+import journeymap.client.waypoint.WaypointStore;
+import journeymap.common.properties.Category;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraftforge.fml.client.FMLClientHandler;
+
+import java.io.IOException;
 import java.util.*;
 
-public class WaypointManager extends JmUI
-{
+public class WaypointManager extends JmUI {
     static final String ASCEND = "\u25b2";
     static final String DESCEND = "\u25bc";
     static final int COLWAYPOINT = 0;
@@ -45,15 +46,15 @@ public class WaypointManager extends JmUI
     private ButtonList bottomButtons;
     private Waypoint focusWaypoint;
     private ArrayList<WaypointManagerItem> items;
-    
+
     public WaypointManager() {
         this(null, null);
     }
-    
+
     public WaypointManager(final JmUI returnDisplay) {
         this(null, returnDisplay);
     }
-    
+
     public WaypointManager(final Waypoint focusWaypoint, final JmUI returnDisplay) {
         super(Constants.getString("jm.waypoint.manage_title"), returnDisplay);
         this.on = Constants.getString("jm.common.on");
@@ -66,7 +67,7 @@ public class WaypointManager extends JmUI
         this.items = new ArrayList<WaypointManagerItem>();
         this.focusWaypoint = focusWaypoint;
     }
-    
+
     @Override
     public void initGui() {
         try {
@@ -74,7 +75,7 @@ public class WaypointManager extends JmUI
             this.canUserTeleport = CmdTeleportWaypoint.isPermitted(this.mc);
             final FontRenderer fr = this.getFontRenderer();
             if (this.buttonSortDistance == null) {
-                final WaypointManagerItem.Sort distanceSort = new WaypointManagerItem.DistanceComparator((EntityPlayer)FMLClientHandler.instance().getClient().player, true);
+                final WaypointManagerItem.Sort distanceSort = new WaypointManagerItem.DistanceComparator((EntityPlayer) FMLClientHandler.instance().getClient().player, true);
                 final String distanceLabel = Constants.getString("jm.waypoint.distance");
                 (this.buttonSortDistance = new SortButton(distanceLabel, distanceSort)).setTextOnly(fr);
             }
@@ -101,14 +102,13 @@ public class WaypointManager extends JmUI
                 (this.buttonOptions = new Button(Constants.getString("jm.common.options_button"))).fitWidth(this.getFontRenderer());
             }
             this.buttonClose = new Button(Constants.getString("jm.common.close"));
-            this.bottomButtons = new ButtonList(new Button[] { this.buttonOptions, this.buttonAdd, this.buttonDimensions, this.buttonClose });
+            this.bottomButtons = new ButtonList(new Button[]{this.buttonOptions, this.buttonAdd, this.buttonDimensions, this.buttonClose});
             this.buttonList.addAll(this.bottomButtons);
             if (this.items.isEmpty()) {
                 this.updateItems();
                 if (WaypointManager.currentSort == null) {
                     this.updateSort(this.buttonSortDistance);
-                }
-                else {
+                } else {
                     if (this.buttonSortDistance.sort.equals(WaypointManager.currentSort)) {
                         this.buttonSortDistance.sort.ascending = WaypointManager.currentSort.ascending;
                         this.buttonSortDistance.setActive(true);
@@ -123,8 +123,7 @@ public class WaypointManager extends JmUI
             }
             if (this.itemScrollPane == null) {
                 this.itemScrollPane = new ScrollListPane(this, this.mc, this.width, this.height, 35, this.height - 30, 20);
-            }
-            else {
+            } else {
                 this.itemScrollPane.setDimensions(this.width, this.height, 35, this.height - 30);
                 this.itemScrollPane.updateSlots();
             }
@@ -132,12 +131,11 @@ public class WaypointManager extends JmUI
             if (!this.items.isEmpty()) {
                 this.itemScrollPane.scrollTo(this.items.get(0));
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             JMLogger.logOnce("Error in OptionsManager.initGui(): " + t, t);
         }
     }
-    
+
     @Override
     protected void layoutButtons() {
         if (this.buttonList.isEmpty() || this.itemScrollPane == null) {
@@ -151,7 +149,7 @@ public class WaypointManager extends JmUI
         this.bottomButtons.equalizeWidths(this.getFontRenderer(), 4, bottomButtonWidth);
         this.bottomButtons.layoutCenteredHorizontal(this.width / 2, this.height - 25, true, 4);
     }
-    
+
     @Override
     public void drawScreen(final int x, final int y, final float par3) {
         if (this.mc == null) {
@@ -191,16 +189,15 @@ public class WaypointManager extends JmUI
                     this.drawHoveringText(this.itemScrollPane.lastTooltip, x, button.getBottomY() + 15);
                 }
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             JMLogger.logOnce("Error in OptionsManager.drawScreen(): " + t, t);
         }
     }
-    
+
     @Override
     public void drawBackground(final int layer) {
     }
-    
+
     protected void mouseClicked(final int mouseX, final int mouseY, final int mouseEvent) throws IOException {
         super.mouseClicked(mouseX, mouseY, mouseEvent);
         if (mouseEvent == 0) {
@@ -210,30 +207,32 @@ public class WaypointManager extends JmUI
             }
         }
     }
-    
+
     @Override
     protected void mouseReleased(final int mouseX, final int mouseY, final int state) {
         super.mouseReleased(mouseX, mouseY, state);
         this.itemScrollPane.mouseReleased(mouseX, mouseY, state);
     }
-    
+
     protected void mouseClickMove(final int mouseX, final int mouseY, final int lastButtonClicked, final long timeSinceMouseClick) {
         super.mouseClickMove(mouseX, mouseY, lastButtonClicked, timeSinceMouseClick);
         this.checkPressedButton();
     }
-    
+
     public void handleMouseInput() throws IOException {
         super.handleMouseInput();
         this.itemScrollPane.handleMouseInput();
     }
-    
+
     protected void checkPressedButton() {
         final SlotMetadata slotMetadata = this.itemScrollPane.getLastPressed();
-        if (slotMetadata != null) {}
+        if (slotMetadata != null) {
+        }
         final ScrollListPane.ISlot parentSlot = this.itemScrollPane.getLastPressedParentSlot();
-        if (parentSlot != null) {}
+        if (parentSlot != null) {
+        }
     }
-    
+
     protected void actionPerformed(final GuiButton guibutton) {
         if (guibutton == this.buttonClose) {
             this.refreshAndClose();
@@ -254,7 +253,7 @@ public class WaypointManager extends JmUI
             return;
         }
         if (guibutton == this.buttonAdd) {
-            final Waypoint waypoint = Waypoint.of((EntityPlayer)this.mc.player);
+            final Waypoint waypoint = Waypoint.of((EntityPlayer) this.mc.player);
             UIManager.INSTANCE.openWaypointEditor(waypoint, true, this);
             return;
         }
@@ -269,7 +268,7 @@ public class WaypointManager extends JmUI
             UIManager.INSTANCE.openOptionsManager(this, ClientCategory.Waypoint, ClientCategory.WaypointBeacon);
         }
     }
-    
+
     @Override
     protected void keyTyped(final char c, final int i) {
         switch (i) {
@@ -301,7 +300,7 @@ public class WaypointManager extends JmUI
             this.itemScrollPane.scrollBy(this.itemScrollPane.getAmountScrolled());
         }
     }
-    
+
     protected boolean toggleItems(boolean enable) {
         for (final WaypointManagerItem item : this.items) {
             if (enable == item.waypoint.isEnable()) {
@@ -316,7 +315,7 @@ public class WaypointManager extends JmUI
         }
         return !enable;
     }
-    
+
     protected void updateItems() {
         this.items.clear();
         final Integer currentDim = (DimensionsButton.currentWorldProvider == null) ? null : DimensionsButton.currentWorldProvider.getDimension();
@@ -326,7 +325,7 @@ public class WaypointManager extends JmUI
         boolean allOn = true;
         for (final Waypoint waypoint : waypoints) {
             final WaypointManagerItem item = new WaypointManagerItem(waypoint, fr, this);
-            item.getDistanceTo((EntityPlayer)this.mc.player);
+            item.getDistanceTo((EntityPlayer) this.mc.player);
             if (currentDim == null || item.waypoint.getDimensions().contains(currentDim)) {
                 this.items.add(item);
                 if (!allOn) {
@@ -337,8 +336,7 @@ public class WaypointManager extends JmUI
         }
         if (this.items.isEmpty()) {
             this.itemWidth = 460;
-        }
-        else {
+        } else {
             this.itemWidth = this.items.get(0).internalWidth;
         }
         this.buttonToggleAll.setToggled(!allOn);
@@ -347,21 +345,19 @@ public class WaypointManager extends JmUI
             Collections.sort(this.items, WaypointManager.currentSort);
         }
     }
-    
+
     protected void updateSort(final SortButton sortButton) {
         for (final GuiButton button : this.buttonList) {
             if (button instanceof SortButton) {
                 if (button == sortButton) {
                     if (sortButton.sort.equals(WaypointManager.currentSort)) {
                         sortButton.toggle();
-                    }
-                    else {
+                    } else {
                         sortButton.setActive(true);
                     }
                     WaypointManager.currentSort = sortButton.sort;
-                }
-                else {
-                    ((SortButton)button).setActive(false);
+                } else {
+                    ((SortButton) button).setActive(false);
                 }
             }
         }
@@ -372,31 +368,31 @@ public class WaypointManager extends JmUI
             this.itemScrollPane.setSlots(this.items);
         }
     }
-    
+
     protected void updateCount() {
         final String itemCount = this.items.isEmpty() ? "" : Integer.toString(this.items.size());
         final String enableOn = Constants.getString("jm.waypoint.enable_all", itemCount, this.on);
         final String enableOff = Constants.getString("jm.waypoint.enable_all", itemCount, this.off);
         this.buttonToggleAll.setLabels(enableOff, enableOn);
     }
-    
+
     protected boolean isSelected(final WaypointManagerItem item) {
         return this.itemScrollPane.isSelected(item.getSlotIndex());
     }
-    
+
     protected int getMargin() {
         return (this.width > this.itemWidth + 2) ? ((this.width - this.itemWidth) / 2) : 0;
     }
-    
+
     public void removeWaypoint(final WaypointManagerItem item) {
         WaypointStore.INSTANCE.remove(item.waypoint);
         this.items.remove(item);
     }
-    
+
     protected void refreshAndClose() {
         this.closeAndReturn();
     }
-    
+
     @Override
     protected void closeAndReturn() {
         this.bottomButtons.setEnabled(false);
@@ -405,13 +401,12 @@ public class WaypointManager extends JmUI
         this.bottomButtons.setEnabled(true);
         if (this.returnDisplay == null) {
             UIManager.INSTANCE.closeAll();
-        }
-        else {
+        } else {
             UIManager.INSTANCE.open(this.returnDisplay);
         }
     }
-    
+
     Map<Category, List<SlotMetadata>> getToolbars() {
-        return (Map<Category, List<SlotMetadata>>)Collections.EMPTY_MAP;
+        return (Map<Category, List<SlotMetadata>>) Collections.EMPTY_MAP;
     }
 }

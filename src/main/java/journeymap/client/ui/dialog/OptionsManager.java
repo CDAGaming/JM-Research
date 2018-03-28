@@ -1,37 +1,49 @@
 package journeymap.client.ui.dialog;
 
-import journeymap.common.*;
-import journeymap.client.*;
-import journeymap.client.forge.event.*;
-import net.minecraftforge.fml.client.*;
-import journeymap.client.ui.option.*;
-import journeymap.client.log.*;
-import net.minecraft.client.*;
-import journeymap.client.ui.*;
-import net.minecraft.client.renderer.*;
-import java.io.*;
+import journeymap.client.Constants;
+import journeymap.client.cartography.color.ColorManager;
+import journeymap.client.data.DataCache;
+import journeymap.client.forge.event.KeyEventHandler;
+import journeymap.client.io.ThemeLoader;
+import journeymap.client.log.JMLogger;
+import journeymap.client.mod.ModBlockDelegate;
+import journeymap.client.model.BlockMD;
+import journeymap.client.properties.ClientCategory;
+import journeymap.client.properties.CoreProperties;
+import journeymap.client.render.draw.DrawUtil;
+import journeymap.client.render.map.TileDrawStepCache;
+import journeymap.client.service.WebServer;
+import journeymap.client.task.main.SoftResetTask;
+import journeymap.client.task.multi.MapPlayerTask;
+import journeymap.client.task.multi.RenderSpec;
+import journeymap.client.ui.UIManager;
 import journeymap.client.ui.component.*;
-import journeymap.client.task.multi.*;
-import journeymap.client.properties.*;
-import journeymap.client.io.*;
-import journeymap.client.data.*;
-import journeymap.common.properties.*;
-import journeymap.client.service.*;
-import journeymap.client.waypoint.*;
-import journeymap.client.cartography.color.*;
-import journeymap.client.mod.*;
-import journeymap.client.model.*;
-import journeymap.client.render.map.*;
-import journeymap.client.ui.minimap.*;
-import journeymap.client.ui.fullscreen.*;
-import journeymap.client.task.main.*;
-import java.util.*;
-import journeymap.client.render.draw.*;
-import net.minecraft.client.gui.*;
+import journeymap.client.ui.fullscreen.Fullscreen;
+import journeymap.client.ui.minimap.MiniMap;
+import journeymap.client.ui.option.CategorySlot;
+import journeymap.client.ui.option.OptionSlotFactory;
+import journeymap.client.ui.option.SlotMetadata;
+import journeymap.client.waypoint.WaypointStore;
+import journeymap.common.Journeymap;
+import journeymap.common.properties.Category;
+import journeymap.common.properties.PropertiesBase;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraftforge.fml.client.FMLClientHandler;
 
-public class OptionsManager extends JmUI
-{
+import java.io.IOException;
+import java.util.*;
+
+public class OptionsManager extends JmUI {
     protected static Set<Category> openCategories;
+
+    static {
+        OptionsManager.openCategories = new HashSet<Category>();
+    }
+
     protected final int inGameMinimapId;
     protected Category[] initialCategories;
     protected CheckBox minimap1PreviewButton;
@@ -49,15 +61,15 @@ public class OptionsManager extends JmUI
     protected Set<Category> changedCategories;
     protected boolean forceMinimapUpdate;
     protected ButtonList editGridButtons;
-    
+
     public OptionsManager() {
-        this((GuiScreen)null);
+        this((GuiScreen) null);
     }
-    
+
     public OptionsManager(final GuiScreen returnDisplay) {
-        this(returnDisplay, (Category[])OptionsManager.openCategories.toArray(new Category[0]));
+        this(returnDisplay, (Category[]) OptionsManager.openCategories.toArray(new Category[0]));
     }
-    
+
     public OptionsManager(final GuiScreen returnDisplay, final Category... initialCategories) {
         super(String.format("JourneyMap %s %s", Journeymap.JM_VERSION, Constants.getString("jm.common.options")), returnDisplay);
         this.changedCategories = new HashSet<Category>();
@@ -65,7 +77,7 @@ public class OptionsManager extends JmUI
         this.initialCategories = initialCategories;
         this.inGameMinimapId = Journeymap.getClient().getActiveMinimapId();
     }
-    
+
     @Override
     public void initGui() {
         try {
@@ -79,7 +91,7 @@ public class OptionsManager extends JmUI
                 this.editGridMinimap2Button.setDrawBackground(false);
                 (this.editGridFullscreenButton = new Button(name)).setTooltip(tooltip);
                 this.editGridFullscreenButton.setDrawBackground(false);
-                this.editGridButtons = new ButtonList(new Button[] { this.editGridMinimap1Button, this.editGridMinimap2Button, this.editGridFullscreenButton });
+                this.editGridButtons = new ButtonList(new Button[]{this.editGridMinimap1Button, this.editGridMinimap2Button, this.editGridFullscreenButton});
             }
             if (this.minimap1PreviewButton == null) {
                 final String name = String.format("%s %s", Constants.getString("jm.minimap.preview"), "1");
@@ -98,7 +110,7 @@ public class OptionsManager extends JmUI
                 }
             }
             if (this.renderStatsButton == null) {
-                (this.renderStatsButton = new LabelButton(150, "jm.common.renderstats", new Object[] { 0, 0, 0 })).setEnabled(false);
+                (this.renderStatsButton = new LabelButton(150, "jm.common.renderstats", new Object[]{0, 0, 0})).setEnabled(false);
             }
             if (this.optionsListPane == null) {
                 final List<ScrollListPane.ISlot> categorySlots = new ArrayList<ScrollListPane.ISlot>();
@@ -120,9 +132,10 @@ public class OptionsManager extends JmUI
                 }
                 for (final ScrollListPane.ISlot rootSlot : this.optionsListPane.getRootSlots()) {
                     if (rootSlot instanceof CategorySlot) {
-                        final CategorySlot categorySlot2 = (CategorySlot)rootSlot;
+                        final CategorySlot categorySlot2 = (CategorySlot) rootSlot;
                         final Category category = categorySlot2.getCategory();
-                        if (category == null) {}
+                        if (category == null) {
+                        }
                         final ResetButton resetButton = new ResetButton(category);
                         final SlotMetadata resetSlotMetadata = new SlotMetadata(resetButton, 1);
                         if (category == ClientCategory.MiniMap1) {
@@ -130,17 +143,14 @@ public class OptionsManager extends JmUI
                                 categorySlot2.getAllChildMetadata().add(new SlotMetadata(this.minimap1PreviewButton, 4));
                             }
                             categorySlot2.getAllChildMetadata().add(new SlotMetadata(this.editGridMinimap1Button, 3));
-                        }
-                        else if (category == ClientCategory.MiniMap2) {
+                        } else if (category == ClientCategory.MiniMap2) {
                             if (FMLClientHandler.instance().getClient().world != null) {
                                 categorySlot2.getAllChildMetadata().add(new SlotMetadata(this.minimap2PreviewButton, 4));
                             }
                             categorySlot2.getAllChildMetadata().add(new SlotMetadata(this.editGridMinimap2Button, 3));
-                        }
-                        else if (category == ClientCategory.FullMap) {
+                        } else if (category == ClientCategory.FullMap) {
                             categorySlot2.getAllChildMetadata().add(new SlotMetadata(this.editGridMinimap2Button, 3));
-                        }
-                        else {
+                        } else {
                             if (category != ClientCategory.Cartography) {
                                 continue;
                             }
@@ -154,39 +164,36 @@ public class OptionsManager extends JmUI
                 if (!categorySlots.isEmpty()) {
                     this.optionsListPane.scrollTo(categorySlots.get(0));
                 }
-            }
-            else {
+            } else {
                 this.optionsListPane.setDimensions(this.width, this.height, 35, this.height - 30);
                 this.optionsListPane.updateSlots();
             }
             this.buttonClose = new Button(Constants.getString("jm.common.close"));
             this.buttonAbout = new Button(Constants.getString("jm.common.splash_about"));
-            final ButtonList bottomRow = new ButtonList(new Button[] { this.buttonAbout, this.buttonClose });
+            final ButtonList bottomRow = new ButtonList(new Button[]{this.buttonAbout, this.buttonClose});
             bottomRow.equalizeWidths(this.getFontRenderer());
             bottomRow.setWidths(Math.max(150, this.buttonAbout.getWidth()));
             bottomRow.layoutCenteredHorizontal(this.width / 2, this.height - 25, true, 4);
             this.buttonList.addAll(bottomRow);
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             JMLogger.logOnce("Error in OptionsManager.initGui(): " + t, t);
         }
     }
-    
+
     @Override
     protected void layoutButtons() {
         if (this.buttonList.isEmpty()) {
             this.initGui();
         }
     }
-    
+
     @Override
     public void drawScreen(final int x, final int y, final float par3) {
         try {
             if (this.forceMinimapUpdate) {
                 if (this.minimap1PreviewButton.isActive()) {
                     UIManager.INSTANCE.switchMiniMapPreset(1);
-                }
-                else if (this.minimap2PreviewButton.isActive()) {
+                } else if (this.minimap2PreviewButton.isActive()) {
                     UIManager.INSTANCE.switchMiniMapPreset(2);
                 }
             }
@@ -209,44 +216,42 @@ public class OptionsManager extends JmUI
                     this.drawHoveringText(this.optionsListPane.lastTooltip, x, button.getBottomY() + 15);
                 }
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             JMLogger.logOnce("Error in OptionsManager.drawScreen(): " + t, t);
         }
     }
-    
+
     public void handleMouseInput() throws IOException {
         super.handleMouseInput();
         this.optionsListPane.handleMouseInput();
     }
-    
+
     private void updateRenderStats() {
         RenderSpec.getSurfaceSpec();
         RenderSpec.getTopoSpec();
         RenderSpec.getUndergroundSpec();
         for (final ScrollListPane.ISlot rootSlot : this.optionsListPane.getRootSlots()) {
             if (rootSlot instanceof CategorySlot) {
-                final CategorySlot categorySlot = (CategorySlot)rootSlot;
+                final CategorySlot categorySlot = (CategorySlot) rootSlot;
                 if (categorySlot.getCategory() != ClientCategory.Cartography) {
                     continue;
                 }
                 final CoreProperties coreProperties = Journeymap.getClient().getCoreProperties();
                 for (final SlotMetadata slotMetadata : categorySlot.getAllChildMetadata()) {
                     if (slotMetadata.getButton() instanceof IConfigFieldHolder) {
-                        final Object property = ((IConfigFieldHolder)slotMetadata.getButton()).getConfigField();
+                        final Object property = ((IConfigFieldHolder) slotMetadata.getButton()).getConfigField();
                         boolean limitButtonRange = false;
                         if (property == coreProperties.renderDistanceCaveMax) {
                             limitButtonRange = true;
                             slotMetadata.getButton().resetLabelColors();
-                        }
-                        else if (property == coreProperties.renderDistanceSurfaceMax) {
+                        } else if (property == coreProperties.renderDistanceSurfaceMax) {
                             limitButtonRange = true;
                             slotMetadata.getButton().resetLabelColors();
                         }
                         if (!limitButtonRange) {
                             continue;
                         }
-                        final IntSliderButton button = (IntSliderButton)slotMetadata.getButton();
+                        final IntSliderButton button = (IntSliderButton) slotMetadata.getButton();
                         button.maxValue = this.mc.gameSettings.renderDistanceChunks;
                         if (button.getValue() <= this.mc.gameSettings.renderDistanceChunks) {
                             continue;
@@ -261,11 +266,11 @@ public class OptionsManager extends JmUI
             this.renderStatsButton.setWidth(this.cartographyCategorySlot.getCurrentColumnWidth());
         }
     }
-    
+
     @Override
     public void drawBackground(final int layer) {
     }
-    
+
     protected void mouseClicked(final int mouseX, final int mouseY, final int mouseEvent) throws IOException {
         super.mouseClicked(mouseX, mouseY, mouseEvent);
         final boolean pressed = this.optionsListPane.mouseClicked(mouseX, mouseY, mouseEvent);
@@ -273,23 +278,23 @@ public class OptionsManager extends JmUI
             this.checkPressedButton();
         }
     }
-    
+
     @Override
     protected void mouseReleased(final int mouseX, final int mouseY, final int mouseEvent) {
         super.mouseReleased(mouseX, mouseY, mouseEvent);
         this.optionsListPane.mouseReleased(mouseX, mouseY, mouseEvent);
     }
-    
+
     protected void mouseClickMove(final int mouseX, final int mouseY, final int lastButtonClicked, final long timeSinceMouseClick) {
         super.mouseClickMove(mouseX, mouseY, lastButtonClicked, timeSinceMouseClick);
         this.checkPressedButton();
     }
-    
+
     protected void checkPressedButton() {
         final SlotMetadata slotMetadata = this.optionsListPane.getLastPressed();
         if (slotMetadata != null) {
             if (slotMetadata.getButton() instanceof ResetButton) {
-                this.resetOptions(((ResetButton)slotMetadata.getButton()).category);
+                this.resetOptions(((ResetButton) slotMetadata.getButton()).category);
             }
             if (slotMetadata.getName().equals(Constants.getString("jm.common.ui_theme"))) {
                 ThemeLoader.getCurrentTheme(true);
@@ -312,7 +317,7 @@ public class OptionsManager extends JmUI
                 UIManager.INSTANCE.getMiniMap().resetInitTime();
             }
         }
-        final CategorySlot categorySlot = (CategorySlot)this.optionsListPane.getLastPressedParentSlot();
+        final CategorySlot categorySlot = (CategorySlot) this.optionsListPane.getLastPressedParentSlot();
         if (categorySlot != null) {
             final Category category = categorySlot.getCategory();
             this.changedCategories.add(category);
@@ -327,7 +332,7 @@ public class OptionsManager extends JmUI
             }
         }
     }
-    
+
     protected void actionPerformed(final GuiButton button) {
         if (button == this.buttonClose) {
             this.closeAndReturn();
@@ -346,7 +351,7 @@ public class OptionsManager extends JmUI
             UIManager.INSTANCE.switchMiniMapPreset(2);
         }
     }
-    
+
     @Override
     protected void keyTyped(final char c, final int key) {
         switch (key) {
@@ -365,7 +370,7 @@ public class OptionsManager extends JmUI
             UIManager.INSTANCE.getMiniMap().updateDisplayVars(true);
         }
     }
-    
+
     protected void resetOptions(final Category category) {
         final Set<PropertiesBase> updatedProperties = new HashSet<PropertiesBase>();
         for (final CategorySlot categorySlot : this.optionsListPane.getRootSlots()) {
@@ -388,11 +393,11 @@ public class OptionsManager extends JmUI
         }
         RenderSpec.resetRenderSpecs();
     }
-    
+
     public boolean previewMiniMap() {
         return this.minimap1PreviewButton.getToggled() || this.minimap2PreviewButton.getToggled();
     }
-    
+
     public void refreshMinimapOptions() {
         final Set<Category> cats = new HashSet<Category>();
         cats.add(ClientCategory.MiniMap1);
@@ -405,7 +410,7 @@ public class OptionsManager extends JmUI
             }
         }
     }
-    
+
     @Override
     protected void closeAndReturn() {
         Journeymap.getClient().getCoreProperties().optionsManagerViewed.set(Journeymap.JM_VERSION.toString());
@@ -416,22 +421,17 @@ public class OptionsManager extends JmUI
                 if (category == ClientCategory.MiniMap1) {
                     DataCache.INSTANCE.resetRadarCaches();
                     UIManager.INSTANCE.getMiniMap().reset();
-                }
-                else if (category == ClientCategory.MiniMap2) {
+                } else if (category == ClientCategory.MiniMap2) {
                     DataCache.INSTANCE.resetRadarCaches();
-                }
-                else if (category == ClientCategory.FullMap) {
+                } else if (category == ClientCategory.FullMap) {
                     DataCache.INSTANCE.resetRadarCaches();
                     ThemeLoader.getCurrentTheme(true);
-                }
-                else if (category == ClientCategory.WebMap) {
+                } else if (category == ClientCategory.WebMap) {
                     DataCache.INSTANCE.resetRadarCaches();
                     WebServer.setEnabled(Journeymap.getClient().getWebMapProperties().enabled.get(), true);
-                }
-                else if (category == ClientCategory.Waypoint) {
+                } else if (category == ClientCategory.Waypoint) {
                     WaypointStore.INSTANCE.reset();
-                }
-                else {
+                } else {
                     if (category == ClientCategory.WaypointBeacon) {
                         continue;
                     }
@@ -444,8 +444,7 @@ public class OptionsManager extends JmUI
                         MiniMap.state().requireRefresh();
                         Fullscreen.state().requireRefresh();
                         MapPlayerTask.forceNearbyRemap();
-                    }
-                    else {
+                    } else {
                         if (category != ClientCategory.Advanced) {
                             continue;
                         }
@@ -458,7 +457,7 @@ public class OptionsManager extends JmUI
             UIManager.INSTANCE.getMiniMap().updateDisplayVars(true);
         }
         if (this.returnDisplay != null && this.returnDisplay instanceof Fullscreen) {
-            ((Fullscreen)this.returnDisplay).reset();
+            ((Fullscreen) this.returnDisplay).reset();
         }
         OptionsManager.openCategories.clear();
         for (final CategorySlot categorySlot : this.optionsListPane.getRootSlots()) {
@@ -468,7 +467,7 @@ public class OptionsManager extends JmUI
         }
         super.closeAndReturn();
     }
-    
+
     Map<Category, List<SlotMetadata>> getToolbars() {
         if (this.toolbars == null) {
             this.toolbars = new HashMap<Category, List<SlotMetadata>>();
@@ -476,20 +475,15 @@ public class OptionsManager extends JmUI
                 final String name = Constants.getString("jm.config.reset");
                 final String tooltip = Constants.getString("jm.config.reset.tooltip");
                 final SlotMetadata toolbarSlotMetadata = new SlotMetadata(new ResetButton(category), name, tooltip);
-                this.toolbars.put(category, (List<SlotMetadata>)Arrays.asList(toolbarSlotMetadata));
+                this.toolbars.put(category, (List<SlotMetadata>) Arrays.asList(toolbarSlotMetadata));
             }
         }
         return this.toolbars;
     }
-    
-    static {
-        OptionsManager.openCategories = new HashSet<Category>();
-    }
-    
-    public static class ResetButton extends Button
-    {
+
+    public static class ResetButton extends Button {
         public final Category category;
-        
+
         public ResetButton(final Category category) {
             super(Constants.getString("jm.config.reset"));
             this.category = category;
@@ -498,11 +492,10 @@ public class OptionsManager extends JmUI
             this.setLabelColors(16711680, 16711680, null);
         }
     }
-    
-    public static class LabelButton extends Button
-    {
+
+    public static class LabelButton extends Button {
         DrawUtil.HAlign hAlign;
-        
+
         public LabelButton(final int width, final String key, final Object... labelArgs) {
             super(Constants.getString(key, labelArgs));
             this.hAlign = DrawUtil.HAlign.Left;
@@ -513,20 +506,20 @@ public class OptionsManager extends JmUI
             this.setLabelColors(12632256, 12632256, 12632256);
             this.setWidth(width);
         }
-        
+
         @Override
         public int getFitWidth(final FontRenderer fr) {
             return this.width;
         }
-        
+
         @Override
         public void fitWidth(final FontRenderer fr) {
         }
-        
+
         public void setHAlign(final DrawUtil.HAlign hAlign) {
             this.hAlign = hAlign;
         }
-        
+
         @Override
         public void drawButton(final Minecraft minecraft, final int mouseX, final int mouseY, final float ticks) {
             int labelX = 0;

@@ -1,19 +1,22 @@
 package journeymap.client.mod.impl;
 
-import journeymap.client.mod.*;
-import journeymap.client.model.*;
-import java.util.*;
+import journeymap.client.mod.IModBlockHandler;
+import journeymap.client.model.BlockFlag;
+import journeymap.client.model.BlockMD;
 
-public class BiomesOPlenty implements IModBlockHandler
-{
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+public class BiomesOPlenty implements IModBlockHandler {
     private List<String> plants;
     private List<String> crops;
-    
+
     public BiomesOPlenty() {
         this.plants = Arrays.asList("flower", "mushroom", "sapling", "plant", "ivy", "waterlily", "moss");
         this.crops = Collections.singletonList("turnip");
     }
-    
+
     @Override
     public void initialize(final BlockMD blockMD) {
         final String name = blockMD.getBlockId().toLowerCase();

@@ -1,17 +1,19 @@
 package journeymap.client.data;
 
-import com.google.common.cache.*;
-import journeymap.client.model.*;
-import journeymap.common.*;
-import java.util.*;
-import journeymap.client.waypoint.*;
+import com.google.common.cache.CacheLoader;
+import journeymap.client.model.Waypoint;
+import journeymap.client.waypoint.WaypointStore;
+import journeymap.common.Journeymap;
 
-public class WaypointsData extends CacheLoader<Class, Collection<Waypoint>>
-{
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+public class WaypointsData extends CacheLoader<Class, Collection<Waypoint>> {
     public static boolean isManagerEnabled() {
         return Journeymap.getClient().getWaypointProperties().managerEnabled.get();
     }
-    
+
     protected static List<Waypoint> getWaypoints() {
         final ArrayList<Waypoint> list = new ArrayList<Waypoint>(0);
         if (isManagerEnabled()) {
@@ -19,7 +21,7 @@ public class WaypointsData extends CacheLoader<Class, Collection<Waypoint>>
         }
         return list;
     }
-    
+
     private static boolean waypointClassesFound(final String... names) throws Exception {
         boolean loaded = true;
         for (final String name : names) {
@@ -31,27 +33,23 @@ public class WaypointsData extends CacheLoader<Class, Collection<Waypoint>>
                 Class.forName(name);
                 loaded = true;
                 Journeymap.getLogger().debug("Class found: " + name);
-            }
-            catch (NoClassDefFoundError e) {
+            } catch (NoClassDefFoundError e) {
                 throw new Exception("Class detected, but is obsolete: " + e.getMessage());
-            }
-            catch (ClassNotFoundException e2) {
+            } catch (ClassNotFoundException e2) {
                 Journeymap.getLogger().debug("Class not found: " + name);
-            }
-            catch (VerifyError v) {
+            } catch (VerifyError v) {
                 throw new Exception("Class detected, but is obsolete: " + v.getMessage());
-            }
-            catch (Throwable t) {
+            } catch (Throwable t) {
                 throw new Exception("Class detected, but produced errors.", t);
             }
         }
         return loaded;
     }
-    
+
     public Collection<Waypoint> load(final Class aClass) throws Exception {
         return getWaypoints();
     }
-    
+
     public long getTTL() {
         return 5000L;
     }

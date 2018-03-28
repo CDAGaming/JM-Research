@@ -1,27 +1,30 @@
 package journeymap.client.ui.fullscreen.layer;
 
-import journeymap.client.render.draw.*;
-import journeymap.client.ui.fullscreen.*;
-import net.minecraft.client.*;
-import journeymap.client.render.map.*;
-import java.awt.geom.*;
-import journeymap.common.*;
-import journeymap.common.log.*;
-import java.util.*;
-import journeymap.client.data.*;
-import journeymap.client.io.*;
-import journeymap.client.model.*;
-import journeymap.client.cartography.*;
-import net.minecraft.util.math.*;
-import journeymap.client.cartography.render.*;
+import journeymap.client.cartography.ChunkRenderController;
+import journeymap.client.cartography.render.BaseRenderer;
+import journeymap.client.data.DataCache;
+import journeymap.client.io.FileHandler;
+import journeymap.client.model.ChunkMD;
+import journeymap.client.model.RegionCoord;
+import journeymap.client.render.draw.DrawStep;
+import journeymap.client.render.map.GridRenderer;
+import journeymap.client.ui.fullscreen.Fullscreen;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 
-public class LayerDelegate
-{
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
+
+public class LayerDelegate {
     long lastClick;
     BlockPos lastBlockPos;
     private List<DrawStep> drawSteps;
     private List<Layer> layers;
-    
+
     public LayerDelegate(final Fullscreen fullscreen) {
         this.lastClick = 0L;
         this.lastBlockPos = null;
@@ -31,7 +34,7 @@ public class LayerDelegate
         this.layers.add(new WaypointLayer());
         this.layers.add(new KeybindingInfoLayer(fullscreen));
     }
-    
+
     public void onMouseMove(final Minecraft mc, final GridRenderer gridRenderer, final Point2D.Double mousePosition, final float fontScale, final boolean isScrolling) {
         if (this.lastBlockPos == null || !isScrolling) {
             this.lastBlockPos = this.getBlockPos(mc, gridRenderer, mousePosition);
@@ -40,13 +43,12 @@ public class LayerDelegate
         for (final Layer layer : this.layers) {
             try {
                 this.drawSteps.addAll(layer.onMouseMove(mc, gridRenderer, mousePosition, this.lastBlockPos, fontScale, isScrolling));
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 Journeymap.getLogger().error(LogFormatter.toString(e));
             }
         }
     }
-    
+
     public void onMouseClicked(final Minecraft mc, final GridRenderer gridRenderer, final Point2D.Double mousePosition, final int button, final float fontScale) {
         this.lastBlockPos = gridRenderer.getBlockAtPixel(mousePosition);
         final long sysTime = Minecraft.getSystemTime();
@@ -60,13 +62,12 @@ public class LayerDelegate
                     break;
                 }
                 continue;
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 Journeymap.getLogger().error(LogFormatter.toString(e));
             }
         }
     }
-    
+
     public BlockPos getBlockPos(final Minecraft mc, final GridRenderer gridRenderer, final Point2D.Double mousePosition) {
         final BlockPos seaLevel = gridRenderer.getBlockAtPixel(mousePosition);
         final ChunkMD chunkMD = DataCache.INSTANCE.getChunkMD(seaLevel);
@@ -82,17 +83,16 @@ public class LayerDelegate
         }
         return seaLevel;
     }
-    
+
     public List<DrawStep> getDrawSteps() {
         return this.drawSteps;
     }
-    
-    public interface Layer
-    {
+
+    public interface Layer {
         List<DrawStep> onMouseMove(final Minecraft p0, final GridRenderer p1, final Point2D.Double p2, final BlockPos p3, final float p4, final boolean p5);
-        
+
         List<DrawStep> onMouseClick(final Minecraft p0, final GridRenderer p1, final Point2D.Double p2, final BlockPos p3, final int p4, final boolean p5, final float p6);
-        
+
         boolean propagateClick();
     }
 }

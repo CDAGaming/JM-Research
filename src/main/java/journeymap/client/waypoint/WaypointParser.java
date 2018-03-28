@@ -1,22 +1,30 @@
 package journeymap.client.waypoint;
 
-import java.util.List;
-import java.util.regex.*;
-import org.apache.commons.lang3.*;
-import journeymap.client.model.*;
-import journeymap.common.*;
-import net.minecraft.util.math.*;
-import java.awt.*;
-import net.minecraftforge.client.event.*;
-import net.minecraft.util.text.event.*;
-import java.util.*;
+import journeymap.client.model.Waypoint;
+import journeymap.common.Journeymap;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.*;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.HoverEvent;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import org.apache.commons.lang3.StringUtils;
 
-public class WaypointParser
-{
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
+import java.util.regex.Pattern;
+
+public class WaypointParser {
     public static String[] QUOTES;
     public static Pattern PATTERN;
-    
+
+    static {
+        WaypointParser.QUOTES = new String[]{"'", "\""};
+        WaypointParser.PATTERN = Pattern.compile("(\\w+\\s*:\\s*-?[\\w\\d\\s'\"]+,\\s*)+(\\w+\\s*:\\s*-?[\\w\\d\\s'\"]+)", 2);
+    }
+
     public static List<String> getWaypointStrings(final String line) {
         List<String> list = null;
         final String[] candidates = StringUtils.substringsBetween(line, "[", "]");
@@ -32,7 +40,7 @@ public class WaypointParser
         }
         return list;
     }
-    
+
     public static List<Waypoint> getWaypoints(final String line) {
         List<Waypoint> list = null;
         final String[] candidates = StringUtils.substringsBetween(line, "[", "]");
@@ -51,7 +59,7 @@ public class WaypointParser
         }
         return list;
     }
-    
+
     public static Waypoint parse(final String original) {
         String[] quotedVals = null;
         String raw = original.replaceAll("[\\[\\]]", "");
@@ -80,21 +88,16 @@ public class WaypointParser
                     try {
                         if ("x".equals(key)) {
                             x = Integer.parseInt(val2);
-                        }
-                        else if ("y".equals(key)) {
+                        } else if ("y".equals(key)) {
                             y = Math.max(0, Math.min(255, Integer.parseInt(val2)));
-                        }
-                        else if ("z".equals(key)) {
+                        } else if ("z".equals(key)) {
                             z = Integer.parseInt(val2);
-                        }
-                        else if ("dim".equals(key)) {
+                        } else if ("dim".equals(key)) {
                             dim = Integer.parseInt(val2);
-                        }
-                        else if ("name".equals(key)) {
+                        } else if ("name".equals(key)) {
                             name = val2;
                         }
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         Journeymap.getLogger().warn("Bad format in waypoint text part: " + part + ": " + e);
                     }
                 }
@@ -111,29 +114,28 @@ public class WaypointParser
                 name = String.format("%s,%s", x, z);
             }
             final Random r = new Random();
-            final Waypoint waypoint = new Waypoint(name, new BlockPos((int)x, (int)y, (int)z), new Color(r.nextInt(255), r.nextInt(255), r.nextInt(255)), Waypoint.Type.Normal, dim);
+            final Waypoint waypoint = new Waypoint(name, new BlockPos((int) x, (int) y, (int) z), new Color(r.nextInt(255), r.nextInt(255), r.nextInt(255)), Waypoint.Type.Normal, dim);
             return waypoint;
         }
         return null;
     }
-    
+
     public static void parseChatForWaypoints(final ClientChatReceivedEvent event, final String unformattedText) {
         final List<String> matches = getWaypointStrings(unformattedText);
         if (matches != null) {
             boolean changed = false;
             if (event.getMessage() instanceof TextComponentTranslation) {
-                final Object[] formatArgs = ((TextComponentTranslation)event.getMessage()).getFormatArgs();
+                final Object[] formatArgs = ((TextComponentTranslation) event.getMessage()).getFormatArgs();
                 for (int i = 0; i < formatArgs.length && !matches.isEmpty(); ++i) {
                     if (formatArgs[i] instanceof ITextComponent) {
-                        final ITextComponent arg = (ITextComponent)formatArgs[i];
+                        final ITextComponent arg = (ITextComponent) formatArgs[i];
                         final ITextComponent result = addWaypointMarkup(arg.getUnformattedText(), matches);
                         if (result != null) {
                             formatArgs[i] = result;
                             changed = true;
                         }
-                    }
-                    else if (formatArgs[i] instanceof String) {
-                        final String arg2 = (String)formatArgs[i];
+                    } else if (formatArgs[i] instanceof String) {
+                        final String arg2 = (String) formatArgs[i];
                         final ITextComponent result = addWaypointMarkup(arg2, matches);
                         if (result != null) {
                             formatArgs[i] = result;
@@ -142,17 +144,15 @@ public class WaypointParser
                     }
                 }
                 if (changed) {
-                    event.setMessage((ITextComponent)new TextComponentTranslation(((TextComponentTranslation)event.getMessage()).getKey(), formatArgs));
+                    event.setMessage((ITextComponent) new TextComponentTranslation(((TextComponentTranslation) event.getMessage()).getKey(), formatArgs));
                 }
-            }
-            else if (event.getMessage() instanceof TextComponentString) {
+            } else if (event.getMessage() instanceof TextComponentString) {
                 final ITextComponent result2 = addWaypointMarkup(event.getMessage().getUnformattedText(), matches);
                 if (result2 != null) {
                     event.setMessage(result2);
                     changed = true;
                 }
-            }
-            else {
+            } else {
                 Journeymap.getLogger().warn("No implementation for handling waypoints in ITextComponent " + event.getMessage().getClass());
             }
             if (!changed) {
@@ -160,7 +160,7 @@ public class WaypointParser
             }
         }
     }
-    
+
     private static ITextComponent addWaypointMarkup(final String text, final List<String> matches) {
         final List<ITextComponent> newParts = new ArrayList<ITextComponent>();
         int index = 0;
@@ -171,7 +171,7 @@ public class WaypointParser
             if (text.contains(match)) {
                 final int start = text.indexOf(match);
                 if (start > index) {
-                    newParts.add((ITextComponent)new TextComponentString(text.substring(index, start)));
+                    newParts.add((ITextComponent) new TextComponentString(text.substring(index, start)));
                 }
                 matched = true;
                 final TextComponentString clickable = new TextComponentString(match);
@@ -181,10 +181,10 @@ public class WaypointParser
                 hover.getStyle().setColor(TextFormatting.YELLOW);
                 final TextComponentString hover2 = new TextComponentString("Click to create Waypoint.\nCtrl+Click to view on map.");
                 hover2.getStyle().setColor(TextFormatting.AQUA);
-                hover.appendSibling((ITextComponent)hover2);
-                chatStyle.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, (ITextComponent)hover));
+                hover.appendSibling((ITextComponent) hover2);
+                chatStyle.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, (ITextComponent) hover));
                 chatStyle.setColor(TextFormatting.AQUA);
-                newParts.add((ITextComponent)clickable);
+                newParts.add((ITextComponent) clickable);
                 index = start + match.length();
                 iterator.remove();
             }
@@ -193,20 +193,15 @@ public class WaypointParser
             return null;
         }
         if (index < text.length() - 1) {
-            newParts.add((ITextComponent)new TextComponentString(text.substring(index, text.length())));
+            newParts.add((ITextComponent) new TextComponentString(text.substring(index, text.length())));
         }
         if (!newParts.isEmpty()) {
             final TextComponentString replacement = new TextComponentString("");
             for (final ITextComponent sib : newParts) {
                 replacement.appendSibling(sib);
             }
-            return (ITextComponent)replacement;
+            return (ITextComponent) replacement;
         }
         return null;
-    }
-    
-    static {
-        WaypointParser.QUOTES = new String[] { "'", "\"" };
-        WaypointParser.PATTERN = Pattern.compile("(\\w+\\s*:\\s*-?[\\w\\d\\s'\"]+,\\s*)+(\\w+\\s*:\\s*-?[\\w\\d\\s'\"]+)", 2);
     }
 }

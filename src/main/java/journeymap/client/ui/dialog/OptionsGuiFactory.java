@@ -1,23 +1,23 @@
 package journeymap.client.ui.dialog;
 
-import net.minecraftforge.fml.client.*;
-import net.minecraft.client.*;
-import net.minecraft.client.gui.*;
-import java.util.*;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraftforge.fml.client.IModGuiFactory;
 
-public class OptionsGuiFactory implements IModGuiFactory
-{
+import java.util.Set;
+
+public class OptionsGuiFactory implements IModGuiFactory {
     public void initialize(final Minecraft minecraftInstance) {
     }
-    
+
     public boolean hasConfigGui() {
         return false;
     }
-    
+
     public GuiScreen createConfigGui(final GuiScreen parentScreen) {
         return null;
     }
-    
+
     public Set<IModGuiFactory.RuntimeOptionCategoryElement> runtimeGuiCategories() {
         return null;
     }

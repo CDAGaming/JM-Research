@@ -1,38 +1,39 @@
 package journeymap.client.service;
 
-import net.minecraftforge.fml.client.*;
-import journeymap.common.*;
-import java.util.*;
-import journeymap.client.model.*;
-import journeymap.client.data.*;
-import journeymap.client.io.*;
-import net.minecraft.util.math.*;
-import java.awt.image.*;
-import org.apache.logging.log4j.*;
-import se.rupy.http.*;
-import net.minecraft.client.*;
-import net.minecraft.world.*;
-import java.io.*;
+import journeymap.client.data.WorldData;
+import journeymap.client.io.FileHandler;
+import journeymap.client.io.RegionImageHandler;
+import journeymap.client.model.MapType;
+import journeymap.common.Journeymap;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import org.apache.logging.log4j.Level;
+import se.rupy.http.Event;
+import se.rupy.http.Query;
 
-public class TileService extends FileService
-{
+import java.awt.image.BufferedImage;
+import java.io.File;
+
+public class TileService extends FileService {
     public static final String CALLBACK_PARAM = "callback";
     public static final String CHARACTER_ENCODING = "UTF-8";
     private static final long serialVersionUID = 4412225358529161454L;
     private byte[] blankImage;
-    
+
     @Override
     public String path() {
         return "/tile";
     }
-    
+
     @Override
     public void filter(final Event event) throws Event, Exception {
         final long start = System.currentTimeMillis();
         final Query query = event.query();
         query.parse();
         final Minecraft minecraft = FMLClientHandler.instance().getClient();
-        final World world = (World)minecraft.world;
+        final World world = (World) minecraft.world;
         if (world == null) {
             this.throwEventException(503, "World not connected", event, false);
         }
@@ -46,15 +47,14 @@ public class TileService extends FileService
         try {
             final int zoom = this.getParameter(query, "zoom", Integer.valueOf(0));
             final int x = this.getParameter(query, "x", Integer.valueOf(0));
-            Integer vSlice = this.getParameter(query, "depth", (Integer)null);
+            Integer vSlice = this.getParameter(query, "depth", (Integer) null);
             final int z = this.getParameter(query, "z", Integer.valueOf(0));
             final int dimension = this.getParameter(query, "dim", Integer.valueOf(0));
             final String mapTypeString = this.getParameter(query, "mapType", MapType.Name.day.name());
             MapType.Name mapTypeName = null;
             try {
                 mapTypeName = MapType.Name.valueOf(mapTypeString);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 final String error = "Bad request: mapType=" + mapTypeString;
                 this.throwEventException(400, error, event, true);
             }
@@ -64,9 +64,8 @@ public class TileService extends FileService
             if (mapTypeName == MapType.Name.underground && WorldData.isHardcoreAndMultiplayer()) {
                 ResponseHeader.on(event).contentType(ContentType.png).noCache();
                 this.serveFile(RegionImageHandler.getBlank512x512ImageFile(), event);
-            }
-            else {
-                final int scale = (int)Math.pow(2.0, zoom);
+            } else {
+                final int scale = (int) Math.pow(2.0, zoom);
                 final int distance = 32 / scale;
                 final int minChunkX = x * distance;
                 final int minChunkZ = z * distance;
@@ -84,8 +83,7 @@ public class TileService extends FileService
             if (Journeymap.getLogger().isEnabled(Level.DEBUG)) {
                 Journeymap.getLogger().debug(stop - start + "ms to serve tile");
             }
-        }
-        catch (NumberFormatException e2) {
+        } catch (NumberFormatException e2) {
             this.reportMalformedRequest(event);
         }
     }

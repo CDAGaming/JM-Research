@@ -1,19 +1,20 @@
 package journeymap.client.data;
 
-import com.google.common.cache.*;
-import net.minecraft.client.*;
-import net.minecraft.entity.player.*;
-import net.minecraft.world.*;
-import net.minecraft.util.math.*;
-import journeymap.client.model.*;
-import net.minecraftforge.fml.client.*;
-import net.minecraft.entity.*;
-import journeymap.client.log.*;
-import net.minecraft.world.biome.*;
-import journeymap.common.*;
+import com.google.common.cache.CacheLoader;
+import journeymap.client.log.JMLogger;
+import journeymap.client.model.ChunkMD;
+import journeymap.client.model.EntityDTO;
+import journeymap.common.Journeymap;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.WorldProviderHell;
+import net.minecraft.world.biome.Biome;
+import net.minecraftforge.fml.client.FMLClientHandler;
 
-public class PlayerData extends CacheLoader<Class, EntityDTO>
-{
+public class PlayerData extends CacheLoader<Class, EntityDTO> {
     public static boolean playerIsUnderground(final Minecraft mc, final EntityPlayer player) {
         if (player.getEntityWorld().provider instanceof WorldProviderHell) {
             return true;
@@ -27,7 +28,7 @@ public class PlayerData extends CacheLoader<Class, EntityDTO>
             return true;
         }
         int y = posY;
-    Label_0157:
+        Label_0157:
         for (int x = posX - 1; x <= posX + 1; ++x) {
             for (int z = posZ - 1; z <= posZ + 1; ++z) {
                 y = posY + 1;
@@ -40,17 +41,17 @@ public class PlayerData extends CacheLoader<Class, EntityDTO>
         }
         return isUnderground;
     }
-    
+
     public EntityDTO load(final Class aClass) throws Exception {
         final Minecraft mc = FMLClientHandler.instance().getClient();
-        final EntityPlayer player = (EntityPlayer)mc.player;
-        final EntityDTO dto = DataCache.INSTANCE.getEntityDTO((EntityLivingBase)player);
-        dto.update((EntityLivingBase)player, false);
+        final EntityPlayer player = (EntityPlayer) mc.player;
+        final EntityDTO dto = DataCache.INSTANCE.getEntityDTO((EntityLivingBase) player);
+        dto.update((EntityLivingBase) player, false);
         dto.biome = this.getPlayerBiome(player);
         dto.underground = playerIsUnderground(mc, player);
         return dto;
     }
-    
+
     private String getPlayerBiome(final EntityPlayer player) {
         if (player != null) {
             try {
@@ -58,14 +59,13 @@ public class PlayerData extends CacheLoader<Class, EntityDTO>
                 if (biome != null) {
                     return biome.getBiomeName();
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 JMLogger.logOnce("Couldn't get player biome: " + e.getMessage(), e);
             }
         }
         return "?";
     }
-    
+
     public long getTTL() {
         return Journeymap.getClient().getCoreProperties().cachePlayerData.get();
     }

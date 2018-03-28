@@ -1,13 +1,19 @@
 package journeymap.common.log;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 
-public class LogFormatter
-{
+public class LogFormatter {
     public static final String LINEBREAK;
     private static int OutOfMemoryWarnings;
     private static int LinkageErrorWarnings;
-    
+
+    static {
+        LINEBREAK = System.getProperty("line.separator");
+        LogFormatter.OutOfMemoryWarnings = 0;
+        LogFormatter.LinkageErrorWarnings = 0;
+    }
+
     public static String toString(final Throwable thrown) {
         checkErrors(thrown);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -16,7 +22,7 @@ public class LogFormatter
         ps.flush();
         return baos.toString();
     }
-    
+
     private static void checkErrors(Throwable thrown) {
         int maxRecursion = 5;
         if (thrown != null && LogFormatter.OutOfMemoryWarnings < 5 && LogFormatter.LinkageErrorWarnings < 5) {
@@ -37,12 +43,12 @@ public class LogFormatter
                 if (!(thrown instanceof Exception)) {
                     continue;
                 }
-                thrown = ((Exception)thrown).getCause();
+                thrown = ((Exception) thrown).getCause();
                 --maxRecursion;
             }
         }
     }
-    
+
     public static String toPartialString(final Throwable t) {
         final StringBuilder sb = new StringBuilder(t.toString());
         final StackTraceElement caller = Thread.currentThread().getStackTrace()[2];
@@ -53,11 +59,5 @@ public class LogFormatter
             }
         }
         return sb.toString();
-    }
-    
-    static {
-        LINEBREAK = System.getProperty("line.separator");
-        LogFormatter.OutOfMemoryWarnings = 0;
-        LogFormatter.LinkageErrorWarnings = 0;
     }
 }

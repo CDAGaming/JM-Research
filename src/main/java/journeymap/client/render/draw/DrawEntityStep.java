@@ -1,24 +1,31 @@
 package journeymap.client.render.draw;
 
-import net.minecraft.client.*;
-import journeymap.client.render.texture.*;
-import java.lang.ref.*;
-import net.minecraft.entity.*;
-import java.awt.geom.*;
-import journeymap.common.*;
-import journeymap.client.ui.minimap.*;
-import journeymap.client.data.*;
-import net.minecraft.entity.player.*;
-import net.minecraft.scoreboard.*;
-import journeymap.client.render.map.*;
-import com.google.common.cache.*;
+import com.google.common.cache.CacheLoader;
+import journeymap.client.data.DataCache;
+import journeymap.client.render.map.GridRenderer;
+import journeymap.client.render.texture.TextureImpl;
+import journeymap.client.ui.minimap.EntityDisplay;
+import journeymap.common.Journeymap;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.scoreboard.ScorePlayerTeam;
+import net.minecraft.scoreboard.Team;
 
-public class DrawEntityStep implements DrawStep
-{
+import java.awt.geom.Point2D;
+import java.lang.ref.WeakReference;
+
+public class DrawEntityStep implements DrawStep {
     static final Integer labelBg;
     static final int labelBgAlpha = 180;
     static final Integer labelFg;
     static final int labelFgAlpha = 225;
+
+    static {
+        labelBg = 0;
+        labelFg = 16777215;
+    }
+
     boolean useDots;
     int elevationOffset;
     int color;
@@ -33,7 +40,7 @@ public class DrawEntityStep implements DrawStep
     String playerTeamName;
     Point2D screenPosition;
     float drawScale;
-    
+
     private DrawEntityStep(final EntityLivingBase entityLiving) {
         this.showHeading = true;
         this.showName = true;
@@ -42,7 +49,7 @@ public class DrawEntityStep implements DrawStep
         this.entityLivingRef = new WeakReference<EntityLivingBase>(entityLiving);
         this.hideSneaks = Journeymap.getClient().getCoreProperties().hideSneakingEntities.get();
     }
-    
+
     public void update(final EntityDisplay entityDisplay, final TextureImpl locatorTexture, final TextureImpl entityTexture, final int color, final boolean showHeading, final boolean showName) {
         final EntityLivingBase entityLiving = this.entityLivingRef.get();
         if (showName && entityLiving != null) {
@@ -59,13 +66,12 @@ public class DrawEntityStep implements DrawStep
             final Team team = entityLiving.getTeam();
             if (team != null) {
                 this.playerTeamName = ScorePlayerTeam.formatPlayerName(entityLiving.getTeam(), entityLiving.getName());
-            }
-            else {
+            } else {
                 this.playerTeamName = null;
             }
         }
     }
-    
+
     @Override
     public void draw(final Pass pass, final double xOffset, final double yOffset, final GridRenderer gridRenderer, final double fontScale, final double rotation) {
         if (pass == Pass.Tooltip) {
@@ -73,7 +79,7 @@ public class DrawEntityStep implements DrawStep
         }
         final EntityLivingBase entityLiving = this.entityLivingRef.get();
         if (pass == Pass.Object) {
-            if (entityLiving == null || entityLiving.isDead || entityLiving.isInvisibleToPlayer((EntityPlayer)this.minecraft.player) || !entityLiving.addedToChunk || (this.hideSneaks && entityLiving.isSneaking())) {
+            if (entityLiving == null || entityLiving.isDead || entityLiving.isInvisibleToPlayer((EntityPlayer) this.minecraft.player) || !entityLiving.addedToChunk || (this.hideSneaks && entityLiving.isSneaking())) {
                 this.screenPosition = null;
                 return;
             }
@@ -85,17 +91,16 @@ public class DrawEntityStep implements DrawStep
             final double drawY = this.screenPosition.getY() + yOffset;
             float alpha = 1.0f;
             if (entityLiving.posY > this.minecraft.player.posY) {
-                alpha = 1.0f - Math.max(0.1f, (float)((entityLiving.posY - this.minecraft.player.posY) / 32.0));
+                alpha = 1.0f - Math.max(0.1f, (float) ((entityLiving.posY - this.minecraft.player.posY) / 32.0));
             }
             if (entityLiving instanceof EntityPlayer) {
                 this.drawPlayer(pass, drawX, drawY, gridRenderer, alpha, heading, fontScale, rotation);
-            }
-            else {
+            } else {
                 this.drawCreature(pass, drawX, drawY, gridRenderer, alpha, heading, fontScale, rotation);
             }
         }
     }
-    
+
     private void drawPlayer(final Pass pass, final double drawX, final double drawY, final GridRenderer gridRenderer, final float alpha, final double heading, final double fontScale, final double rotation) {
         final EntityLivingBase entityLiving = this.entityLivingRef.get();
         if (entityLiving == null) {
@@ -108,29 +113,27 @@ public class DrawEntityStep implements DrawStep
             if (this.entityTexture != null) {
                 if (this.useDots) {
                     boolean flip = false;
-                    this.elevationOffset = (int)(DataCache.getPlayer().posY - entityLiving.posY);
+                    this.elevationOffset = (int) (DataCache.getPlayer().posY - entityLiving.posY);
                     if (this.elevationOffset < -1 || this.elevationOffset > 1) {
                         flip = (this.elevationOffset < -1);
                         DrawUtil.drawColoredEntity(drawX, drawY, this.entityTexture, this.color, alpha, this.drawScale, flip ? (-rotation + 180.0) : (-rotation));
                     }
-                }
-                else {
+                } else {
                     DrawUtil.drawColoredEntity(drawX, drawY, this.entityTexture, this.color, alpha, this.drawScale, -rotation);
                 }
             }
         }
         if (pass == Pass.Text) {
             final int labelOffset = (this.entityTexture == null) ? 0 : ((rotation == 0.0) ? (-this.entityTexture.getHeight() / 2) : (this.entityTexture.getHeight() / 2));
-            final Point2D labelPoint = gridRenderer.shiftWindowPosition((int)drawX, (int)drawY, 0, -labelOffset);
+            final Point2D labelPoint = gridRenderer.shiftWindowPosition((int) drawX, (int) drawY, 0, -labelOffset);
             if (this.playerTeamName != null) {
                 DrawUtil.drawLabel(this.playerTeamName, labelPoint.getX(), labelPoint.getY(), DrawUtil.HAlign.Center, DrawUtil.VAlign.Below, 0, 0.8f, 16777215, 1.0f, fontScale, false, rotation);
-            }
-            else {
+            } else {
                 DrawUtil.drawLabel(entityLiving.getName(), labelPoint.getX(), labelPoint.getY(), DrawUtil.HAlign.Center, DrawUtil.VAlign.Below, 0, 0.8f, 65280, 1.0f, fontScale, false, rotation);
             }
         }
     }
-    
+
     private void drawCreature(final Pass pass, final double drawX, final double drawY, final GridRenderer gridRenderer, final float alpha, final double heading, final double fontScale, final double rotation) {
         final EntityLivingBase entityLiving = this.entityLivingRef.get();
         if (entityLiving == null) {
@@ -147,35 +150,28 @@ public class DrawEntityStep implements DrawStep
         if (pass == Pass.Object && this.entityTexture != null) {
             if (this.useDots) {
                 boolean flip = false;
-                this.elevationOffset = (int)(DataCache.getPlayer().posY - entityLiving.posY);
+                this.elevationOffset = (int) (DataCache.getPlayer().posY - entityLiving.posY);
                 if (this.elevationOffset < -1 || this.elevationOffset > 1) {
                     flip = (this.elevationOffset < -1);
                     DrawUtil.drawColoredEntity(drawX, drawY, this.entityTexture, this.color, alpha, this.drawScale, flip ? (-rotation + 180.0) : (-rotation));
                 }
-            }
-            else {
+            } else {
                 DrawUtil.drawEntity(drawX, drawY, -rotation, this.entityTexture, alpha, this.drawScale, 0.0);
             }
         }
     }
-    
+
     @Override
     public int getDisplayOrder() {
         return (this.customName != null) ? 1 : 0;
     }
-    
+
     @Override
     public String getModId() {
         return "journeymap";
     }
-    
-    static {
-        labelBg = 0;
-        labelFg = 16777215;
-    }
-    
-    public static class SimpleCacheLoader extends CacheLoader<EntityLivingBase, DrawEntityStep>
-    {
+
+    public static class SimpleCacheLoader extends CacheLoader<EntityLivingBase, DrawEntityStep> {
         public DrawEntityStep load(final EntityLivingBase entityLiving) throws Exception {
             return new DrawEntityStep(entityLiving);
         }

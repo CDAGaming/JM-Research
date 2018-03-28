@@ -1,21 +1,23 @@
 package journeymap.client.service;
 
-import se.rupy.http.*;
-import journeymap.common.log.*;
-import journeymap.client.data.*;
-import journeymap.client.log.*;
-import com.google.common.io.*;
-import java.io.*;
+import com.google.common.io.CharStreams;
+import journeymap.client.data.DataCache;
+import journeymap.client.log.JMLogger;
+import journeymap.client.log.StatTimer;
+import journeymap.common.log.LogFormatter;
+import se.rupy.http.Event;
 
-public class DebugService extends FileService
-{
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+public class DebugService extends FileService {
     private static final long serialVersionUID = 1L;
-    
+
     @Override
     public String path() {
         return "/debug";
     }
-    
+
     @Override
     public void filter(final Event event) throws Event, Exception {
         ResponseHeader.on(event).contentType(ContentType.html).noCache();
@@ -30,10 +32,9 @@ public class DebugService extends FileService
         String debug = null;
         final InputStream debugHtmlStream = this.getStream("/debug.html", null);
         if (debugHtmlStream != null) {
-            final String debugHtml = CharStreams.toString((Readable)new InputStreamReader(debugHtmlStream, "UTF-8"));
+            final String debugHtml = CharStreams.toString((Readable) new InputStreamReader(debugHtmlStream, "UTF-8"));
             debug = debugHtml.replace("<output/>", sb.toString());
-        }
-        else {
+        } else {
             debug = sb.toString();
         }
         this.gzipResponse(event, debug);

@@ -1,19 +1,25 @@
 package journeymap.client.render.texture;
 
-import net.minecraft.util.*;
-import journeymap.common.*;
-import java.net.*;
-import net.minecraft.client.*;
-import javax.imageio.*;
-import journeymap.client.io.*;
-import java.awt.image.*;
-import java.awt.*;
+import journeymap.client.io.RegionImageHandler;
+import journeymap.common.Journeymap;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.StringUtils;
 
-public class IgnSkin
-{
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+public class IgnSkin {
     private static String SKINS;
     private static String DEFAULT;
-    
+
+    static {
+        IgnSkin.SKINS = "http://skins.minecraft.net/MinecraftSkins/%s.png";
+        IgnSkin.DEFAULT = "Herobrine";
+    }
+
     public static BufferedImage downloadSkin(final String username) {
         BufferedImage img = null;
         final HttpURLConnection conn = null;
@@ -24,18 +30,17 @@ public class IgnSkin
                 skinPath = String.format(IgnSkin.SKINS, IgnSkin.DEFAULT);
                 img = downloadImage(new URL(skinPath));
             }
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             Journeymap.getLogger().warn("Error getting skin image for " + username + ": " + e.getMessage());
         }
         return img;
     }
-    
+
     private static BufferedImage downloadImage(final URL imageURL) {
         BufferedImage img = null;
         HttpURLConnection conn = null;
         try {
-            conn = (HttpURLConnection)imageURL.openConnection(Minecraft.getMinecraft().getProxy());
+            conn = (HttpURLConnection) imageURL.openConnection(Minecraft.getMinecraft().getProxy());
             HttpURLConnection.setFollowRedirects(true);
             conn.setInstanceFollowRedirects(true);
             conn.setDoInput(true);
@@ -54,24 +59,16 @@ public class IgnSkin
                 final Graphics2D g = RegionImageHandler.initRenderingHints(img.createGraphics());
                 g.drawImage(face, 0, 0, 24, 24, null);
                 g.dispose();
-            }
-            else {
+            } else {
                 Journeymap.getLogger().debug("Bad Response getting image: " + imageURL + " : " + conn.getResponseCode());
             }
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             Journeymap.getLogger().error("Error getting skin image: " + imageURL + " : " + e.getMessage());
-        }
-        finally {
+        } finally {
             if (conn != null) {
                 conn.disconnect();
             }
         }
         return img;
-    }
-    
-    static {
-        IgnSkin.SKINS = "http://skins.minecraft.net/MinecraftSkins/%s.png";
-        IgnSkin.DEFAULT = "Herobrine";
     }
 }

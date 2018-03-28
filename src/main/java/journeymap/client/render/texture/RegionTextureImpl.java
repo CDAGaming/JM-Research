@@ -1,29 +1,29 @@
 package journeymap.client.render.texture;
 
-import net.minecraft.util.math.*;
-import java.awt.image.*;
-import net.minecraft.client.renderer.texture.*;
-import journeymap.client.task.multi.*;
-import net.minecraft.client.renderer.*;
-import org.lwjgl.opengl.*;
-import java.nio.*;
-import journeymap.common.*;
-import java.util.*;
+import journeymap.client.task.multi.MapPlayerTask;
+import journeymap.common.Journeymap;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.texture.TextureUtil;
+import net.minecraft.util.math.ChunkPos;
+import org.lwjgl.opengl.GL11;
 
-public class RegionTextureImpl extends TextureImpl
-{
+import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
+import java.util.HashSet;
+import java.util.Set;
+
+public class RegionTextureImpl extends TextureImpl {
     protected HashSet<ChunkPos> dirtyChunks;
-    
+
     public RegionTextureImpl(final BufferedImage image) {
         super(null, image, true, false);
         this.dirtyChunks = new HashSet<ChunkPos>();
     }
-    
+
     public void setImage(final BufferedImage bufferedImage, final boolean retainImage, final HashSet<ChunkPos> updatedChunks) {
         if (updatedChunks.size() > 15) {
             super.setImage(bufferedImage, retainImage);
-        }
-        else {
+        } else {
             this.dirtyChunks.addAll(updatedChunks);
             this.bindNeeded = true;
             try {
@@ -34,15 +34,14 @@ public class RegionTextureImpl extends TextureImpl
                 }
                 this.width = bufferedImage.getWidth();
                 this.height = bufferedImage.getHeight();
-            }
-            finally {
+            } finally {
                 this.bufferLock.unlock();
             }
         }
         this.lastImageUpdate = System.currentTimeMillis();
         this.notifyListeners();
     }
-    
+
     @Override
     public void bindTexture() {
         if (!this.bindNeeded) {
@@ -81,22 +80,19 @@ public class RegionTextureImpl extends TextureImpl
                 this.dirtyChunks.clear();
                 if (glErrors) {
                     this.bindNeeded = true;
-                }
-                else {
+                } else {
                     this.bindNeeded = false;
                     this.lastBound = System.currentTimeMillis();
                 }
-            }
-            catch (Throwable t) {
+            } catch (Throwable t) {
                 Journeymap.getLogger().warn("Can't bind texture: " + t);
                 this.buffer = null;
-            }
-            finally {
+            } finally {
                 this.bufferLock.unlock();
             }
         }
     }
-    
+
     public Set<ChunkPos> getDirtyAreas() {
         return this.dirtyChunks;
     }
