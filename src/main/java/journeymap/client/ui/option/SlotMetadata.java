@@ -33,7 +33,7 @@ public class SlotMetadata<T> implements Comparable<SlotMetadata>
     }
     
     public SlotMetadata(final Button button, final boolean advanced) {
-        this(button, button.field_146126_j, button.getUnformattedTooltip(), null, null, advanced);
+        this(button, button.displayString, button.getUnformattedTooltip(), null, null, advanced);
     }
     
     public SlotMetadata(final Button button, final String name, final String tooltip, final boolean advanced) {
@@ -136,15 +136,15 @@ public class SlotMetadata<T> implements Comparable<SlotMetadata>
     
     public void updateFromButton() {
         if (this.button != null) {
-            this.name = this.button.field_146126_j;
+            this.name = this.button.displayString;
             this.tooltip = this.button.getUnformattedTooltip();
             this.tooltipLines = null;
         }
     }
     
     public String[] getTooltip() {
-        final FontRenderer fontRenderer = FMLClientHandler.instance().getClient().field_71466_p;
-        final String bidiColor = fontRenderer.func_78260_a() ? "%2$s%1$s" : "%1$s%2$s";
+        final FontRenderer fontRenderer = FMLClientHandler.instance().getClient().fontRenderer;
+        final String bidiColor = fontRenderer.getBidiFlag() ? "%2$s%1$s" : "%1$s%2$s";
         if (this.tooltipLines == null) {
             final ArrayList<TextComponentTranslation> lines = new ArrayList<TextComponentTranslation>(4);
             if (this.tooltip != null || this.range != null || this.defaultValue != null || this.advanced) {
@@ -163,7 +163,7 @@ public class SlotMetadata<T> implements Comparable<SlotMetadata>
             if (!lines.isEmpty()) {
                 final ArrayList<String> stringLines = new ArrayList<String>();
                 for (final TextComponentTranslation line : lines) {
-                    stringLines.add(line.func_150260_c().trim());
+                    stringLines.add(line.getUnformattedText().trim());
                 }
                 this.tooltipLines = stringLines.toArray(new String[stringLines.size()]);
             }
@@ -172,10 +172,10 @@ public class SlotMetadata<T> implements Comparable<SlotMetadata>
     }
     
     protected List<TextComponentTranslation> getWordWrappedLines(final String color, final String original) {
-        final FontRenderer fontRenderer = FMLClientHandler.instance().getClient().field_71466_p;
+        final FontRenderer fontRenderer = FMLClientHandler.instance().getClient().fontRenderer;
         final List<TextComponentTranslation> list = new ArrayList<TextComponentTranslation>();
-        final int max = fontRenderer.func_78260_a() ? 170 : 250;
-        for (final Object line : fontRenderer.func_78271_c(original, max)) {
+        final int max = fontRenderer.getBidiFlag() ? 170 : 250;
+        for (final Object line : fontRenderer.listFormattedStringToWidth(original, max)) {
             list.add(new TextComponentTranslation("jm.config.tooltip_format", new Object[] { color, line }));
         }
         return list;

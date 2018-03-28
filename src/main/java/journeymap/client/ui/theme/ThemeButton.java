@@ -66,7 +66,7 @@ public class ThemeButton extends BooleanPropertyButton
             this.textureDisabled = null;
         }
         this.textureIcon = TextureCache.getThemeTexture(theme, String.format("icon/%s.png", this.iconName));
-        this.func_175211_a(this.buttonSpec.width);
+        this.setWidth(this.buttonSpec.width);
         this.setHeight(this.buttonSpec.height);
         this.setToggled(false, false);
     }
@@ -115,11 +115,11 @@ public class ThemeButton extends BooleanPropertyButton
     }
     
     @Override
-    public void func_191745_a(final Minecraft minecraft, final int mouseX, final int mouseY, final float ticks) {
+    public void drawButton(final Minecraft minecraft, final int mouseX, final int mouseY, final float ticks) {
         if (!this.isVisible()) {
             return;
         }
-        final boolean hover = mouseX >= this.x && mouseY >= this.field_146129_i && mouseX < this.x + this.field_146120_f && mouseY < this.field_146129_i + this.field_146121_g;
+        final boolean hover = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
         this.setMouseOver(hover);
         final int hoverState = this.getHoverState(hover);
         final boolean isMouseOver = hoverState == 2;
@@ -150,14 +150,14 @@ public class ThemeButton extends BooleanPropertyButton
     
     public void drawNativeButton(final Minecraft minecraft, final int mouseX, final int mouseY) {
         final int magic = 20;
-        minecraft.func_110434_K().func_110577_a(ThemeButton.field_146122_a);
-        GlStateManager.func_179131_c(1.0f, 1.0f, 1.0f, 1.0f);
-        final int k = this.func_146114_a(this.func_146115_a());
-        GlStateManager.func_179147_l();
-        GlStateManager.func_179112_b(770, 771);
-        this.func_73729_b(this.x, this.field_146129_i, 0, 46 + k * magic, this.field_146120_f / 2, this.field_146121_g);
-        this.func_73729_b(this.x + this.field_146120_f / 2, this.field_146129_i, 200 - this.field_146120_f / 2, 46 + k * magic, this.field_146120_f / 2, this.field_146121_g);
-        this.func_146119_b(minecraft, mouseX, mouseY);
+        minecraft.getTextureManager().bindTexture(ThemeButton.BUTTON_TEXTURES);
+        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
+        final int k = this.getHoverState(this.isMouseOver());
+        GlStateManager.enableBlend();
+        GlStateManager.blendFunc(770, 771);
+        this.drawTexturedModalRect(this.x, this.y, 0, 46 + k * magic, this.width / 2, this.height);
+        this.drawTexturedModalRect(this.x + this.width / 2, this.y, 200 - this.width / 2, 46 + k * magic, this.width / 2, this.height);
+        this.mouseDragged(minecraft, mouseX, mouseY);
         final int l = 14737632;
     }
     
@@ -167,7 +167,7 @@ public class ThemeButton extends BooleanPropertyButton
     
     @Override
     public List<String> getTooltip() {
-        if (!this.field_146125_m) {
+        if (!this.visible) {
             return null;
         }
         final List<String> list = super.getTooltip();
@@ -178,7 +178,7 @@ public class ThemeButton extends BooleanPropertyButton
         else {
             style = (this.toggled ? this.buttonSpec.tooltipOnStyle : this.buttonSpec.tooltipOffStyle);
         }
-        list.add(0, style + this.field_146126_j);
+        list.add(0, style + this.displayString);
         if (this.additionalTooltips != null) {
             list.addAll(this.additionalTooltips);
         }

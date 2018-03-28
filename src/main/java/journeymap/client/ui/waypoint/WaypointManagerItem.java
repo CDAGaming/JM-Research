@@ -73,7 +73,7 @@ public class WaypointManagerItem implements ScrollListPane.ISlot
         (this.buttonChat = new Button(Constants.getString("jm.waypoint.chat"))).setTooltip(Constants.getString("jm.waypoint.chat.tooltip"));
         (this.buttonListRight = new ButtonList(new Button[] { this.buttonChat, this.buttonEdit, this.buttonRemove })).setHeights(manager.rowHeight);
         this.buttonListRight.fitWidths(fontRenderer);
-        this.internalWidth = fontRenderer.func_78263_a('X') * 32;
+        this.internalWidth = fontRenderer.getCharWidth('X') * 32;
         this.internalWidth += Math.max(manager.colLocation, manager.colName);
         this.internalWidth += this.buttonListLeft.getWidth(this.hgap);
         this.internalWidth += this.buttonListRight.getWidth(this.hgap);
@@ -129,11 +129,11 @@ public class WaypointManagerItem implements ScrollListPane.ISlot
         if (color == null) {
             color = (waypointValid ? this.waypoint.getSafeColor() : 8421504);
         }
-        final FontRenderer fr = FMLClientHandler.instance().getClient().field_71466_p;
-        final int yOffset = 1 + (this.manager.rowHeight - fr.field_78288_b) / 2;
-        fr.func_175063_a(String.format("%sm", this.getDistance()), (float)(x + this.manager.colLocation), (float)(y + yOffset), (int)color);
+        final FontRenderer fr = FMLClientHandler.instance().getClient().fontRenderer;
+        final int yOffset = 1 + (this.manager.rowHeight - fr.FONT_HEIGHT) / 2;
+        fr.drawStringWithShadow(String.format("%sm", this.getDistance()), (float)(x + this.manager.colLocation), (float)(y + yOffset), (int)color);
         final String name = waypointValid ? this.waypoint.getName() : (TextFormatting.STRIKETHROUGH + this.waypoint.getName());
-        fr.func_175063_a(name, (float)this.manager.colName, (float)(y + yOffset), (int)color);
+        fr.drawStringWithShadow(name, (float)this.manager.colName, (float)(y + yOffset), (int)color);
     }
     
     protected void drawWaypoint(final int x, final int y) {
@@ -164,7 +164,7 @@ public class WaypointManagerItem implements ScrollListPane.ISlot
             return false;
         }
         if (this.buttonChat.mouseOver(mouseX, mouseY)) {
-            FMLClientHandler.instance().getClient().func_147108_a((GuiScreen)new WaypointChat(this.waypoint));
+            FMLClientHandler.instance().getClient().displayGuiScreen((GuiScreen)new WaypointChat(this.waypoint));
             mouseOver = true;
         }
         else if (this.buttonRemove.mouseOver(mouseX, mouseY)) {
@@ -203,7 +203,7 @@ public class WaypointManagerItem implements ScrollListPane.ISlot
     
     public int getDistanceTo(final EntityPlayer player) {
         if (this.distance == null) {
-            this.distance = (int)player.func_174791_d().func_72438_d(this.waypoint.getPosition());
+            this.distance = (int)player.getPositionVector().distanceTo(this.waypoint.getPosition());
         }
         return this.distance;
     }
@@ -213,10 +213,10 @@ public class WaypointManagerItem implements ScrollListPane.ISlot
         return null;
     }
     
-    public void func_192633_a(final int p_192633_1_, final int p_192633_2_, final int p_192633_3_, final float p_192633_4_) {
+    public void updatePosition(final int slotIndex, final int x, final int y, final float partialTicks) {
     }
     
-    public void func_192634_a(final int slotIndex, final int x, final int y, final int listWidth, final int slotHeight, final int mouseX, final int mouseY, final boolean isSelected, final float partialTicks) {
+    public void drawEntry(final int slotIndex, final int x, final int y, final int listWidth, final int slotHeight, final int mouseX, final int mouseY, final boolean isSelected, final float partialTicks) {
         final Minecraft mc = this.manager.getMinecraft();
         this.width = listWidth;
         this.setPosition(x, y);
@@ -238,21 +238,21 @@ public class WaypointManagerItem implements ScrollListPane.ISlot
         this.buttonListLeft.layoutHorizontal(this.buttonListRight.getLeftX() - this.hgap * 2, y, false, this.hgap).draw(mc, mouseX, mouseY);
     }
     
-    public boolean func_148278_a(final int slotIndex, final int x, final int y, final int mouseEvent, final int relativeX, final int relativeY) {
+    public boolean mousePressed(final int slotIndex, final int x, final int y, final int mouseEvent, final int relativeX, final int relativeY) {
         return this.clickScrollable(x, y);
     }
     
     @Override
     public String[] mouseHover(final int slotIndex, final int x, final int y, final int mouseEvent, final int relativeX, final int relativeY) {
         for (final Button button : this.buttonListLeft) {
-            if (button.func_146115_a()) {
-                this.manager.drawHoveringText(button.getTooltip(), x, y, FMLClientHandler.instance().getClient().field_71466_p);
+            if (button.isMouseOver()) {
+                this.manager.drawHoveringText(button.getTooltip(), x, y, FMLClientHandler.instance().getClient().fontRenderer);
             }
         }
         return new String[0];
     }
     
-    public void func_148277_b(final int slotIndex, final int x, final int y, final int mouseEvent, final int relativeX, final int relativeY) {
+    public void mouseReleased(final int slotIndex, final int x, final int y, final int mouseEvent, final int relativeX, final int relativeY) {
     }
     
     @Override

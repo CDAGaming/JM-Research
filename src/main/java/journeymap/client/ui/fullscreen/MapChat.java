@@ -16,23 +16,23 @@ public class MapChat extends GuiChat
         this.hidden = hidden;
     }
     
-    public void func_146281_b() {
-        super.func_146281_b();
+    public void onGuiClosed() {
+        super.onGuiClosed();
         this.hidden = true;
     }
     
     public void close() {
-        this.func_146281_b();
+        this.onGuiClosed();
     }
     
-    public void func_73876_c() {
+    public void updateScreen() {
         if (this.hidden) {
             return;
         }
-        super.func_73876_c();
+        super.updateScreen();
     }
     
-    public void func_73869_a(final char typedChar, final int keyCode) throws IOException {
+    public void keyTyped(final char typedChar, final int keyCode) throws IOException {
         if (this.hidden) {
             return;
         }
@@ -40,58 +40,58 @@ public class MapChat extends GuiChat
             this.close();
         }
         else if (keyCode != 28 && keyCode != 156) {
-            super.func_73869_a(typedChar, keyCode);
+            super.keyTyped(typedChar, keyCode);
         }
         else {
-            final String s = this.field_146415_a.func_146179_b().trim();
+            final String s = this.inputField.getText().trim();
             if (!s.isEmpty()) {
-                this.func_175275_f(s);
+                this.sendChatMessage(s);
             }
-            this.field_146415_a.func_146180_a("");
-            this.field_146297_k.field_71456_v.func_146158_b().func_146240_d();
+            this.inputField.setText("");
+            this.mc.ingameGUI.getChatGUI().resetScroll();
         }
     }
     
-    public void func_146274_d() throws IOException {
+    public void handleMouseInput() throws IOException {
         if (this.hidden) {
             return;
         }
-        super.func_146274_d();
+        super.handleMouseInput();
     }
     
-    public void func_73864_a(final int par1, final int par2, final int par3) throws IOException {
+    public void mouseClicked(final int par1, final int par2, final int par3) throws IOException {
         if (this.hidden) {
             return;
         }
-        super.func_73864_a(par1, par2, par3);
+        super.mouseClicked(par1, par2, par3);
     }
     
-    public void func_73878_a(final boolean par1, final int par2) {
+    public void confirmClicked(final boolean par1, final int par2) {
         if (this.hidden) {
             return;
         }
-        super.func_73878_a(par1, par2);
+        super.confirmClicked(par1, par2);
     }
     
-    public void func_73863_a(final int mouseX, final int mouseY, final float partialTicks) {
-        GlStateManager.func_179094_E();
-        GL11.glTranslatef(0.0f, this.field_146295_m - 47.5f, 0.0f);
-        if (this.field_146297_k != null && this.field_146297_k.field_71456_v != null && this.field_146297_k.field_71456_v.func_146158_b() != null) {
-            final GuiNewChat func_146158_b = this.field_146297_k.field_71456_v.func_146158_b();
+    public void drawScreen(final int mouseX, final int mouseY, final float partialTicks) {
+        GlStateManager.pushMatrix();
+        GL11.glTranslatef(0.0f, this.height - 47.5f, 0.0f);
+        if (this.mc != null && this.mc.ingameGUI != null && this.mc.ingameGUI.getChatGUI() != null) {
+            final GuiNewChat getChatGUI = this.mc.ingameGUI.getChatGUI();
             int n;
             if (this.hidden) {
-                n = this.field_146297_k.field_71456_v.func_73834_c();
+                n = this.mc.ingameGUI.getUpdateCounter();
             }
             else {
                 this.cursorCounter = (n = this.cursorCounter) + 1;
             }
-            func_146158_b.func_146230_a(n);
+            getChatGUI.drawChat(n);
         }
-        GlStateManager.func_179121_F();
+        GlStateManager.popMatrix();
         if (this.hidden) {
             return;
         }
-        super.func_73863_a(mouseX, mouseY, partialTicks);
+        super.drawScreen(mouseX, mouseY, partialTicks);
     }
     
     public boolean isHidden() {
@@ -103,6 +103,6 @@ public class MapChat extends GuiChat
     }
     
     public void setText(final String defaultText) {
-        this.field_146415_a.func_146180_a(defaultText);
+        this.inputField.setText(defaultText);
     }
 }

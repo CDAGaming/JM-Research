@@ -26,7 +26,7 @@ public class ButtonListSlot implements ScrollListPane.ISlot, Comparable<ButtonLi
     
     public ButtonListSlot(final CategorySlot parent) {
         this.mc = FMLClientHandler.instance().getClient();
-        this.fontRenderer = FMLClientHandler.instance().getClient().field_71466_p;
+        this.fontRenderer = FMLClientHandler.instance().getClient().fontRenderer;
         this.buttons = new ButtonList();
         this.buttonOptionMetadata = new HashMap<Button, SlotMetadata>();
         this.lastPressed = null;
@@ -66,10 +66,10 @@ public class ButtonListSlot implements ScrollListPane.ISlot, Comparable<ButtonLi
         return (Collection<SlotMetadata>)this.buttonOptionMetadata.values();
     }
     
-    public void func_192633_a(final int p_192633_1_, final int p_192633_2_, final int p_192633_3_, final float p_192633_4_) {
+    public void updatePosition(final int slotIndex, final int x, final int y, final float partialTicks) {
     }
     
-    public void func_192634_a(final int slotIndex, int x, final int y, int listWidth, final int slotHeight, final int mouseX, final int mouseY, final boolean isSelected, final float partialTicks) {
+    public void drawEntry(final int slotIndex, int x, final int y, int listWidth, final int slotHeight, final int mouseX, final int mouseY, final boolean isSelected, final float partialTicks) {
         int margin = 0;
         if (this.parent.getCurrentColumnWidth() > 0) {
             final int cols = listWidth / this.parent.currentColumnWidth;
@@ -90,7 +90,7 @@ public class ButtonListSlot implements ScrollListPane.ISlot, Comparable<ButtonLi
                 this.buttons.layoutHorizontal(x, y, true, ButtonListSlot.hgap);
             }
             for (final Button button : this.buttons) {
-                button.func_191745_a(this.mc, mouseX, mouseY, 0.0f);
+                button.drawButton(this.mc, mouseX, mouseY, 0.0f);
                 if (tooltipMetadata == null && button.mouseOver(mouseX, mouseY)) {
                     tooltipMetadata = this.buttonOptionMetadata.get(button);
                 }
@@ -99,10 +99,10 @@ public class ButtonListSlot implements ScrollListPane.ISlot, Comparable<ButtonLi
         this.currentToolTip = tooltipMetadata;
     }
     
-    public boolean func_148278_a(final int slotIndex, final int x, final int y, final int mouseEvent, final int relativeX, final int relativeY) {
+    public boolean mousePressed(final int slotIndex, final int x, final int y, final int mouseEvent, final int relativeX, final int relativeY) {
         if (mouseEvent == 0) {
             for (final Button button : this.buttons) {
-                if (button.func_146116_c(this.mc, x, y)) {
+                if (button.mousePressed(this.mc, x, y)) {
                     this.lastPressed = this.buttonOptionMetadata.get(button);
                     return true;
                 }
@@ -121,16 +121,16 @@ public class ButtonListSlot implements ScrollListPane.ISlot, Comparable<ButtonLi
         return new String[0];
     }
     
-    public void func_148277_b(final int slotIndex, final int x, final int y, final int mouseEvent, final int relativeX, final int relativeY) {
+    public void mouseReleased(final int slotIndex, final int x, final int y, final int mouseEvent, final int relativeX, final int relativeY) {
         for (final Button button : this.buttons) {
-            button.func_146118_a(x, y);
+            button.mouseReleased(x, y);
         }
     }
     
     @Override
     public boolean keyTyped(final char c, final int i) {
         for (final SlotMetadata slot : this.buttonOptionMetadata.values()) {
-            if (slot.button.func_146115_a() && slot.button.keyTyped(c, i)) {
+            if (slot.button.isMouseOver() && slot.button.keyTyped(c, i)) {
                 this.lastPressed = slot;
                 return true;
             }
@@ -175,7 +175,7 @@ public class ButtonListSlot implements ScrollListPane.ISlot, Comparable<ButtonLi
     
     protected String getFirstButtonString() {
         if (this.buttons.size() > 0) {
-            return this.buttons.get(0).field_146126_j;
+            return this.buttons.get(0).displayString;
         }
         return null;
     }

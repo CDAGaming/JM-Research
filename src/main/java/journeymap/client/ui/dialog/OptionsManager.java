@@ -67,9 +67,9 @@ public class OptionsManager extends JmUI
     }
     
     @Override
-    public void func_73866_w_() {
+    public void initGui() {
         try {
-            this.field_146292_n.clear();
+            this.buttonList.clear();
             if (this.editGridMinimap1Button == null) {
                 final String name = Constants.getString("jm.common.grid_edit");
                 final String tooltip = Constants.getString("jm.common.grid_edit.tooltip");
@@ -85,7 +85,7 @@ public class OptionsManager extends JmUI
                 final String name = String.format("%s %s", Constants.getString("jm.minimap.preview"), "1");
                 final String tooltip = Constants.getString("jm.minimap.preview.tooltip", KeyEventHandler.INSTANCE.kbMinimapPreset.getDisplayName());
                 (this.minimap1PreviewButton = new CheckBox(name, false)).setTooltip(tooltip);
-                if (FMLClientHandler.instance().getClient().field_71441_e == null) {
+                if (FMLClientHandler.instance().getClient().world == null) {
                     this.minimap1PreviewButton.setEnabled(false);
                 }
             }
@@ -93,7 +93,7 @@ public class OptionsManager extends JmUI
                 final String name = String.format("%s %s", Constants.getString("jm.minimap.preview"), "2");
                 final String tooltip = Constants.getString("jm.minimap.preview.tooltip", KeyEventHandler.INSTANCE.kbMinimapPreset.getDisplayName());
                 (this.minimap2PreviewButton = new CheckBox(name, false)).setTooltip(tooltip);
-                if (FMLClientHandler.instance().getClient().field_71441_e == null) {
+                if (FMLClientHandler.instance().getClient().world == null) {
                     this.minimap2PreviewButton.setEnabled(false);
                 }
             }
@@ -102,11 +102,11 @@ public class OptionsManager extends JmUI
             }
             if (this.optionsListPane == null) {
                 final List<ScrollListPane.ISlot> categorySlots = new ArrayList<ScrollListPane.ISlot>();
-                final Minecraft field_146297_k = this.field_146297_k;
-                final int field_146294_l = this.field_146294_l;
-                final int field_146295_m = this.field_146295_m;
+                final Minecraft mc = this.mc;
+                final int width = this.width;
+                final int height = this.height;
                 this.getClass();
-                (this.optionsListPane = new ScrollListPane<CategorySlot>(this, field_146297_k, field_146294_l, field_146295_m, 35, this.field_146295_m - 30, 20)).setAlignTop(true);
+                (this.optionsListPane = new ScrollListPane<CategorySlot>(this, mc, width, height, 35, this.height - 30, 20)).setAlignTop(true);
                 this.optionsListPane.setSlots(OptionSlotFactory.getSlots(this.getToolbars()));
                 if (this.initialCategories != null) {
                     for (final Category initialCategory : this.initialCategories) {
@@ -126,13 +126,13 @@ public class OptionsManager extends JmUI
                         final ResetButton resetButton = new ResetButton(category);
                         final SlotMetadata resetSlotMetadata = new SlotMetadata(resetButton, 1);
                         if (category == ClientCategory.MiniMap1) {
-                            if (FMLClientHandler.instance().getClient().field_71441_e != null) {
+                            if (FMLClientHandler.instance().getClient().world != null) {
                                 categorySlot2.getAllChildMetadata().add(new SlotMetadata(this.minimap1PreviewButton, 4));
                             }
                             categorySlot2.getAllChildMetadata().add(new SlotMetadata(this.editGridMinimap1Button, 3));
                         }
                         else if (category == ClientCategory.MiniMap2) {
-                            if (FMLClientHandler.instance().getClient().field_71441_e != null) {
+                            if (FMLClientHandler.instance().getClient().world != null) {
                                 categorySlot2.getAllChildMetadata().add(new SlotMetadata(this.minimap2PreviewButton, 4));
                             }
                             categorySlot2.getAllChildMetadata().add(new SlotMetadata(this.editGridMinimap2Button, 3));
@@ -156,7 +156,7 @@ public class OptionsManager extends JmUI
                 }
             }
             else {
-                this.optionsListPane.func_148122_a(this.field_146294_l, this.field_146295_m, 35, this.field_146295_m - 30);
+                this.optionsListPane.setDimensions(this.width, this.height, 35, this.height - 30);
                 this.optionsListPane.updateSlots();
             }
             this.buttonClose = new Button(Constants.getString("jm.common.close"));
@@ -164,8 +164,8 @@ public class OptionsManager extends JmUI
             final ButtonList bottomRow = new ButtonList(new Button[] { this.buttonAbout, this.buttonClose });
             bottomRow.equalizeWidths(this.getFontRenderer());
             bottomRow.setWidths(Math.max(150, this.buttonAbout.getWidth()));
-            bottomRow.layoutCenteredHorizontal(this.field_146294_l / 2, this.field_146295_m - 25, true, 4);
-            this.field_146292_n.addAll(bottomRow);
+            bottomRow.layoutCenteredHorizontal(this.width / 2, this.height - 25, true, 4);
+            this.buttonList.addAll(bottomRow);
         }
         catch (Throwable t) {
             JMLogger.logOnce("Error in OptionsManager.initGui(): " + t, t);
@@ -174,13 +174,13 @@ public class OptionsManager extends JmUI
     
     @Override
     protected void layoutButtons() {
-        if (this.field_146292_n.isEmpty()) {
-            this.func_73866_w_();
+        if (this.buttonList.isEmpty()) {
+            this.initGui();
         }
     }
     
     @Override
-    public void func_73863_a(final int x, final int y, final float par3) {
+    public void drawScreen(final int x, final int y, final float par3) {
         try {
             if (this.forceMinimapUpdate) {
                 if (this.minimap1PreviewButton.isActive()) {
@@ -190,17 +190,17 @@ public class OptionsManager extends JmUI
                     UIManager.INSTANCE.switchMiniMapPreset(2);
                 }
             }
-            if (this.field_146297_k.field_71441_e != null) {
+            if (this.mc.world != null) {
                 this.updateRenderStats();
             }
             final String[] lastTooltip = this.optionsListPane.lastTooltip;
             final long lastTooltipTime = this.optionsListPane.lastTooltipTime;
             this.optionsListPane.lastTooltip = null;
-            this.optionsListPane.func_148128_a(x, y, par3);
-            super.func_73863_a(x, y, par3);
+            this.optionsListPane.drawScreen(x, y, par3);
+            super.drawScreen(x, y, par3);
             if (this.previewMiniMap()) {
                 UIManager.INSTANCE.getMiniMap().drawMap(true);
-                RenderHelper.func_74518_a();
+                RenderHelper.disableStandardItemLighting();
             }
             if (this.optionsListPane.lastTooltip != null && Arrays.equals(this.optionsListPane.lastTooltip, lastTooltip)) {
                 this.optionsListPane.lastTooltipTime = lastTooltipTime;
@@ -215,9 +215,9 @@ public class OptionsManager extends JmUI
         }
     }
     
-    public void func_146274_d() throws IOException {
-        super.func_146274_d();
-        this.optionsListPane.func_178039_p();
+    public void handleMouseInput() throws IOException {
+        super.handleMouseInput();
+        this.optionsListPane.handleMouseInput();
     }
     
     private void updateRenderStats() {
@@ -247,41 +247,41 @@ public class OptionsManager extends JmUI
                             continue;
                         }
                         final IntSliderButton button = (IntSliderButton)slotMetadata.getButton();
-                        button.maxValue = this.field_146297_k.field_71474_y.field_151451_c;
-                        if (button.getValue() <= this.field_146297_k.field_71474_y.field_151451_c) {
+                        button.maxValue = this.mc.gameSettings.renderDistanceChunks;
+                        if (button.getValue() <= this.mc.gameSettings.renderDistanceChunks) {
                             continue;
                         }
-                        button.setValue(this.field_146297_k.field_71474_y.field_151451_c);
+                        button.setValue(this.mc.gameSettings.renderDistanceChunks);
                     }
                 }
             }
         }
-        this.renderStatsButton.field_146126_j = (Journeymap.getClient().getCoreProperties().mappingEnabled.get() ? MapPlayerTask.getSimpleStats() : Constants.getString("jm.common.enable_mapping_false_text"));
+        this.renderStatsButton.displayString = (Journeymap.getClient().getCoreProperties().mappingEnabled.get() ? MapPlayerTask.getSimpleStats() : Constants.getString("jm.common.enable_mapping_false_text"));
         if (this.cartographyCategorySlot != null) {
-            this.renderStatsButton.func_175211_a(this.cartographyCategorySlot.getCurrentColumnWidth());
+            this.renderStatsButton.setWidth(this.cartographyCategorySlot.getCurrentColumnWidth());
         }
     }
     
     @Override
-    public void func_146278_c(final int layer) {
+    public void drawBackground(final int layer) {
     }
     
-    protected void func_73864_a(final int mouseX, final int mouseY, final int mouseEvent) throws IOException {
-        super.func_73864_a(mouseX, mouseY, mouseEvent);
-        final boolean pressed = this.optionsListPane.func_148179_a(mouseX, mouseY, mouseEvent);
+    protected void mouseClicked(final int mouseX, final int mouseY, final int mouseEvent) throws IOException {
+        super.mouseClicked(mouseX, mouseY, mouseEvent);
+        final boolean pressed = this.optionsListPane.mouseClicked(mouseX, mouseY, mouseEvent);
         if (pressed) {
             this.checkPressedButton();
         }
     }
     
     @Override
-    protected void func_146286_b(final int mouseX, final int mouseY, final int mouseEvent) {
-        super.func_146286_b(mouseX, mouseY, mouseEvent);
-        this.optionsListPane.func_148181_b(mouseX, mouseY, mouseEvent);
+    protected void mouseReleased(final int mouseX, final int mouseY, final int mouseEvent) {
+        super.mouseReleased(mouseX, mouseY, mouseEvent);
+        this.optionsListPane.mouseReleased(mouseX, mouseY, mouseEvent);
     }
     
-    protected void func_146273_a(final int mouseX, final int mouseY, final int lastButtonClicked, final long timeSinceMouseClick) {
-        super.func_146273_a(mouseX, mouseY, lastButtonClicked, timeSinceMouseClick);
+    protected void mouseClickMove(final int mouseX, final int mouseY, final int lastButtonClicked, final long timeSinceMouseClick) {
+        super.mouseClickMove(mouseX, mouseY, lastButtonClicked, timeSinceMouseClick);
         this.checkPressedButton();
     }
     
@@ -328,7 +328,7 @@ public class OptionsManager extends JmUI
         }
     }
     
-    protected void func_146284_a(final GuiButton button) {
+    protected void actionPerformed(final GuiButton button) {
         if (button == this.buttonClose) {
             this.closeAndReturn();
             return;
@@ -348,7 +348,7 @@ public class OptionsManager extends JmUI
     }
     
     @Override
-    protected void func_73869_a(final char c, final int key) {
+    protected void keyTyped(final char c, final int key) {
         switch (key) {
             case 1: {
                 if (this.previewMiniMap()) {
@@ -410,7 +410,7 @@ public class OptionsManager extends JmUI
     protected void closeAndReturn() {
         Journeymap.getClient().getCoreProperties().optionsManagerViewed.set(Journeymap.JM_VERSION.toString());
         Journeymap.getClient().saveConfigProperties();
-        if (this.field_146297_k.field_71441_e != null) {
+        if (this.mc.world != null) {
             UIManager.INSTANCE.getMiniMap().setMiniMapProperties(Journeymap.getClient().getMiniMapProperties(this.inGameMinimapId));
             for (final Category category : this.changedCategories) {
                 if (category == ClientCategory.MiniMap1) {
@@ -511,12 +511,12 @@ public class OptionsManager extends JmUI
             this.setDrawFrame(false);
             this.setEnabled(false);
             this.setLabelColors(12632256, 12632256, 12632256);
-            this.func_175211_a(width);
+            this.setWidth(width);
         }
         
         @Override
         public int getFitWidth(final FontRenderer fr) {
-            return this.field_146120_f;
+            return this.width;
         }
         
         @Override
@@ -528,7 +528,7 @@ public class OptionsManager extends JmUI
         }
         
         @Override
-        public void func_191745_a(final Minecraft minecraft, final int mouseX, final int mouseY, final float ticks) {
+        public void drawButton(final Minecraft minecraft, final int mouseX, final int mouseY, final float ticks) {
             int labelX = 0;
             switch (this.hAlign) {
                 case Left: {
@@ -544,7 +544,7 @@ public class OptionsManager extends JmUI
                     break;
                 }
             }
-            DrawUtil.drawLabel(this.field_146126_j, labelX, this.getMiddleY(), this.hAlign, DrawUtil.VAlign.Middle, null, 0.0f, this.labelColor, 1.0f, 1.0, this.drawLabelShadow);
+            DrawUtil.drawLabel(this.displayString, labelX, this.getMiddleY(), this.hAlign, DrawUtil.VAlign.Middle, null, 0.0f, this.labelColor, 1.0f, 1.0, this.drawLabelShadow);
         }
     }
 }

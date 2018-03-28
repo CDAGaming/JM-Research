@@ -35,12 +35,12 @@ public class ThemeToolbar extends Button
         Theme.Container.Toolbar.ToolbarSpec toolbarSpec;
         if (this.buttonList.isHorizontal()) {
             toolbarSpec = this.theme.container.toolbar.horizontal;
-            this.func_175211_a(toolbarSpec.begin.width + toolbarSpec.inner.width * this.buttonList.getVisibleButtonCount() + toolbarSpec.end.width);
+            this.setWidth(toolbarSpec.begin.width + toolbarSpec.inner.width * this.buttonList.getVisibleButtonCount() + toolbarSpec.end.width);
             this.setHeight(toolbarSpec.inner.height);
         }
         else {
             toolbarSpec = this.theme.container.toolbar.vertical;
-            this.func_175211_a(toolbarSpec.inner.width);
+            this.setWidth(toolbarSpec.inner.width);
             this.setHeight(toolbarSpec.begin.height + toolbarSpec.inner.height * this.buttonList.getVisibleButtonCount() + toolbarSpec.end.height);
         }
         if (this.toolbarSpec == null || toolbarSpec != this.toolbarSpec) {
@@ -61,12 +61,12 @@ public class ThemeToolbar extends Button
         int drawX;
         int drawY;
         if (isHorizontal) {
-            drawX = this.buttonList.getLeftX() - (this.field_146120_f - this.buttonList.getWidth(this.toolbarSpec.padding)) / 2;
-            drawY = this.buttonList.getTopY() - (this.field_146121_g - this.theme.control.button.height) / 2;
+            drawX = this.buttonList.getLeftX() - (this.width - this.buttonList.getWidth(this.toolbarSpec.padding)) / 2;
+            drawY = this.buttonList.getTopY() - (this.height - this.theme.control.button.height) / 2;
         }
         else {
             drawX = this.buttonList.getLeftX() - (this.toolbarSpec.inner.width - this.theme.control.button.width) / 2;
-            drawY = this.buttonList.getTopY() - (this.field_146121_g - this.buttonList.getHeight(this.toolbarSpec.padding)) / 2;
+            drawY = this.buttonList.getTopY() - (this.height - this.buttonList.getHeight(this.toolbarSpec.padding)) / 2;
         }
         this.setPosition(drawX, drawY);
     }
@@ -111,8 +111,8 @@ public class ThemeToolbar extends Button
     }
     
     @Override
-    public void func_191745_a(final Minecraft minecraft, final int mouseX, final int mouseY, final float f) {
-        if (!this.field_146125_m) {
+    public void drawButton(final Minecraft minecraft, final int mouseX, final int mouseY, final float f) {
+        if (!this.visible) {
             return;
         }
         final boolean isHorizontal = this.buttonList.isHorizontal();
@@ -121,7 +121,7 @@ public class ThemeToolbar extends Button
         if (!this.toolbarSpec.useThemeImages) {
             return;
         }
-        if (this.field_146125_m) {
+        if (this.visible) {
             float scale = 1.0f;
             if (this.toolbarSpec.begin.width > 0 && this.toolbarSpec.begin.height > 0) {
                 if (this.toolbarSpec.begin.width != this.textureBegin.getWidth()) {
@@ -162,22 +162,22 @@ public class ThemeToolbar extends Button
     
     @Override
     public int getCenterX() {
-        return this.field_146128_h + this.field_146120_f / 2;
+        return this.x + this.width / 2;
     }
     
     @Override
     public int getMiddleY() {
-        return this.field_146129_i + this.field_146121_g / 2;
+        return this.y + this.height / 2;
     }
     
     @Override
     public int getBottomY() {
-        return this.field_146129_i + this.field_146121_g;
+        return this.y + this.height;
     }
     
     @Override
     public int getRightX() {
-        return this.field_146128_h + this.field_146120_f;
+        return this.x + this.width;
     }
     
     @Override

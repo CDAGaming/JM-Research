@@ -46,7 +46,7 @@ public class AboutDialog extends JmUI
     }
     
     @Override
-    public void func_73866_w_() {
+    public void initGui() {
         Journeymap.getClient().getCoreProperties().splashViewed.set(Journeymap.JM_VERSION.toString());
         if (this.info == null) {
             this.info = FileHandler.getMessageModel(SplashInfo.class, "splash");
@@ -60,7 +60,7 @@ public class AboutDialog extends JmUI
             }
             return;
         }
-        this.field_146292_n.clear();
+        this.buttonList.clear();
         final FontRenderer fr = this.getFontRenderer();
         this.devButtons = new ButtonList();
         for (final SplashPerson dev : this.devs) {
@@ -70,7 +70,7 @@ public class AboutDialog extends JmUI
         }
         this.devButtons.setWidths(20);
         this.devButtons.setHeights(20);
-        this.devButtons.layoutDistributedHorizontal(0, 35, this.field_146294_l, true);
+        this.devButtons.layoutDistributedHorizontal(0, 35, this.width, true);
         this.peopleButtons = new ButtonList();
         for (final SplashPerson peep : this.people) {
             final Button button = new Button(peep.name);
@@ -79,21 +79,21 @@ public class AboutDialog extends JmUI
         }
         this.peopleButtons.setWidths(20);
         this.peopleButtons.setHeights(20);
-        this.peopleButtons.layoutDistributedHorizontal(0, this.field_146295_m - 65, this.field_146294_l, true);
+        this.peopleButtons.layoutDistributedHorizontal(0, this.height - 65, this.width, true);
         this.infoButtons = new ButtonList();
         for (final SplashInfo.Line line : this.info.lines) {
             final SplashInfoButton button2 = new SplashInfoButton(line);
             button2.setDrawBackground(false);
             button2.setDefaultStyle(false);
             button2.setDrawFrame(false);
-            button2.setHeight(fr.field_78288_b + 5);
+            button2.setHeight(fr.FONT_HEIGHT + 5);
             if (line.hasAction()) {
                 button2.setTooltip(Constants.getString("jm.common.splash_action"));
             }
-            ((ArrayList<SplashInfoButton>)this.infoButtons).add(button2);
+            (this.infoButtons).add(button2);
         }
         this.infoButtons.equalizeWidths(fr);
-        this.field_146292_n.addAll(this.infoButtons);
+        this.buttonList.addAll(this.infoButtons);
         (this.buttonClose = new Button(Constants.getString("jm.common.close"))).addClickListener(button -> {
             this.closeAndReturn();
             return true;
@@ -108,12 +108,12 @@ public class AboutDialog extends JmUI
             return true;
         });
         this.bottomButtons = new ButtonList(new Button[] { this.buttonOptions });
-        if (this.field_146297_k.field_71441_e != null) {
+        if (this.mc.world != null) {
             this.bottomButtons.add(this.buttonClose);
         }
         this.bottomButtons.equalizeWidths(fr);
         this.bottomButtons.setWidths(Math.max(100, this.buttonOptions.getWidth()));
-        this.field_146292_n.addAll(this.bottomButtons);
+        this.buttonList.addAll(this.bottomButtons);
         (this.buttonWebsite = new Button("http://journeymap.info")).setTooltip(Constants.getString("jm.common.website"));
         this.buttonWebsite.addClickListener(button -> {
             FullscreenActions.launchWebsite("");
@@ -125,7 +125,7 @@ public class AboutDialog extends JmUI
             return true;
         });
         (this.linkButtons = new ButtonList(new Button[] { this.buttonWebsite, this.buttonDownload })).equalizeWidths(fr);
-        this.field_146292_n.addAll(this.linkButtons);
+        this.buttonList.addAll(this.linkButtons);
         final int commonWidth = Math.max(this.bottomButtons.getWidth(0) / this.bottomButtons.size(), this.linkButtons.getWidth(0) / this.linkButtons.size());
         this.bottomButtons.setWidths(commonWidth);
         this.linkButtons.setWidths(commonWidth);
@@ -133,7 +133,7 @@ public class AboutDialog extends JmUI
         this.buttonPatreon.setDrawBackground(false);
         this.buttonPatreon.setDrawFrame(false);
         this.buttonPatreon.setTooltip(Constants.getString("jm.common.patreon"), Constants.getString("jm.common.patreon.tooltip"));
-        this.buttonPatreon.func_175211_a(this.patreonLogo.getWidth() / this.scaleFactor);
+        this.buttonPatreon.setWidth(this.patreonLogo.getWidth() / this.scaleFactor);
         this.buttonPatreon.setHeight(this.patreonLogo.getHeight() / this.scaleFactor);
         this.buttonPatreon.addClickListener(button -> {
             FullscreenActions.launchPatreon();
@@ -143,7 +143,7 @@ public class AboutDialog extends JmUI
         this.buttonDiscord.setDrawBackground(false);
         this.buttonDiscord.setDrawFrame(false);
         this.buttonDiscord.setTooltip(Constants.getString("jm.common.discord"), Constants.getString("jm.common.discord.tooltip"));
-        this.buttonDiscord.func_175211_a(this.discordLogo.getWidth() / this.scaleFactor);
+        this.buttonDiscord.setWidth(this.discordLogo.getWidth() / this.scaleFactor);
         this.buttonDiscord.setHeight(this.discordLogo.getHeight() / this.scaleFactor);
         this.buttonDiscord.addClickListener(button -> {
             FullscreenActions.discord();
@@ -152,32 +152,32 @@ public class AboutDialog extends JmUI
         (this.logoButtons = new ButtonList(new Button[] { this.buttonDiscord, this.buttonPatreon })).setLayout(ButtonList.Layout.Horizontal, ButtonList.Direction.LeftToRight);
         this.logoButtons.setHeights(Math.max(this.discordLogo.getHeight(), this.patreonLogo.getHeight()) / this.scaleFactor);
         this.logoButtons.setWidths(Math.max(this.discordLogo.getWidth(), this.patreonLogo.getWidth()) / this.scaleFactor);
-        this.field_146292_n.addAll(this.logoButtons);
+        this.buttonList.addAll(this.logoButtons);
     }
     
     @Override
     protected void layoutButtons() {
-        if (this.field_146292_n.isEmpty()) {
-            this.func_73866_w_();
+        if (this.buttonList.isEmpty()) {
+            this.initGui();
         }
-        final int mx = Mouse.getEventX() * this.field_146294_l / this.field_146297_k.field_71443_c;
-        final int my = this.field_146295_m - Mouse.getEventY() * this.field_146295_m / this.field_146297_k.field_71440_d - 1;
+        final int mx = Mouse.getEventX() * this.width / this.mc.displayWidth;
+        final int my = this.height - Mouse.getEventY() * this.height / this.mc.displayHeight - 1;
         final int hgap = 4;
         final int vgap = 4;
         final FontRenderer fr = this.getFontRenderer();
         final int estimatedInfoHeight = this.infoButtons.getHeight(4);
         final int estimatedButtonsHeight = (this.buttonClose.getHeight() + 4) * 3 + 4;
-        final int field_146295_m = this.field_146295_m;
+        final int height = this.height;
         this.getClass();
-        final int centerHeight = field_146295_m - 35 - estimatedButtonsHeight;
-        final int lineHeight = (int)(fr.field_78288_b * 1.4);
-        final int bx = this.field_146294_l / 2;
+        final int centerHeight = height - 35 - estimatedButtonsHeight;
+        final int lineHeight = (int)(fr.FONT_HEIGHT * 1.4);
+        final int bx = this.width / 2;
         int by = 0;
         final boolean movePeople = System.currentTimeMillis() - this.lastPeopleMove > 20L;
         if (movePeople) {
             this.lastPeopleMove = System.currentTimeMillis();
         }
-        final Rectangle2D.Double screenBounds = new Rectangle2D.Double(0.0, 0.0, this.field_146294_l, this.field_146295_m);
+        final Rectangle2D.Double screenBounds = new Rectangle2D.Double(0.0, 0.0, this.width, this.height);
         if (!this.devButtons.isEmpty()) {
             for (final SplashPerson dev : this.devs) {
                 if (dev.getButton().mouseOver(mx, my)) {
@@ -216,7 +216,7 @@ public class AboutDialog extends JmUI
             DrawUtil.drawGradientRect(listX, listY, listWidth, listHeight, 4210752, 1.0f, 0, 1.0f);
             DrawUtil.drawLabel(Constants.getString("jm.common.splash_whatisnew"), bx, topY, DrawUtil.HAlign.Center, DrawUtil.VAlign.Below, 0, 0.0f, 65535, 1.0f, 1.0, true);
         }
-        final int rowHeight = this.buttonOptions.field_146121_g + 4;
+        final int rowHeight = this.buttonOptions.height + 4;
         by = this.height - rowHeight - 4;
         this.bottomButtons.layoutCenteredHorizontal(bx, by, true, 4);
         by -= rowHeight;

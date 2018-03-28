@@ -131,15 +131,15 @@ public class CategorySlot implements ScrollListPane.ISlot, Comparable<CategorySl
         return this.currentColumnWidth;
     }
     
-    public void func_192633_a(final int p_192633_1_, final int p_192633_2_, final int p_192633_3_, final float p_192633_4_) {
+    public void updatePosition(final int slotIndex, final int x, final int y, final float partialTicks) {
     }
     
-    public void func_192634_a(final int slotIndex, final int x, final int y, final int listWidth, final int slotHeight, final int mouseX, final int mouseY, final boolean isSelected, final float partialTicks) {
+    public void drawEntry(final int slotIndex, final int x, final int y, final int listWidth, final int slotHeight, final int mouseX, final int mouseY, final boolean isSelected, final float partialTicks) {
         this.currentSlotIndex = slotIndex;
-        this.button.func_175211_a(listWidth);
+        this.button.setWidth(listWidth);
         this.button.setPosition(x, y);
         this.button.setHeight(slotHeight);
-        this.button.func_191745_a(this.mc, mouseX, mouseY, 0.0f);
+        this.button.drawButton(this.mc, mouseX, mouseY, 0.0f);
         DrawUtil.drawRectangle(this.button.getX() + 4, this.button.getMiddleY() - 5, 11.0, 10.0, 0, 0.2f);
         DrawUtil.drawLabel(this.selected ? this.glyphOpen : this.glyphClosed, this.button.getX() + 12, this.button.getMiddleY(), DrawUtil.HAlign.Left, DrawUtil.VAlign.Middle, 0, 0.0f, this.button.getLabelColor(), 1.0f, 1.0, true);
         if (this.masterSlot != null && this.selected) {
@@ -155,7 +155,7 @@ public class CategorySlot implements ScrollListPane.ISlot, Comparable<CategorySl
     }
     
     private void updateButtonLabel() {
-        this.button.field_146126_j = this.category.getLabel();
+        this.button.displayString = this.category.getLabel();
     }
     
     public boolean isSelected() {
@@ -166,9 +166,9 @@ public class CategorySlot implements ScrollListPane.ISlot, Comparable<CategorySl
         this.selected = selected;
     }
     
-    public boolean func_148278_a(final int slotIndex, final int x, final int y, final int mouseEvent, final int relativeX, final int relativeY) {
+    public boolean mousePressed(final int slotIndex, final int x, final int y, final int mouseEvent, final int relativeX, final int relativeY) {
         if (mouseEvent == 0) {
-            final boolean pressed = this.button.func_146116_c(this.mc, x, y);
+            final boolean pressed = this.button.mousePressed(this.mc, x, y);
             if (pressed) {
                 this.selected = !this.selected;
                 this.updateButtonLabel();
@@ -186,8 +186,8 @@ public class CategorySlot implements ScrollListPane.ISlot, Comparable<CategorySl
         return new String[0];
     }
     
-    public void func_148277_b(final int slotIndex, final int x, final int y, final int mouseEvent, final int relativeX, final int relativeY) {
-        this.button.func_146118_a(x, y);
+    public void mouseReleased(final int slotIndex, final int x, final int y, final int mouseEvent, final int relativeX, final int relativeY) {
+        this.button.mouseReleased(x, y);
     }
     
     @Override
