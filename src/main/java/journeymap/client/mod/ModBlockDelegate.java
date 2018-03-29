@@ -2,7 +2,6 @@ package journeymap.client.mod;
 
 import journeymap.client.mod.impl.Bibliocraft;
 import journeymap.client.mod.impl.BiomesOPlenty;
-import journeymap.client.mod.impl.TerraFirmaCraft;
 import journeymap.client.mod.vanilla.VanillaBlockColorProxy;
 import journeymap.client.mod.vanilla.VanillaBlockHandler;
 import journeymap.client.mod.vanilla.VanillaBlockSpriteProxy;
@@ -39,8 +38,6 @@ public enum ModBlockDelegate {
         this.handlerClasses.clear();
         this.handlerClasses.put("BiblioCraft", Bibliocraft.class);
         this.handlerClasses.put("BiomesOPlenty", BiomesOPlenty.class);
-        this.handlerClasses.put("terrafirmacraft", TerraFirmaCraft.class);
-        this.handlerClasses.put("tfc2", TerraFirmaCraft.class);
         for (final Map.Entry<String, Class<? extends IModBlockHandler>> entry : this.handlerClasses.entrySet()) {
             String modId = entry.getKey();
             final Class<? extends IModBlockHandler> handlerClass = entry.getValue();
