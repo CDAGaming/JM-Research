@@ -48,12 +48,12 @@ public class Category implements Comparable<Category> {
             return false;
         }
         final Category category = (Category) o;
-        return Objects.equal((Object) this.getName(), (Object) category.getName());
+        return Objects.equal(this.getName(), category.getName());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(new Object[]{this.getName()});
+        return Objects.hashCode(this.getName());
     }
 
     @Override

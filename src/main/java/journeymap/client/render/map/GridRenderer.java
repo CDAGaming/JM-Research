@@ -40,7 +40,7 @@ public class GridRenderer {
 
     static {
         GridRenderer.enabled = true;
-        GridRenderer.messages = new HashMap<String, String>();
+        GridRenderer.messages = new HashMap<>();
     }
 
     private final TilePos centerPos;
@@ -78,7 +78,7 @@ public class GridRenderer {
         this.centerPos = new TilePos(0, 0);
         this.logger = Journeymap.getLogger();
         this.debug = this.logger.isDebugEnabled();
-        this.grid = new TreeMap<TilePos, Tile>();
+        this.grid = new TreeMap<>();
         this.centerPixelOffset = new Point2D.Double();
         this.updateTilesTimer1 = StatTimer.get("GridRenderer.updateTiles(1)", 5, 500);
         this.updateTilesTimer2 = StatTimer.get("GridRenderer.updateTiles(2)", 5, 500);
@@ -169,7 +169,6 @@ public class GridRenderer {
                 if (tile == null || !tile.hasTexture(this.mapType)) {
                     return true;
                 }
-                continue;
             }
         }
         return false;

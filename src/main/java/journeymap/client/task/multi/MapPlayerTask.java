@@ -77,17 +77,17 @@ public class MapPlayerTask extends BaseMapTask {
             final long time = playerEntity.world.getWorldInfo().getWorldTime() % 24000L;
             mapType = ((time < 13800L) ? MapType.day(player) : MapType.night(player));
         }
-        final List<ITask> tasks = new ArrayList<ITask>(2);
-        tasks.add(new MapPlayerTask(chunkRenderController, playerEntity.world, mapType, new ArrayList<ChunkPos>()));
+        final List<ITask> tasks = new ArrayList<>(2);
+        tasks.add(new MapPlayerTask(chunkRenderController, playerEntity.world, mapType, new ArrayList<>()));
         if (underground) {
             if (surfaceAllowed && Journeymap.getClient().getCoreProperties().alwaysMapSurface.get()) {
-                tasks.add(new MapPlayerTask(chunkRenderController, playerEntity.world, MapType.day(player), new ArrayList<ChunkPos>()));
+                tasks.add(new MapPlayerTask(chunkRenderController, playerEntity.world, MapType.day(player), new ArrayList<>()));
             }
         } else if (cavesAllowed && Journeymap.getClient().getCoreProperties().alwaysMapCaves.get()) {
-            tasks.add(new MapPlayerTask(chunkRenderController, playerEntity.world, MapType.underground(player), new ArrayList<ChunkPos>()));
+            tasks.add(new MapPlayerTask(chunkRenderController, playerEntity.world, MapType.underground(player), new ArrayList<>()));
         }
         if (Journeymap.getClient().getCoreProperties().mapTopography.get()) {
-            tasks.add(new MapPlayerTask(chunkRenderController, playerEntity.world, MapType.topo(player), new ArrayList<ChunkPos>()));
+            tasks.add(new MapPlayerTask(chunkRenderController, playerEntity.world, MapType.topo(player), new ArrayList<>()));
         }
         return new MapPlayerTaskBatch(tasks);
     }
@@ -96,7 +96,7 @@ public class MapPlayerTask extends BaseMapTask {
         try {
             final CoreProperties coreProperties = Journeymap.getClient().getCoreProperties();
             final boolean underground = DataCache.getPlayer().underground;
-            final ArrayList<String> lines = new ArrayList<String>(MapPlayerTask.tempDebugLines.asMap().values());
+            final ArrayList<String> lines = new ArrayList<>(MapPlayerTask.tempDebugLines.asMap().values());
             if (underground || coreProperties.alwaysMapCaves.get()) {
                 lines.add(RenderSpec.getUndergroundSpec().getDebugStats());
             }
@@ -108,7 +108,7 @@ public class MapPlayerTask extends BaseMapTask {
             }
             return lines.toArray(new String[lines.size()]);
         } catch (Throwable t) {
-            MapPlayerTask.logger.error((Object) t);
+            MapPlayerTask.logger.error(t);
             return new String[0];
         }
     }
@@ -120,7 +120,7 @@ public class MapPlayerTask extends BaseMapTask {
     }
 
     public static void removeTempDebugMessage(final String key) {
-        MapPlayerTask.tempDebugLines.invalidate((Object) key);
+        MapPlayerTask.tempDebugLines.invalidate(key);
     }
 
     public static String getSimpleStats() {
@@ -153,7 +153,7 @@ public class MapPlayerTask extends BaseMapTask {
     @Override
     public void initTask(final Minecraft minecraft, final JourneymapClient jm, final File jmWorldDir, final boolean threadLogging) throws InterruptedException {
         this.startNs = System.nanoTime();
-        RenderSpec renderSpec = null;
+        RenderSpec renderSpec;
         if (this.mapType.isUnderground()) {
             renderSpec = RenderSpec.getUndergroundSpec();
         } else if (this.mapType.isTopo()) {
@@ -249,7 +249,7 @@ public class MapPlayerTask extends BaseMapTask {
                 return;
             }
             this.startNs = System.nanoTime();
-            final List<ITask> tasks = new ArrayList<ITask>(this.taskList);
+            final List<ITask> tasks = new ArrayList<>(this.taskList);
             super.performTask(mc, jm, jmWorldDir, threadLogging);
             this.elapsedNs = System.nanoTime() - this.startNs;
             MapPlayerTask.lastTaskTime = TimeUnit.NANOSECONDS.toMillis(this.elapsedNs);

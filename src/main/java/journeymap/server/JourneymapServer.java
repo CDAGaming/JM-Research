@@ -38,7 +38,7 @@ public class JourneymapServer implements CommonProxy {
 
     @Override
     public void initialize(final FMLInitializationEvent event) {
-        MinecraftForge.EVENT_BUS.register((Object) new ForgeEvents());
+        MinecraftForge.EVENT_BUS.register(new ForgeEvents());
         PacketHandler.init(Side.SERVER);
     }
 

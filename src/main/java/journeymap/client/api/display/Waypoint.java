@@ -154,17 +154,17 @@ public class Waypoint extends WaypointBase<Waypoint> {
             return false;
         }
         final Waypoint that = (Waypoint) o;
-        return this.isPersistent() == that.isPersistent() && this.isEditable() == that.isEditable() && Objects.equal((Object) this.getDimension(), (Object) that.getDimension()) && Objects.equal((Object) this.getColor(), (Object) that.getColor()) && Objects.equal((Object) this.getBackgroundColor(), (Object) that.getBackgroundColor()) && Objects.equal((Object) this.getName(), (Object) that.getName()) && Objects.equal((Object) this.getPosition(), (Object) that.getPosition()) && Objects.equal((Object) this.getIcon(), (Object) that.getIcon()) && Arrays.equals(this.getDisplayDimensions(), that.getDisplayDimensions());
+        return this.isPersistent() == that.isPersistent() && this.isEditable() == that.isEditable() && Objects.equal(this.getDimension(), that.getDimension()) && Objects.equal(this.getColor(), that.getColor()) && Objects.equal(this.getBackgroundColor(), that.getBackgroundColor()) && Objects.equal(this.getName(), that.getName()) && Objects.equal(this.getPosition(), that.getPosition()) && Objects.equal(this.getIcon(), that.getIcon()) && Arrays.equals(this.getDisplayDimensions(), that.getDisplayDimensions());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(new Object[]{super.hashCode(), this.getName()});
+        return Objects.hashCode(super.hashCode(), this.getName());
     }
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper((Object) this).add("name", (Object) this.name).add("dim", this.dim).add("pos", (Object) this.pos).add("group", (Object) this.group).add("icon", (Object) this.icon).add("color", (Object) this.color).add("bgColor", (Object) this.bgColor).add("displayDims", (Object) ((this.displayDims == null) ? null : Ints.asList(this.displayDims))).add("editable", this.editable).add("persistent", this.persistent).add("dirty", this.dirty).toString();
+        return MoreObjects.toStringHelper(this).add("name", this.name).add("dim", this.dim).add("pos", this.pos).add("group", this.group).add("icon", this.icon).add("color", this.color).add("bgColor", this.bgColor).add("displayDims", (this.displayDims == null) ? null : Ints.asList(this.displayDims)).add("editable", this.editable).add("persistent", this.persistent).add("dirty", this.dirty).toString();
     }
 
     class CachedDimPosition {

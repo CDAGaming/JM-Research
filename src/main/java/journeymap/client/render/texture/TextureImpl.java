@@ -53,7 +53,7 @@ public class TextureImpl extends AbstractTexture {
 
     public TextureImpl(final Integer glId, final BufferedImage image, final boolean retainImage, final boolean bindImmediately) {
         this.bufferLock = new ReentrantLock();
-        this.listeners = new ArrayList<WeakReference<Listener>>(0);
+        this.listeners = new ArrayList<>(0);
         if (glId != null) {
             this.glTextureId = glId;
         }
@@ -229,7 +229,7 @@ public class TextureImpl extends AbstractTexture {
     }
 
     public String toString() {
-        return MoreObjects.toStringHelper((Object) this).add("glid", this.glTextureId).add("description", (Object) this.description).add("lastImageUpdate", this.lastImageUpdate).add("lastBound", this.lastBound).toString();
+        return MoreObjects.toStringHelper(this).add("glid", this.glTextureId).add("description", this.description).add("lastImageUpdate", this.lastImageUpdate).add("lastBound", this.lastBound).toString();
     }
 
     public void finalize() {
@@ -274,10 +274,9 @@ public class TextureImpl extends AbstractTexture {
                 if (addedListener == listener) {
                     return;
                 }
-                continue;
             }
         }
-        this.listeners.add(new WeakReference<Listener>(addedListener));
+        this.listeners.add(new WeakReference<>(addedListener));
     }
 
     protected void notifyListeners() {

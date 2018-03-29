@@ -76,9 +76,7 @@ public class WebServer {
         final int maxPort = Math.max(9990, this.port + 1000);
         boolean validPort = false;
         while (!validPort && hardFails <= 5 && testPort <= maxPort) {
-            ServerSocketChannel server = null;
-            try {
-                server = ServerSocketChannel.open();
+            try (ServerSocketChannel server = ServerSocketChannel.open()) {
                 server.socket().bind(new InetSocketAddress(testPort));
                 validPort = true;
             } catch (BindException e) {
@@ -87,13 +85,6 @@ public class WebServer {
             } catch (Throwable t) {
                 this.logger.error("Error when testing port " + testPort + ": " + t);
                 ++hardFails;
-            } finally {
-                if (server != null) {
-                    try {
-                        server.close();
-                    } catch (IOException ex) {
-                    }
-                }
             }
         }
         this.ready = validPort;
@@ -145,12 +136,7 @@ public class WebServer {
         final JMThreadFactory tf = new JMThreadFactory("svr");
         final ExecutorService es = Executors.newSingleThreadExecutor(tf);
         es.execute(this.rupy);
-        Runtime.getRuntime().addShutdownHook(tf.newThread(new Runnable() {
-            @Override
-            public void run() {
-                WebServer.this.stop();
-            }
-        }));
+        Runtime.getRuntime().addShutdownHook(tf.newThread(WebServer.this::stop));
         this.logger.info("Started webserver on port " + this.port);
     }
 

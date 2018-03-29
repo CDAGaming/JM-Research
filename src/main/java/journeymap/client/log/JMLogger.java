@@ -40,7 +40,7 @@ public class JMLogger {
     private static RandomAccessFileAppender fileAppender;
 
     static {
-        singletonErrors = new HashSet<Integer>();
+        singletonErrors = new HashSet<>();
         singletonErrorsCounter = new AtomicInteger(0);
     }
 
@@ -64,9 +64,9 @@ public class JMLogger {
             } else {
                 logFile.getParentFile().mkdirs();
             }
-            final PatternLayout layout = PatternLayout.createLayout("[%d{HH:mm:ss}] [%t/%level] [%C{1}] %msg%n", (PatternSelector) null, (Configuration) null, (RegexReplacement) null, (Charset) null, true, false, (String) null, (String) null);
-            JMLogger.fileAppender = RandomAccessFileAppender.createAppender(logFile.getAbsolutePath(), "treu", "journeymap-logfile", "true", (String) null, "true", (Layout) layout, (Filter) null, "false", (String) null, (Configuration) null);
-            ((org.apache.logging.log4j.core.Logger) logger).addAppender((Appender) JMLogger.fileAppender);
+            final PatternLayout layout = PatternLayout.createLayout("[%d{HH:mm:ss}] [%t/%level] [%C{1}] %msg%n", null, null, null, null, true, false, null, null);
+            JMLogger.fileAppender = RandomAccessFileAppender.createAppender(logFile.getAbsolutePath(), "treu", "journeymap-logfile", "true", null, "true", layout, null, "false", null, null);
+            ((org.apache.logging.log4j.core.Logger) logger).addAppender(JMLogger.fileAppender);
             if (!JMLogger.fileAppender.isStarted()) {
                 JMLogger.fileAppender.start();
             }
@@ -89,17 +89,17 @@ public class JMLogger {
     }
 
     public static void logProperties() {
-        final LogEvent record = (LogEvent) new Log4jLogEvent(JourneymapClient.MOD_NAME, MarkerManager.getMarker(JourneymapClient.MOD_NAME), (String) null, Level.INFO, (Message) new SimpleMessage(getPropertiesSummary()), (Throwable) null);
+        final LogEvent record = new Log4jLogEvent(JourneymapClient.MOD_NAME, MarkerManager.getMarker(JourneymapClient.MOD_NAME), (String) null, Level.INFO, (Message) new SimpleMessage(getPropertiesSummary()), (Throwable) null);
         if (JMLogger.fileAppender != null) {
             JMLogger.fileAppender.append(record);
         }
     }
 
     public static String getPropertiesSummary() {
-        final LinkedHashMap<String, String> props = new LinkedHashMap<String, String>();
+        final LinkedHashMap<String, String> props = new LinkedHashMap<>();
         props.put("Version", JourneymapClient.MOD_NAME + ", built with Forge " + "14.23.0.2491");
         props.put("Forge", ForgeVersion.getVersion());
-        final List<String> envProps = Arrays.asList("os.name, os.arch, java.version, user.country, user.language");
+        final List<String> envProps = Collections.singletonList("os.name, os.arch, java.version, user.country, user.language");
         StringBuilder sb = new StringBuilder();
         for (final String env : envProps) {
             sb.append(env).append("=").append(System.getProperty(env)).append(", ");

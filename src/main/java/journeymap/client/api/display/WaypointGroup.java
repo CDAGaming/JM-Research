@@ -66,15 +66,13 @@ public class WaypointGroup extends WaypointBase<WaypointGroup> {
         final WaypointGroup that = (WaypointGroup) o;
         if (this.order == that.order) {
             that.getClass();
-            if (Double.compare(1.4, 1.4) == 0) {
-                return true;
-            }
+            return Double.compare(1.4, 1.4) == 0;
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(new Object[]{super.hashCode(), 1.4});
+        return Objects.hashCode(super.hashCode(), 1.4);
     }
 }

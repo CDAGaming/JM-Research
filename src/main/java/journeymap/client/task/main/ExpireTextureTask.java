@@ -34,12 +34,12 @@ public class ExpireTextureTask implements IMainThreadTask {
     }
 
     private ExpireTextureTask(final TextureImpl texture) {
-        (this.textures = new ArrayList<TextureImpl>()).add(texture);
+        (this.textures = new ArrayList<>()).add(texture);
         this.textureId = -1;
     }
 
     private ExpireTextureTask(final Collection<TextureImpl> textureCollection) {
-        this.textures = new ArrayList<TextureImpl>(textureCollection);
+        this.textures = new ArrayList<>(textureCollection);
         this.textureId = -1;
     }
 

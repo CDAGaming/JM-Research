@@ -23,6 +23,6 @@ public class InitLogin {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper((Object) this).add("teleportEnabled", this.teleportEnabled).toString();
+        return MoreObjects.toStringHelper(this).add("teleportEnabled", this.teleportEnabled).toString();
     }
 }

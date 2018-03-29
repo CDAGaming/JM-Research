@@ -17,7 +17,7 @@ public class RegionTextureImpl extends TextureImpl {
 
     public RegionTextureImpl(final BufferedImage image) {
         super(null, image, true, false);
-        this.dirtyChunks = new HashSet<ChunkPos>();
+        this.dirtyChunks = new HashSet<>();
     }
 
     public void setImage(final BufferedImage bufferedImage, final boolean retainImage, final HashSet<ChunkPos> updatedChunks) {

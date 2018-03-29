@@ -18,12 +18,12 @@ public class WaypointDrawStepFactory {
     final List<DrawWayPointStep> drawStepList;
 
     public WaypointDrawStepFactory() {
-        this.drawStepList = new ArrayList<DrawWayPointStep>();
+        this.drawStepList = new ArrayList<>();
     }
 
     public List<DrawWayPointStep> prepareSteps(final Collection<Waypoint> waypoints, final GridRenderer grid, boolean checkDistance, final boolean showLabel) {
         final Minecraft mc = FMLClientHandler.instance().getClient();
-        final EntityPlayer player = (EntityPlayer) mc.player;
+        final EntityPlayer player = mc.player;
         final int dimension = player.dimension;
         final int maxDistance = Journeymap.getClient().getWaypointProperties().maxDistance.get();
         checkDistance = (checkDistance && maxDistance > 0);

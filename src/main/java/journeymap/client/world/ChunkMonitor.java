@@ -30,7 +30,7 @@ public enum ChunkMonitor implements IWorldEventListener, EventHandlerManager.Eve
 
     public void reset() {
         if (this.world != null) {
-            this.world.removeEventListener((IWorldEventListener) ChunkMonitor.INSTANCE);
+            this.world.removeEventListener(ChunkMonitor.INSTANCE);
         }
         this.world = null;
     }
@@ -46,7 +46,7 @@ public enum ChunkMonitor implements IWorldEventListener, EventHandlerManager.Eve
     @SubscribeEvent
     public void onChunkLoad(final ChunkEvent.Load event) {
         if (this.world == null) {
-            (this.world = event.getWorld()).addEventListener((IWorldEventListener) this);
+            (this.world = event.getWorld()).addEventListener(this);
             event.getWorld();
         }
         final Chunk chunk = event.getChunk();

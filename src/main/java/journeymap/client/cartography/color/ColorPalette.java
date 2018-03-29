@@ -43,7 +43,7 @@ public class ColorPalette {
     static {
         UTF8 = Charset.forName("UTF-8");
         logger = Journeymap.getLogger();
-        GSON = new GsonBuilder().registerTypeAdapter((Type) HashBasedTable.class, (Object) new Serializer()).registerTypeAdapter((Type) HashBasedTable.class, (Object) new Deserializer()).create();
+        GSON = new GsonBuilder().registerTypeAdapter(HashBasedTable.class, new Serializer()).registerTypeAdapter(HashBasedTable.class, new Deserializer()).create();
     }
 
     @Since(3.0)
@@ -129,7 +129,7 @@ public class ColorPalette {
 
     public static ColorPalette create(final boolean standard, final boolean permanent) {
         final long start = System.currentTimeMillis();
-        ColorPalette palette = null;
+        ColorPalette palette;
         try {
             final String resourcePackNames = ColorManager.getResourcePackNames();
             final String modPackNames = Constants.getModNames();
@@ -155,10 +155,10 @@ public class ColorPalette {
     }
 
     private static ColorPalette loadFromFile(final File file) {
-        String jsonString = null;
+        String jsonString;
         try {
             jsonString = Files.toString(file, ColorPalette.UTF8).replaceFirst("var colorpalette=", "");
-            final ColorPalette palette = (ColorPalette) ColorPalette.GSON.fromJson(jsonString, (Class) ColorPalette.class);
+            final ColorPalette palette = ColorPalette.GSON.fromJson(jsonString, ColorPalette.class);
             palette.origin = file;
             palette.getOriginHtml(true, true);
             return palette;
@@ -179,12 +179,12 @@ public class ColorPalette {
     }
 
     boolean hasBlockStateColor(final BlockMD blockMD) {
-        return this.table.contains((Object) BlockMD.getBlockId(blockMD), (Object) BlockMD.getBlockStateId(blockMD));
+        return this.table.contains(BlockMD.getBlockId(blockMD), BlockMD.getBlockStateId(blockMD));
     }
 
     @Nullable
     private BlockStateColor getBlockStateColor(final BlockMD blockMD, final boolean createIfMissing) {
-        BlockStateColor blockStateColor = (BlockStateColor) this.table.get((Object) BlockMD.getBlockId(blockMD), (Object) BlockMD.getBlockStateId(blockMD));
+        BlockStateColor blockStateColor = this.table.get(BlockMD.getBlockId(blockMD), BlockMD.getBlockStateId(blockMD));
         if (blockStateColor == null && createIfMissing && blockMD.hasColor()) {
             blockStateColor = new BlockStateColor(blockMD);
             this.table.put(BlockMD.getBlockId(blockMD), BlockMD.getBlockStateId(blockMD), blockStateColor);
@@ -201,7 +201,7 @@ public class ColorPalette {
         }
         if (preExisting) {
             if (blockMD.hasTransparency()) {
-                blockMD.setAlpha((blockStateColor.alpha != null) ? ((float) blockStateColor.alpha) : 1.0f);
+                blockMD.setAlpha((blockStateColor.alpha != null) ? blockStateColor.alpha : 1.0f);
             }
             final int color = RGB.hexToInt(blockStateColor.color);
             blockMD.setColor(color);
@@ -233,7 +233,7 @@ public class ColorPalette {
         File palleteFile = null;
         try {
             palleteFile = (standard ? getStandardPaletteFile() : getWorldPaletteFile());
-            Files.write((CharSequence) ("var colorpalette=" + ColorPalette.GSON.toJson((Object) this)), palleteFile, ColorPalette.UTF8);
+            Files.write("var colorpalette=" + ColorPalette.GSON.toJson(this), palleteFile, ColorPalette.UTF8);
             this.origin = palleteFile;
             this.dirty = false;
             this.getOriginHtml(true, true);
@@ -257,13 +257,13 @@ public class ColorPalette {
             if ((!htmlFile.exists() && createIfMissing) || overwriteExisting) {
                 htmlFile = FileHandler.copyColorPaletteHtmlFile(this.origin.getParentFile(), "colorpalette.html");
                 String htmlString = Files.toString(htmlFile, ColorPalette.UTF8);
-                htmlString = this.substituteValueInContents(htmlString, "jm.colorpalette.file_title", new Object[0]);
+                htmlString = this.substituteValueInContents(htmlString, "jm.colorpalette.file_title");
                 htmlString = this.substituteValueInContents(htmlString, "jm.colorpalette.file_missing_data", "colorpalette.json");
-                htmlString = this.substituteValueInContents(htmlString, "jm.colorpalette.resource_packs", new Object[0]);
-                htmlString = this.substituteValueInContents(htmlString, "jm.colorpalette.mods", new Object[0]);
-                htmlString = this.substituteValueInContents(htmlString, "jm.colorpalette.basic_colors", new Object[0]);
-                htmlString = this.substituteValueInContents(htmlString, "jm.colorpalette.biome_colors", new Object[0]);
-                Files.write((CharSequence) htmlString, htmlFile, ColorPalette.UTF8);
+                htmlString = this.substituteValueInContents(htmlString, "jm.colorpalette.resource_packs");
+                htmlString = this.substituteValueInContents(htmlString, "jm.colorpalette.mods");
+                htmlString = this.substituteValueInContents(htmlString, "jm.colorpalette.basic_colors");
+                htmlString = this.substituteValueInContents(htmlString, "jm.colorpalette.biome_colors");
+                Files.write(htmlString, htmlFile, ColorPalette.UTF8);
             }
             return htmlFile;
         } catch (Throwable t) {
@@ -308,31 +308,31 @@ public class ColorPalette {
                 final String[] resource = blockId.split(":");
                 final String mod = resource[0];
                 final String block = resource[1];
-                JsonObject jsonMod = null;
+                JsonObject jsonMod;
                 if (!jsonTable.has(mod)) {
                     jsonMod = new JsonObject();
-                    jsonTable.add(mod, (JsonElement) jsonMod);
+                    jsonTable.add(mod, jsonMod);
                 } else {
                     jsonMod = jsonTable.getAsJsonObject(mod);
                 }
-                JsonObject jsonBlock = null;
+                JsonObject jsonBlock;
                 if (!jsonMod.has(block)) {
                     jsonBlock = new JsonObject();
-                    jsonMod.add(block, (JsonElement) jsonBlock);
+                    jsonMod.add(block, jsonBlock);
                 } else {
                     jsonBlock = jsonMod.getAsJsonObject(block);
                 }
                 for (final String stateId : src.row(blockId).keySet().stream().sorted().collect(Collectors.toList())) {
-                    final BlockStateColor blockStateColor = (BlockStateColor) src.get((Object) blockId, (Object) stateId);
+                    final BlockStateColor blockStateColor = src.get(blockId, stateId);
                     final JsonArray bscArray = new JsonArray();
-                    bscArray.add((JsonElement) new JsonPrimitive(blockStateColor.color));
+                    bscArray.add(new JsonPrimitive(blockStateColor.color));
                     if (blockStateColor.alpha != null && blockStateColor.alpha != 1.0f) {
-                        bscArray.add((JsonElement) new JsonPrimitive((Number) blockStateColor.alpha));
+                        bscArray.add(new JsonPrimitive(blockStateColor.alpha));
                     }
-                    jsonBlock.add(stateId, (JsonElement) bscArray);
+                    jsonBlock.add(stateId, bscArray);
                 }
             }
-            return (JsonElement) jsonTable;
+            return jsonTable;
         }
     }
 
@@ -352,7 +352,7 @@ public class ColorPalette {
                         if (bscArray.size() > 1) {
                             alpha = bscArray.get(1).getAsFloat();
                         }
-                        final BlockStateColor blockStateColor = new BlockStateColor(color, Float.valueOf(alpha));
+                        final BlockStateColor blockStateColor = new BlockStateColor(color, alpha);
                         result.put((modId + ":" + blockId), blockStateId, blockStateColor);
                     }
                 }

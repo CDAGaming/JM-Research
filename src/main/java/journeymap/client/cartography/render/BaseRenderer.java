@@ -64,8 +64,8 @@ public abstract class BaseRenderer implements IChunkRenderer {
 
     public BaseRenderer() {
         this.dataCache = DataCache.INSTANCE;
-        this.primarySlopeOffsets = new ArrayList<BlockCoordIntPair>(3);
-        this.secondarySlopeOffsets = new ArrayList<BlockCoordIntPair>(4);
+        this.primarySlopeOffsets = new ArrayList<>(3);
+        this.secondarySlopeOffsets = new ArrayList<>(4);
         this.updateOptions(null, null);
         this.shadingSlopeMin = 0.2f;
         this.shadingSlopeMax = 1.7f;
@@ -214,8 +214,8 @@ public abstract class BaseRenderer implements IChunkRenderer {
         final int blockX = (chunkMd.getCoord().x << 4) + (x + offset.x);
         final int blockZ = (chunkMd.getCoord().z << 4) + (z + offset.z);
         final ChunkPos targetCoord = new ChunkPos(blockX >> 4, blockZ >> 4);
-        ChunkMD targetChunkMd = null;
-        if (targetCoord.equals((Object) chunkMd.getCoord())) {
+        ChunkMD targetChunkMd;
+        if (targetCoord.equals(chunkMd.getCoord())) {
             targetChunkMd = chunkMd;
         } else {
             targetChunkMd = this.dataCache.getChunkMD(targetCoord);
@@ -313,7 +313,7 @@ public abstract class BaseRenderer implements IChunkRenderer {
         final int blockX = (chunkMd.getCoord().x << 4) + (x + offset.x);
         final int blockZ = (chunkMd.getCoord().z << 4) + (z + offset.z);
         final ChunkPos targetCoord = new ChunkPos(blockX >> 4, blockZ >> 4);
-        if (targetCoord.equals((Object) chunkMd.getCoord())) {
+        if (targetCoord.equals(chunkMd.getCoord())) {
             return chunkMd;
         }
         return this.dataCache.getChunkMD(targetCoord);

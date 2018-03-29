@@ -104,7 +104,7 @@ public class TopoProperties extends ClientPropertiesBase implements Comparable<T
 
     @Override
     public int compareTo(final TopoProperties other) {
-        return Integer.valueOf(this.hashCode()).compareTo(Integer.valueOf(other.hashCode()));
+        return Integer.compare(this.hashCode(), other.hashCode());
     }
 
     @Override
@@ -149,7 +149,7 @@ public class TopoProperties extends ClientPropertiesBase implements Comparable<T
             } catch (Exception e) {
                 colorStr = "0x000000";
             }
-            if (!Objects.equal((Object) colorStr, (Object) colors[i])) {
+            if (!Objects.equal(colorStr, colors[i])) {
                 if (fix) {
                     colors[i] = colorStr;
                 } else {

@@ -40,7 +40,7 @@ public class BlockMD implements Comparable<BlockMD> {
 
     static {
         FlagsPlantAndCrop = EnumSet.of(BlockFlag.Plant, BlockFlag.Crop);
-        FlagsNormal = EnumSet.complementOf((EnumSet<BlockFlag>) EnumSet.of(BlockFlag.Error, BlockFlag.Ignore));
+        FlagsNormal = EnumSet.complementOf(EnumSet.of(BlockFlag.Error, BlockFlag.Ignore));
         AIRBLOCK = new BlockMD(Blocks.AIR.getDefaultState(), "minecraft:air", "0", "Air", 0.0f, EnumSet.of(BlockFlag.Ignore), false);
         VOIDBLOCK = new BlockMD(Blocks.AIR.getDefaultState(), "journeymap:void", "0", "Void", 0.0f, EnumSet.of(BlockFlag.Ignore), false);
         BlockMD.LOGGER = Journeymap.getLogger();
@@ -135,7 +135,7 @@ public class BlockMD implements Comparable<BlockMD> {
     }
 
     public static String getBlockId(final IBlockState blockState) {
-        return ((ResourceLocation) Block.REGISTRY.getNameForObject(blockState.getBlock())).toString();
+        return Block.REGISTRY.getNameForObject(blockState.getBlock()).toString();
     }
 
     public static String getBlockStateId(final BlockMD blockMD) {
@@ -143,11 +143,11 @@ public class BlockMD implements Comparable<BlockMD> {
     }
 
     public static String getBlockStateId(final IBlockState blockState) {
-        final Collection properties = (Collection) blockState.getProperties().values();
+        final Collection properties = blockState.getProperties().values();
         if (properties.isEmpty()) {
             return Integer.toString(blockState.getBlock().getMetaFromState(blockState));
         }
-        return Joiner.on(",").join((Iterable) properties);
+        return Joiner.on(",").join(properties);
     }
 
     private static String getBlockName(final IBlockState blockState) {
@@ -176,7 +176,7 @@ public class BlockMD implements Comparable<BlockMD> {
         for (final BlockMD blockMD : defaultBlockMD.getValidStateMDs()) {
             blockMD.addFlags(flags);
         }
-        BlockMD.LOGGER.debug(block.getUnlocalizedName() + " flags set: " + flags);
+        BlockMD.LOGGER.debug(block.getUnlocalizedName() + " flags set: " + Arrays.toString(flags));
     }
 
     public Set<BlockMD> getValidStateMDs() {
@@ -379,23 +379,23 @@ public class BlockMD implements Comparable<BlockMD> {
             return false;
         }
         final BlockMD blockMD = (BlockMD) o;
-        return Objects.equal((Object) this.getBlockId(), (Object) blockMD.getBlockId()) && Objects.equal((Object) this.getBlockStateId(), (Object) blockMD.getBlockStateId());
+        return Objects.equal(this.getBlockId(), blockMD.getBlockId()) && Objects.equal(this.getBlockStateId(), blockMD.getBlockStateId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(new Object[]{this.getBlockId(), this.getBlockStateId()});
+        return Objects.hashCode(this.getBlockId(), this.getBlockStateId());
     }
 
     @Override
     public String toString() {
-        return String.format("BlockMD [%s] (%s)", this.blockState, Joiner.on(",").join((Iterable) this.flags));
+        return String.format("BlockMD [%s] (%s)", this.blockState, Joiner.on(",").join(this.flags));
     }
 
     @Override
     public int compareTo(final BlockMD that) {
         final Ordering ordering = Ordering.natural().nullsLast();
-        return ComparisonChain.start().compare((Object) this.blockId, (Object) that.blockId, (Comparator) ordering).compare((Object) this.blockStateId, (Object) that.blockStateId, (Comparator) ordering).result();
+        return ComparisonChain.start().compare(this.blockId, that.blockId, ordering).compare(this.blockStateId, that.blockStateId, ordering).result();
     }
 
     public static class CacheLoader extends com.google.common.cache.CacheLoader<IBlockState, BlockMD> {

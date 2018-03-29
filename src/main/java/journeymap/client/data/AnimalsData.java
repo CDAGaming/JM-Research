@@ -16,10 +16,10 @@ import java.util.Map;
 public class AnimalsData extends CacheLoader<Class, Map<String, EntityDTO>> {
     public Map<String, EntityDTO> load(final Class aClass) throws Exception {
         if (!FeatureManager.isAllowed(Feature.RadarAnimals)) {
-            return new HashMap<String, EntityDTO>();
+            return new HashMap<>();
         }
         final List<EntityDTO> list = EntityHelper.getAnimalsNearby();
-        final List<EntityDTO> finalList = new ArrayList<EntityDTO>(list);
+        final List<EntityDTO> finalList = new ArrayList<>(list);
         for (final EntityDTO entityDTO : list) {
             final EntityLivingBase entityLiving = entityDTO.entityLivingRef.get();
             if (entityLiving == null) {

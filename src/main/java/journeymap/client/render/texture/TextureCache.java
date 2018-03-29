@@ -112,7 +112,7 @@ public class TextureCache {
         final TextureManager textureManager = Minecraft.getMinecraft().getTextureManager();
         ITextureObject textureObject = textureManager.getTexture(location);
         if (textureObject == null || !(textureObject instanceof TextureImpl)) {
-            textureObject = (ITextureObject) new TextureImpl(location);
+            textureObject = new TextureImpl(location);
             final boolean loaded = textureManager.loadTexture(location, textureObject);
             if (!loaded) {
                 textureObject = null;
@@ -248,7 +248,7 @@ public class TextureCache {
             TextureCache.playerSkins.put(username, tex);
         }
         final TextureImpl playerSkinTex = tex;
-        final BufferedImage[] img = new BufferedImage[1];
+        final BufferedImage[] img = new BufferedImage[0];
         final TextureImpl textureImpl = null;
         TextureCache.texExec.submit(() -> {
             img[0] = IgnSkin.downloadSkin(username);

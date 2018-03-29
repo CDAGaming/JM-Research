@@ -45,7 +45,7 @@ public class RegionCoord implements Comparable<RegionCoord> {
 
     public static RegionCoord fromRegionPos(final File worldDir, final int regionX, final int regionZ, final int dimension) {
         final Cache<String, RegionCoord> cache = DataCache.INSTANCE.getRegionCoords();
-        RegionCoord regionCoord = (RegionCoord) cache.getIfPresent((Object) toCacheKey(getDimPath(worldDir, dimension), regionX, regionZ));
+        RegionCoord regionCoord = cache.getIfPresent(toCacheKey(getDimPath(worldDir, dimension), regionX, regionZ));
         if (regionCoord == null || regionX != regionCoord.regionX || regionZ != regionCoord.regionZ || dimension != regionCoord.dimension) {
             regionCoord = new RegionCoord(worldDir, regionX, regionZ, dimension);
             cache.put(regionCoord.theCacheKey, regionCoord);
@@ -132,7 +132,7 @@ public class RegionCoord implements Comparable<RegionCoord> {
     }
 
     public List<ChunkPos> getChunkCoordsInRegion() {
-        final List<ChunkPos> list = new ArrayList<ChunkPos>(1024);
+        final List<ChunkPos> list = new ArrayList<>(1024);
         final ChunkPos min = this.getMinChunkCoord();
         final ChunkPos max = this.getMaxChunkCoord();
         for (int x = min.x; x <= max.x; ++x) {
@@ -145,13 +145,11 @@ public class RegionCoord implements Comparable<RegionCoord> {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("RegionCoord [");
-        builder.append(this.regionX);
-        builder.append(",");
-        builder.append(this.regionZ);
-        builder.append("]");
-        return builder.toString();
+        return "RegionCoord [" +
+                this.regionX +
+                "," +
+                this.regionZ +
+                "]";
     }
 
     @Override

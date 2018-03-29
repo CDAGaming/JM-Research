@@ -36,6 +36,6 @@ public final class MarkerOverlay extends Overlay {
 
     @Override
     public String toString() {
-        return this.toStringHelper(this).add("icon", (Object) this.icon).add("point", (Object) this.point).toString();
+        return this.toStringHelper(this).add("icon", this.icon).add("point", this.point).toString();
     }
 }

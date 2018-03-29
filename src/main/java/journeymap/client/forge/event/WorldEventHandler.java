@@ -21,7 +21,7 @@ public class WorldEventHandler implements EventHandlerManager.EventHandler {
                 FeatureManager.INSTANCE.reset();
             }
         } catch (Exception e) {
-            Journeymap.getLogger().error("Error handling WorldEvent.Unload", (Throwable) e);
+            Journeymap.getLogger().error("Error handling WorldEvent.Unload", e);
         }
     }
 }

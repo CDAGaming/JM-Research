@@ -50,13 +50,13 @@ public class EntityDTO implements Serializable {
     public int color;
 
     private EntityDTO(final EntityLivingBase entity) {
-        this.entityLivingRef = new WeakReference<EntityLivingBase>(entity);
+        this.entityLivingRef = new WeakReference<>(entity);
         this.entityId = entity.getUniqueID().toString();
     }
 
     public void update(final EntityLivingBase entity, boolean hostile) {
         final Minecraft mc = Minecraft.getMinecraft();
-        final EntityPlayer currentPlayer = (EntityPlayer) FMLClientHandler.instance().getClient().player;
+        final EntityPlayer currentPlayer = FMLClientHandler.instance().getClient().player;
         this.dimension = entity.dimension;
         this.posX = entity.posX;
         this.posY = entity.posY;
@@ -72,7 +72,7 @@ public class EntityDTO implements Serializable {
         }
         this.sneaking = entity.isSneaking();
         final CoreProperties coreProperties = Journeymap.getClient().getCoreProperties();
-        ResourceLocation entityIcon = null;
+        ResourceLocation entityIcon;
         int playerColor = coreProperties.getColor(coreProperties.colorPlayer);
         ScorePlayerTeam team = null;
         try {
@@ -80,12 +80,11 @@ public class EntityDTO implements Serializable {
         } catch (Throwable t3) {
         }
         if (entity instanceof EntityPlayer) {
-            final String name = StringUtils.stripControlCodes(entity.getName());
-            this.username = name;
+            this.username = StringUtils.stripControlCodes(entity.getName());
             try {
                 if (team != null) {
                     playerColor = team.getColor().getColorIndex();
-                } else if (currentPlayer.equals((Object) entity)) {
+                } else if (currentPlayer.equals(entity)) {
                     playerColor = coreProperties.getColor(coreProperties.colorSelf);
                 } else {
                     playerColor = coreProperties.getColor(coreProperties.colorPlayer);
@@ -104,7 +103,7 @@ public class EntityDTO implements Serializable {
             }
         } else {
             this.username = null;
-            entityIcon = EntityHelper.getIconTextureLocation((Entity) entity);
+            entityIcon = EntityHelper.getIconTextureLocation(entity);
         }
         if (entityIcon != null) {
             this.entityIconLocation = entityIcon;
@@ -112,7 +111,7 @@ public class EntityDTO implements Serializable {
         }
         String owner = null;
         if (entity instanceof EntityTameable) {
-            final Entity ownerEntity = (Entity) ((EntityTameable) entity).getOwner();
+            final Entity ownerEntity = ((EntityTameable) entity).getOwner();
             if (ownerEntity != null) {
                 owner = ownerEntity.getName();
             }
@@ -126,7 +125,7 @@ public class EntityDTO implements Serializable {
             if (currentPlayer != null && ownerUuid != null) {
                 try {
                     final String playerUuid = currentPlayer.getUniqueID().toString();
-                    if (playerUuid.equals(ownerUuid)) {
+                    if (playerUuid.equals(ownerUuid.toString())) {
                         owner = currentPlayer.getName();
                     }
                 } catch (Throwable t2) {
@@ -140,7 +139,7 @@ public class EntityDTO implements Serializable {
         if (entity instanceof EntityLiving) {
             final EntityLiving entityLiving = (EntityLiving) entity;
             if (entity.hasCustomName() && entityLiving.getAlwaysRenderNameTag()) {
-                customName = StringUtils.stripControlCodes(((EntityLiving) entity).getCustomNameTag());
+                customName = StringUtils.stripControlCodes(entity.getCustomNameTag());
             }
             if (!hostile && currentPlayer != null) {
                 final EntityLivingBase attackTarget = ((EntityLiving) entity).getAttackTarget();

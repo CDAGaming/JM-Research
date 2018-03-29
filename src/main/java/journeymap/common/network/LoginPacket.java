@@ -16,7 +16,7 @@ public class LoginPacket implements IMessage {
     }
 
     public LoginPacket(final InitLogin packet) {
-        this.packet = InitLogin.GSON.toJson((Object) packet);
+        this.packet = InitLogin.GSON.toJson(packet);
     }
 
     public String getPacket() {
@@ -44,7 +44,7 @@ public class LoginPacket implements IMessage {
     public static class Listener implements IMessageHandler<LoginPacket, IMessage> {
         public IMessage onMessage(final LoginPacket message, final MessageContext ctx) {
             Journeymap.getLogger().info("Login Packet received");
-            final InitLogin packet = (InitLogin) InitLogin.GSON.fromJson(message.getPacket(), (Class) InitLogin.class);
+            final InitLogin packet = (InitLogin) InitLogin.GSON.fromJson(message.getPacket(), InitLogin.class);
             Journeymap.getClient().setServerTeleportEnabled(packet.isTeleportEnabled());
             Journeymap.getClient().setServerEnabled(true);
             return null;

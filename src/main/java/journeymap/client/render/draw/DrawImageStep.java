@@ -33,7 +33,7 @@ public class DrawImageStep extends BaseOverlayDrawStep<ImageOverlay> {
         if (pass == DrawStep.Pass.Object) {
             this.ensureTexture();
             if (!this.hasError && this.iconTexture != null) {
-                final MapImage icon = ((ImageOverlay) this.overlay).getImage();
+                final MapImage icon = this.overlay.getImage();
                 final double width = this.screenBounds.width;
                 final double height = this.screenBounds.height;
                 DrawUtil.drawColoredSprite(this.iconTexture, width, height, 0.0, 0.0, icon.getDisplayWidth(), icon.getDisplayHeight(), icon.getColor(), icon.getOpacity(), this.northWestPosition.x + xOffset, this.northWestPosition.y + yOffset, 1.0f, icon.getRotation());
@@ -49,19 +49,16 @@ public class DrawImageStep extends BaseOverlayDrawStep<ImageOverlay> {
         }
         try {
             if (this.iconFuture == null || this.iconFuture.isCancelled()) {
-                this.iconFuture = TextureCache.scheduleTextureTask((Callable<TextureImpl>) new Callable<TextureImpl>() {
-                    @Override
-                    public TextureImpl call() throws Exception {
-                        final MapImage image = ((ImageOverlay) DrawImageStep.this.overlay).getImage();
-                        ResourceLocation resourceLocation = image.getImageLocation();
-                        if (resourceLocation == null) {
-                            resourceLocation = new ResourceLocation("fake:" + ((ImageOverlay) DrawImageStep.this.overlay).getGuid());
-                            final TextureImpl texture = TextureCache.getTexture(resourceLocation);
-                            texture.setImage(image.getImage(), true);
-                            return texture;
-                        }
-                        return TextureCache.getTexture(resourceLocation);
+                this.iconFuture = TextureCache.scheduleTextureTask(() -> {
+                    final MapImage image = DrawImageStep.this.overlay.getImage();
+                    ResourceLocation resourceLocation = image.getImageLocation();
+                    if (resourceLocation == null) {
+                        resourceLocation = new ResourceLocation("fake:" + DrawImageStep.this.overlay.getGuid());
+                        final TextureImpl texture = TextureCache.getTexture(resourceLocation);
+                        texture.setImage(image.getImage(), true);
+                        return texture;
                     }
+                    return TextureCache.getTexture(resourceLocation);
                 });
             } else if (this.iconFuture.isDone()) {
                 this.iconTexture = this.iconFuture.get();
@@ -71,17 +68,17 @@ public class DrawImageStep extends BaseOverlayDrawStep<ImageOverlay> {
                 this.iconFuture = null;
             }
         } catch (Exception e) {
-            Journeymap.getLogger().error("Error getting ImageOverlay marimage upperTexture: " + e, (Throwable) e);
+            Journeymap.getLogger().error("Error getting ImageOverlay marimage upperTexture: " + e, e);
             this.hasError = true;
         }
     }
 
     @Override
     protected void updatePositions(final GridRenderer gridRenderer, final double rotation) {
-        this.northWestPosition = gridRenderer.getBlockPixelInGrid(((ImageOverlay) this.overlay).getNorthWestPoint());
-        this.southEastPosition = gridRenderer.getBlockPixelInGrid(((ImageOverlay) this.overlay).getSouthEastPoint());
+        this.northWestPosition = gridRenderer.getBlockPixelInGrid(this.overlay.getNorthWestPoint());
+        this.southEastPosition = gridRenderer.getBlockPixelInGrid(this.overlay.getSouthEastPoint());
         (this.screenBounds = new Rectangle2D.Double(this.northWestPosition.x, this.northWestPosition.y, 0.0, 0.0)).add(this.southEastPosition);
-        final TextProperties textProperties = ((ImageOverlay) this.overlay).getTextProperties();
+        final TextProperties textProperties = this.overlay.getTextProperties();
         this.labelPosition.setLocation(this.screenBounds.getCenterX() + textProperties.getOffsetX(), this.screenBounds.getCenterY() + textProperties.getOffsetY());
     }
 }

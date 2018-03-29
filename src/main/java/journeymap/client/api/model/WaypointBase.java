@@ -175,6 +175,6 @@ public abstract class WaypointBase<T extends WaypointBase> extends Displayable i
             return false;
         }
         final WaypointBase<?> that = (WaypointBase<?>) o;
-        return Objects.equal((Object) this.getName(), (Object) that.getName()) && Objects.equal((Object) this.getIcon(), (Object) that.getIcon()) && Objects.equal((Object) this.getColor(), (Object) that.getColor()) && Objects.equal((Object) this.getBackgroundColor(), (Object) that.getBackgroundColor()) && Arrays.equals(this.getDisplayDimensions(), that.getDisplayDimensions());
+        return Objects.equal(this.getName(), that.getName()) && Objects.equal(this.getIcon(), that.getIcon()) && Objects.equal(this.getColor(), that.getColor()) && Objects.equal(this.getBackgroundColor(), that.getBackgroundColor()) && Arrays.equals(this.getDisplayDimensions(), that.getDisplayDimensions());
     }
 }

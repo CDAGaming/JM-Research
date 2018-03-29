@@ -21,7 +21,7 @@ class BlockStateColor implements Comparable<BlockStateColor> {
     Float alpha;
 
     BlockStateColor(final BlockMD blockMD) {
-        this(blockMD, Integer.valueOf(blockMD.getTextureColor()));
+        this(blockMD, blockMD.getTextureColor());
     }
 
     BlockStateColor(final BlockMD blockMD, final Integer color) {
@@ -44,6 +44,6 @@ class BlockStateColor implements Comparable<BlockStateColor> {
     @Override
     public int compareTo(final BlockStateColor that) {
         final Ordering ordering = Ordering.natural().nullsLast();
-        return ComparisonChain.start().compare((Object) this.name, (Object) that.name, (Comparator) ordering).compare((Object) this.block, (Object) that.block, (Comparator) ordering).compare((Object) this.state, (Object) that.state, (Comparator) ordering).compare((Object) this.color, (Object) that.color, (Comparator) ordering).compare((Object) this.alpha, (Object) that.alpha, (Comparator) ordering).result();
+        return ComparisonChain.start().compare(this.name, that.name, ordering).compare(this.block, (Object) that.block, (Comparator) ordering).compare((Object) this.state, (Object) that.state, (Comparator) ordering).compare((Object) this.color, (Object) that.color, (Comparator) ordering).compare((Object) this.alpha, (Object) that.alpha, (Comparator) ordering).result();
     }
 }

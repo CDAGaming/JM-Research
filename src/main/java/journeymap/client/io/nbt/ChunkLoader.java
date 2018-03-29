@@ -23,8 +23,8 @@ public class ChunkLoader {
     public static ChunkMD getChunkMD(final AnvilChunkLoader loader, final Minecraft mc, final ChunkPos coord, final boolean forceRetain) {
         try {
             if (RegionLoader.getRegionFile(mc, coord.x, coord.z).exists()) {
-                if (loader.chunkExists((World) mc.world, coord.x, coord.z)) {
-                    final Chunk chunk = loader.loadChunk((World) mc.world, coord.x, coord.z);
+                if (loader.chunkExists(mc.world, coord.x, coord.z)) {
+                    final Chunk chunk = loader.loadChunk(mc.world, coord.x, coord.z);
                     if (chunk != null) {
                         if (!chunk.isLoaded()) {
                             chunk.markLoaded(true);

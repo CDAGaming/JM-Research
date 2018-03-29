@@ -36,7 +36,7 @@ public class ThemeLoader {
 
     public static void initialize(final boolean preLoadCurrentTheme) {
         Journeymap.getLogger().trace("Initializing themes ...");
-        final Set<String> themeDirNames = ThemePresets.getPresetDirs().stream().collect(Collectors.toSet());
+        final Set<String> themeDirNames = new HashSet<>(ThemePresets.getPresetDirs());
         for (final String dirName : themeDirNames) {
             FileHandler.copyResources(getThemeIconDir(), new ResourceLocation("journeymap", "theme/" + dirName), dirName, true);
         }
@@ -57,13 +57,7 @@ public class ThemeLoader {
 
     public static File[] getThemeDirectories() {
         final File parentDir = getThemeIconDir();
-        final File[] themeDirs = parentDir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(final File pathname) {
-                return pathname.isDirectory();
-            }
-        });
-        return themeDirs;
+        return parentDir.listFiles(File::isDirectory);
     }
 
     public static List<Theme> getThemes() {
@@ -76,14 +70,9 @@ public class ThemeLoader {
                 return Collections.emptyList();
             }
         }
-        final ArrayList<Theme> themes = new ArrayList<Theme>();
+        final ArrayList<Theme> themes = new ArrayList<>();
         for (final File themeDir : themeDirs) {
-            final File[] themeFiles = themeDir.listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(final File dir, final String name) {
-                    return name.endsWith(".theme2.json");
-                }
-            });
+            final File[] themeFiles = themeDir.listFiles((dir, name) -> name.endsWith(".theme2.json"));
             if (themeFiles != null && themeFiles.length > 0) {
                 for (final File themeFile : themeFiles) {
                     final Theme theme2 = loadThemeFromFile(themeFile, false);
@@ -96,7 +85,7 @@ public class ThemeLoader {
         if (themes.isEmpty()) {
             themes.addAll(ThemePresets.getPresets());
         }
-        Collections.sort(themes, Comparator.comparing(theme -> theme.name));
+        themes.sort(Comparator.comparing(theme -> theme.name));
         return themes;
     }
 
@@ -150,7 +139,7 @@ public class ThemeLoader {
             if (themeFile != null && themeFile.exists()) {
                 final Charset UTF8 = Charset.forName("UTF-8");
                 final String json = Files.toString(themeFile, UTF8);
-                final Theme theme = (Theme) ThemeLoader.GSON.fromJson(json, (Class) Theme.class);
+                final Theme theme = ThemeLoader.GSON.fromJson(json, Theme.class);
                 if (theme.schema < 2.0) {
                     Journeymap.getLogger().error("Theme file schema is obsolete, cannot be used: " + themeFile);
                     return null;
@@ -179,7 +168,7 @@ public class ThemeLoader {
             final File themeFile = getThemeFile(theme.directory, theme.name);
             Files.createParentDirs(themeFile);
             final Charset UTF8 = Charset.forName("UTF-8");
-            Files.write((CharSequence) ThemeLoader.GSON.toJson((Object) theme), themeFile, UTF8);
+            Files.write(ThemeLoader.GSON.toJson(theme), themeFile, UTF8);
         } catch (Throwable t) {
             Journeymap.getLogger().error("Could not save Theme json file: " + t);
         }
@@ -191,7 +180,7 @@ public class ThemeLoader {
             try {
                 final Theme.DefaultPointer defaultPointer = new Theme.DefaultPointer(ThemePresets.getDefault());
                 final Charset UTF8 = Charset.forName("UTF-8");
-                Files.write((CharSequence) ThemeLoader.GSON.toJson((Object) defaultPointer), defaultThemeFile, UTF8);
+                Files.write(ThemeLoader.GSON.toJson(defaultPointer), defaultThemeFile, UTF8);
             } catch (Throwable t) {
                 Journeymap.getLogger().error("Could not save DefaultTheme json file: " + t);
             }
@@ -240,7 +229,7 @@ public class ThemeLoader {
             if (defaultThemeFile.exists()) {
                 final Charset UTF8 = Charset.forName("UTF-8");
                 final String json = Files.toString(defaultThemeFile, UTF8);
-                return (Theme.DefaultPointer) ThemeLoader.GSON.fromJson(json, (Class) Theme.DefaultPointer.class);
+                return ThemeLoader.GSON.fromJson(json, Theme.DefaultPointer.class);
             }
             return new Theme.DefaultPointer(ThemePresets.getDefault());
         } catch (Throwable t) {

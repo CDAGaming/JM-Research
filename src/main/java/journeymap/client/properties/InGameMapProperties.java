@@ -24,9 +24,9 @@ public abstract class InGameMapProperties extends MapProperties {
     public final StringField locationFormat;
 
     protected InGameMapProperties() {
-        this.playerDisplay = new EnumField<EntityDisplay>(Category.Inherit, "jm.minimap.player_display", EntityDisplay.SmallDots);
+        this.playerDisplay = new EnumField<>(Category.Inherit, "jm.minimap.player_display", EntityDisplay.SmallDots);
         this.showPlayerHeading = new BooleanField(Category.Inherit, "jm.minimap.player_heading", true);
-        this.mobDisplay = new EnumField<EntityDisplay>(Category.Inherit, "jm.minimap.mob_display", EntityDisplay.SmallDots);
+        this.mobDisplay = new EnumField<>(Category.Inherit, "jm.minimap.mob_display", EntityDisplay.SmallDots);
         this.showMobHeading = new BooleanField(Category.Inherit, "jm.minimap.mob_heading", true);
         this.showMobs = new BooleanField(Category.Inherit, "jm.common.show_mobs", true);
         this.showAnimals = new BooleanField(Category.Inherit, "jm.common.show_animals", true);

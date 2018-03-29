@@ -18,7 +18,7 @@ public class PropertiesManager {
     }
 
     private void loadConfigs() {
-        this.dimensionProperties = new HashMap<Integer, DimensionProperties>();
+        this.dimensionProperties = new HashMap<>();
         (this.globalProperties = new GlobalProperties()).load();
         for (final Integer dim : DimensionManager.getIDs()) {
             this.genConfig(dim);

@@ -145,7 +145,7 @@ public class WaypointGroup implements Comparable<WaypointGroup> {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper((Object) this).add("name", (Object) this.name).add("origin", (Object) this.origin).toString();
+        return MoreObjects.toStringHelper(this).add("name", this.name).add("origin", this.origin).toString();
     }
 
     public String getKey() {

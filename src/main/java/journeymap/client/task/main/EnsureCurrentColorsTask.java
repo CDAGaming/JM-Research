@@ -20,7 +20,7 @@ public class EnsureCurrentColorsTask implements IMainThreadTask {
         this.forceReset = forceReset;
         this.announce = announce;
         if (announce) {
-            ChatLog.announceI18N("jm.common.colorreset_start", new Object[0]);
+            ChatLog.announceI18N("jm.common.colorreset_start");
         }
     }
 
@@ -33,7 +33,7 @@ public class EnsureCurrentColorsTask implements IMainThreadTask {
         }
         ColorManager.INSTANCE.ensureCurrent(this.forceReset);
         if (this.announce) {
-            ChatLog.announceI18N("jm.common.colorreset_complete", new Object[0]);
+            ChatLog.announceI18N("jm.common.colorreset_complete");
         }
         if (this.forceReset) {
             MapPlayerTask.forceNearbyRemap();

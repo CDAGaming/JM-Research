@@ -47,6 +47,6 @@ public final class ImageOverlay extends Overlay {
 
     @Override
     public String toString() {
-        return this.toStringHelper(this).add("image", (Object) this.image).add("northWestPoint", (Object) this.northWestPoint).add("southEastPoint", (Object) this.southEastPoint).toString();
+        return this.toStringHelper(this).add("image", this.image).add("northWestPoint", this.northWestPoint).add("southEastPoint", this.southEastPoint).toString();
     }
 }

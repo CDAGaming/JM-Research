@@ -32,7 +32,7 @@ public class ChunkMD {
     }
 
     public ChunkMD(final Chunk chunk, final boolean forceRetain) {
-        this.properties = new HashMap<String, Serializable>();
+        this.properties = new HashMap<>();
         this.blockDataArrays = new BlockDataArrays();
         if (chunk == null) {
             throw new IllegalArgumentException("Chunk can't be null");
@@ -40,7 +40,7 @@ public class ChunkMD {
         this.coord = new ChunkPos(chunk.x, chunk.z);
         this.setProperty("loaded", System.currentTimeMillis());
         this.properties.put("isSlimeChunk", chunk.getRandomWithSeed(987234911L).nextInt(10) == 0);
-        this.chunkReference = new WeakReference<Chunk>(chunk);
+        this.chunkReference = new WeakReference<>(chunk);
         if (forceRetain) {
             this.retainedChunk = chunk;
         }
@@ -69,7 +69,7 @@ public class ChunkMD {
         final int j = pos.getZ() & 0xF;
         int k = blockBiomeArray[j << 4 | i] & 0xFF;
         if (k == 255) {
-            final Biome biome = chunk.getWorld().getBiomeProvider().getBiome(pos, (Biome) null);
+            final Biome biome = chunk.getWorld().getBiomeProvider().getBiome(pos, null);
             if (biome == null) {
                 return null;
             }
@@ -119,8 +119,7 @@ public class ChunkMD {
 
     public boolean hasChunk() {
         final Chunk chunk = this.chunkReference.get();
-        final boolean result = chunk != null && !(chunk instanceof EmptyChunk) && chunk.isLoaded();
-        return result;
+        return chunk != null && !(chunk instanceof EmptyChunk) && chunk.isLoaded();
     }
 
     public int getHeight(final BlockPos blockPos) {
@@ -137,7 +136,7 @@ public class ChunkMD {
 
     public int getLightOpacity(final BlockMD blockMD, final int localX, final int y, final int localZ) {
         final BlockPos pos = this.getBlockPos(localX, y, localZ);
-        return blockMD.getBlockState().getBlock().getLightOpacity(blockMD.getBlockState(), (IBlockAccess) JmBlockAccess.INSTANCE, pos);
+        return blockMD.getBlockState().getBlock().getLightOpacity(blockMD.getBlockState(), JmBlockAccess.INSTANCE, pos);
     }
 
     public Serializable getProperty(final String name) {
@@ -174,7 +173,7 @@ public class ChunkMD {
             return false;
         }
         final ChunkMD other = (ChunkMD) obj;
-        return this.getCoord().equals((Object) other.getCoord());
+        return this.getCoord().equals(other.getCoord());
     }
 
     public Chunk getChunk() {
@@ -228,7 +227,7 @@ public class ChunkMD {
     protected HashMap<MapType, Long> getRenderTimes() {
         Serializable obj = this.properties.get("lastRendered");
         if (!(obj instanceof HashMap)) {
-            obj = new HashMap<Object, Object>();
+            obj = new HashMap<>();
             this.properties.put("lastRendered", obj);
         }
         return (HashMap<MapType, Long>) obj;

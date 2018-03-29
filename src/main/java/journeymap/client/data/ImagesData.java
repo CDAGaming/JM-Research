@@ -22,7 +22,7 @@ public class ImagesData {
         if (dirtyRegions.isEmpty()) {
             this.regions = (List<Object[]>) Collections.EMPTY_LIST;
         } else {
-            this.regions = new ArrayList<Object[]>(dirtyRegions.size());
+            this.regions = new ArrayList<>(dirtyRegions.size());
             for (final RegionCoord rc : dirtyRegions) {
                 this.regions.add(new Integer[]{rc.regionX, rc.regionZ});
             }

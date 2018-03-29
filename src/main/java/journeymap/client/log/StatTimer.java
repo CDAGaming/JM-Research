@@ -22,7 +22,7 @@ public class StatTimer {
 
     static {
         logger = Journeymap.getLogger();
-        StatTimer.timers = Collections.synchronizedMap(new HashMap<String, StatTimer>());
+        StatTimer.timers = Collections.synchronizedMap(new HashMap<>());
     }
 
     private final int warmupCount;
@@ -103,14 +103,9 @@ public class StatTimer {
     }
 
     public static synchronized String getReport() {
-        final List<StatTimer> list = new ArrayList<StatTimer>(StatTimer.timers.values());
-        Collections.sort(list, new Comparator<StatTimer>() {
-            @Override
-            public int compare(final StatTimer o1, final StatTimer o2) {
-                return o1.name.compareTo(o2.name);
-            }
-        });
-        final StringBuffer sb = new StringBuffer();
+        final List<StatTimer> list = new ArrayList<>(StatTimer.timers.values());
+        list.sort(Comparator.comparing(o -> o.name));
+        final StringBuilder sb = new StringBuilder();
         for (final StatTimer timer : list) {
             if (timer.counter.get() > 0L) {
                 sb.append(LogFormatter.LINEBREAK).append(timer.getReportString());
@@ -120,14 +115,9 @@ public class StatTimer {
     }
 
     public static synchronized List<String> getReportByTotalTime(final String prefix, final String suffix) {
-        final List<StatTimer> list = new ArrayList<StatTimer>(StatTimer.timers.values());
-        Collections.sort(list, new Comparator<StatTimer>() {
-            @Override
-            public int compare(final StatTimer o1, final StatTimer o2) {
-                return Double.compare(o2.totalTime.get(), o1.totalTime.get());
-            }
-        });
-        final ArrayList<String> strings = new ArrayList<String>();
+        final List<StatTimer> list = new ArrayList<>(StatTimer.timers.values());
+        list.sort((o1, o2) -> Double.compare(o2.totalTime.get(), o1.totalTime.get()));
+        final ArrayList<String> strings = new ArrayList<>();
         for (final StatTimer timer : list) {
             if (timer.counter.get() > 0L) {
                 strings.add(prefix + timer.getSimpleReportString() + suffix);

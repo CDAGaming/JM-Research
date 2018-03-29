@@ -156,6 +156,6 @@ public class TextProperties {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper((Object) this).add("activeMapTypes", (Object) this.activeMapTypes).add("activeUIs", (Object) this.activeUIs).add("backgroundColor", this.backgroundColor).add("backgroundOpacity", this.backgroundOpacity).add("color", this.color).add("opacity", this.opacity).add("fontShadow", this.fontShadow).add("maxZoom", this.maxZoom).add("minZoom", this.minZoom).add("offsetX", this.offsetX).add("offsetY", this.offsetY).add("scale", this.scale).toString();
+        return MoreObjects.toStringHelper(this).add("activeMapTypes", this.activeMapTypes).add("activeUIs", this.activeUIs).add("backgroundColor", this.backgroundColor).add("backgroundOpacity", this.backgroundOpacity).add("color", this.color).add("opacity", this.opacity).add("fontShadow", this.fontShadow).add("maxZoom", this.maxZoom).add("minZoom", this.minZoom).add("offsetX", this.offsetX).add("offsetY", this.offsetY).add("scale", this.scale).toString();
     }
 }

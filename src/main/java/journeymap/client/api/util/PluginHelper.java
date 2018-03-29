@@ -37,15 +37,15 @@ public enum PluginHelper {
     public Map<String, IClientPlugin> preInitPlugins(final FMLPreInitializationEvent event) {
         if (this.plugins == null) {
             final ASMDataTable asmDataTable = event.getAsmData();
-            final HashMap<String, IClientPlugin> discovered = new HashMap<String, IClientPlugin>();
-            final Set<ASMDataTable.ASMData> asmDataSet = (Set<ASMDataTable.ASMData>) asmDataTable.getAll(PluginHelper.PLUGIN_ANNOTATION_NAME);
+            final HashMap<String, IClientPlugin> discovered = new HashMap<>();
+            final Set<ASMDataTable.ASMData> asmDataSet = asmDataTable.getAll(PluginHelper.PLUGIN_ANNOTATION_NAME);
             for (final ASMDataTable.ASMData asmData : asmDataSet) {
                 final String className = asmData.getClassName();
                 try {
                     final Class<?> pluginClass = Class.forName(className);
                     if (IClientPlugin.class.isAssignableFrom(pluginClass)) {
                         final Class<? extends IClientPlugin> interfaceImplClass = pluginClass.asSubclass(IClientPlugin.class);
-                        final IClientPlugin instance = (IClientPlugin) interfaceImplClass.newInstance();
+                        final IClientPlugin instance = interfaceImplClass.newInstance();
                         final String modId = instance.getModId();
                         if (Strings.isNullOrEmpty(modId)) {
                             throw new Exception("IClientPlugin.getModId() must return a non-empty, non-null value");
@@ -60,23 +60,23 @@ public enum PluginHelper {
                         PluginHelper.LOGGER.error(String.format("Found @%s: %s, but it doesn't implement %s", PluginHelper.PLUGIN_ANNOTATION_NAME, className, PluginHelper.PLUGIN_INTERFACE_NAME));
                     }
                 } catch (Exception e) {
-                    PluginHelper.LOGGER.error(String.format("Found @%s: %s, but failed to instantiate it: %s", PluginHelper.PLUGIN_ANNOTATION_NAME, className, e.getMessage()), (Throwable) e);
+                    PluginHelper.LOGGER.error(String.format("Found @%s: %s, but failed to instantiate it: %s", PluginHelper.PLUGIN_ANNOTATION_NAME, className, e.getMessage()), e);
                 }
             }
             if (discovered.isEmpty()) {
                 PluginHelper.LOGGER.info("No plugins for JourneyMap API discovered.");
             }
-            this.plugins = Collections.unmodifiableMap((Map<? extends String, ? extends IClientPlugin>) discovered);
+            this.plugins = Collections.unmodifiableMap(discovered);
         }
         return this.plugins;
     }
 
     public Map<String, IClientPlugin> initPlugins(final FMLInitializationEvent event, final IClientAPI clientAPI) {
         if (this.plugins == null) {
-            PluginHelper.LOGGER.warn("Plugin discovery never occurred.", (Throwable) new IllegalStateException());
+            PluginHelper.LOGGER.warn("Plugin discovery never occurred.", new IllegalStateException());
         } else if (!this.initialized) {
             PluginHelper.LOGGER.info(String.format("Initializing plugins with Client API: %s", clientAPI.getClass().getName()));
-            final HashMap<String, IClientPlugin> discovered = new HashMap<String, IClientPlugin>(this.plugins);
+            final HashMap<String, IClientPlugin> discovered = new HashMap<>(this.plugins);
             final Iterator<IClientPlugin> iter = discovered.values().iterator();
             while (iter.hasNext()) {
                 final IClientPlugin plugin = iter.next();
@@ -84,14 +84,14 @@ public enum PluginHelper {
                     plugin.initialize(clientAPI);
                     PluginHelper.LOGGER.info(String.format("Initialized %s: %s", PluginHelper.PLUGIN_INTERFACE_NAME, plugin.getClass().getName()));
                 } catch (Exception e) {
-                    PluginHelper.LOGGER.error("Failed to initialize IClientPlugin: " + plugin.getClass().getName(), (Throwable) e);
+                    PluginHelper.LOGGER.error("Failed to initialize IClientPlugin: " + plugin.getClass().getName(), e);
                     iter.remove();
                 }
             }
-            this.plugins = Collections.unmodifiableMap((Map<? extends String, ? extends IClientPlugin>) discovered);
+            this.plugins = Collections.unmodifiableMap(discovered);
             this.initialized = true;
         } else {
-            PluginHelper.LOGGER.warn("Plugins already initialized!", (Throwable) new IllegalStateException());
+            PluginHelper.LOGGER.warn("Plugins already initialized!", new IllegalStateException());
         }
         return this.plugins;
     }

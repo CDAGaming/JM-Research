@@ -62,7 +62,7 @@ public abstract class Displayable implements Comparable<Displayable> {
     }
 
     public final String getGuid() {
-        return Joiner.on(":").join((Object) this.modId, (Object) this.displayType, new Object[]{this.id});
+        return Joiner.on(":").join(this.modId, this.displayType, this.id);
     }
 
     @Override
@@ -74,12 +74,12 @@ public abstract class Displayable implements Comparable<Displayable> {
             return false;
         }
         final Displayable that = (Displayable) o;
-        return Objects.equal((Object) this.modId, (Object) that.modId) && Objects.equal((Object) this.displayType, (Object) that.displayType) && Objects.equal((Object) this.id, (Object) that.id);
+        return Objects.equal(this.modId, that.modId) && Objects.equal(this.displayType, that.displayType) && Objects.equal(this.id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(new Object[]{this.modId, this.displayType, this.id});
+        return Objects.hashCode(this.modId, this.displayType, this.id);
     }
 
     @Override

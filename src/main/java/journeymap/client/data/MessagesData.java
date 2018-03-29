@@ -16,7 +16,7 @@ public class MessagesData extends CacheLoader<Class, Map<String, Object>> {
     private static final String KEY_PREFIX = "jm.webmap.";
 
     public Map<String, Object> load(final Class aClass) throws Exception {
-        final HashMap<String, Object> props = new HashMap<String, Object>();
+        final HashMap<String, Object> props = new HashMap<>();
         props.put("locale", Constants.getLocale());
         props.put("lang", FMLClientHandler.instance().getClient().gameSettings.language);
         final Properties properties = FileHandler.getLangFile("en_US.lang");

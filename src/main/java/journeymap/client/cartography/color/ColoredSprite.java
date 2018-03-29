@@ -51,7 +51,7 @@ public class ColoredSprite {
     public BufferedImage getColoredImage() {
         try {
             final ResourceLocation resourceLocation = new ResourceLocation(this.getIconName());
-            if (resourceLocation.equals((Object) TextureMap.LOCATION_MISSING_TEXTURE)) {
+            if (resourceLocation.equals(TextureMap.LOCATION_MISSING_TEXTURE)) {
                 return null;
             }
             BufferedImage image = this.getFrameTextureData(this.sprite);

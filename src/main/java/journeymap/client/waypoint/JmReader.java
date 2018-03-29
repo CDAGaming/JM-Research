@@ -12,17 +12,12 @@ import java.util.Collection;
 
 public class JmReader {
     public Collection<Waypoint> loadWaypoints(final File waypointDir) {
-        final ArrayList<Waypoint> waypoints = new ArrayList<Waypoint>();
-        final File[] files = waypointDir.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(final File dir, final String name) {
-                return name.endsWith(".json") && !name.equals("waypoint_groups.json");
-            }
-        });
+        final ArrayList<Waypoint> waypoints = new ArrayList<>();
+        final File[] files = waypointDir.listFiles((dir, name) -> name.endsWith(".json") && !name.equals("waypoint_groups.json"));
         if (files == null || files.length == 0) {
             return waypoints;
         }
-        final ArrayList<File> obsoleteFiles = new ArrayList<File>();
+        final ArrayList<File> obsoleteFiles = new ArrayList<>();
         for (final File waypointFile : files) {
             final Waypoint wp = this.load(waypointFile);
             if (wp != null) {

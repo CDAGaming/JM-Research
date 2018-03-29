@@ -5,7 +5,7 @@ public interface Context {
         Any,
         Fullscreen,
         Minimap,
-        Webmap;
+        Webmap
     }
 
     public enum MapType implements Context {
@@ -13,6 +13,6 @@ public interface Context {
         Day,
         Night,
         Underground,
-        Topo;
+        Topo
     }
 }

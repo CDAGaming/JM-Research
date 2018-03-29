@@ -42,8 +42,8 @@ public class EntityHelper {
         final StatTimer timer = StatTimer.get("EntityHelper." + timerName);
         timer.start();
         final Minecraft mc = FMLClientHandler.instance().getClient();
-        List<EntityDTO> list = new ArrayList<EntityDTO>();
-        final List<Entity> allEntities = new ArrayList<Entity>(mc.world.loadedEntityList);
+        List<EntityDTO> list = new ArrayList<>();
+        final List<Entity> allEntities = new ArrayList<>(mc.world.loadedEntityList);
         final AxisAlignedBB bb = getBB(mc.player);
         try {
             for (final Entity entity : allEntities) {
@@ -61,8 +61,8 @@ public class EntityHelper {
             }
             if (list.size() > maxEntities) {
                 final int before = list.size();
-                EntityHelper.entityDTODistanceComparator.player = (EntityPlayer) mc.player;
-                Collections.sort(list, EntityHelper.entityDTODistanceComparator);
+                EntityHelper.entityDTODistanceComparator.player = mc.player;
+                list.sort(EntityHelper.entityDTODistanceComparator);
                 list = list.subList(0, maxEntities);
             }
         } catch (Throwable t) {
@@ -99,18 +99,18 @@ public class EntityHelper {
         final StatTimer timer = StatTimer.get("EntityHelper.getPlayersNearby");
         timer.start();
         final Minecraft mc = FMLClientHandler.instance().getClient();
-        List<EntityPlayer> allPlayers = new ArrayList<EntityPlayer>(mc.world.playerEntities);
+        List<EntityPlayer> allPlayers = new ArrayList<>(mc.world.playerEntities);
         allPlayers.remove(mc.player);
         final int max = Journeymap.getClient().getCoreProperties().maxPlayersData.get();
         if (allPlayers.size() > max) {
-            EntityHelper.entityDistanceComparator.player = (EntityPlayer) mc.player;
-            Collections.sort(allPlayers, (Comparator<? super EntityPlayer>) EntityHelper.entityDistanceComparator);
+            EntityHelper.entityDistanceComparator.player = mc.player;
+            allPlayers.sort(EntityHelper.entityDistanceComparator);
             allPlayers = allPlayers.subList(0, max);
         }
-        final List<EntityDTO> playerDTOs = new ArrayList<EntityDTO>(allPlayers.size());
+        final List<EntityDTO> playerDTOs = new ArrayList<>(allPlayers.size());
         for (final EntityPlayer player : allPlayers) {
-            final EntityDTO dto = DataCache.INSTANCE.getEntityDTO((EntityLivingBase) player);
-            dto.update((EntityLivingBase) player, false);
+            final EntityDTO dto = DataCache.INSTANCE.getEntityDTO(player);
+            dto.update(player, false);
             playerDTOs.add(dto);
         }
         timer.stop();
@@ -120,7 +120,7 @@ public class EntityHelper {
     private static AxisAlignedBB getBB(final EntityPlayerSP player) {
         final int lateralDistance = Journeymap.getClient().getCoreProperties().radarLateralDistance.get();
         final int verticalDistance = Journeymap.getClient().getCoreProperties().radarVerticalDistance.get();
-        return getBoundingBox((EntityPlayer) player, lateralDistance, verticalDistance);
+        return getBoundingBox(player, lateralDistance, verticalDistance);
     }
 
     public static AxisAlignedBB getBoundingBox(final EntityPlayer player, final double lateralDistance, final double verticalDistance) {
@@ -132,9 +132,9 @@ public class EntityHelper {
             return Collections.emptyMap();
         }
         if (sort) {
-            Collections.sort(list, new EntityMapComparator());
+            list.sort(new EntityMapComparator());
         }
-        final LinkedHashMap<String, EntityDTO> idMap = new LinkedHashMap<String, EntityDTO>(list.size());
+        final LinkedHashMap<String, EntityDTO> idMap = new LinkedHashMap<>(list.size());
         for (final EntityDTO entityMap : list) {
             idMap.put("id" + entityMap.entityId, entityMap);
         }
@@ -144,7 +144,7 @@ public class EntityHelper {
     public static ResourceLocation getIconTextureLocation(final Entity entity) {
         try {
             final Render entityRender = FMLClientHandler.instance().getClient().getRenderManager().getEntityRenderObject(entity);
-            ResourceLocation original = null;
+            ResourceLocation original;
             if (entityRender instanceof RenderHorse) {
                 final EntityHorse horse = (EntityHorse) entity;
                 original = new ResourceLocation("minecraft", horse.getVariantTexturePaths()[0]);
@@ -158,8 +158,7 @@ public class EntityHelper {
             if (!original.getResourcePath().contains("/entity/")) {
                 return null;
             }
-            final ResourceLocation entityIconLoc = new ResourceLocation(original.getResourceDomain(), original.getResourcePath().replace("/entity/", "/entity_icon/"));
-            return entityIconLoc;
+            return new ResourceLocation(original.getResourceDomain(), original.getResourcePath().replace("/entity/", "/entity_icon/"));
         } catch (Throwable t) {
             JMLogger.logOnce("Can't get entityTexture for " + entity.getName(), t);
             return null;
@@ -190,7 +189,7 @@ public class EntityHelper {
 
         @Override
         public int compare(final Entity o1, final Entity o2) {
-            return Double.compare(o1.getDistanceSq((Entity) this.player), o2.getDistanceSq((Entity) this.player));
+            return Double.compare(o1.getDistanceSq(this.player), o2.getDistanceSq(this.player));
         }
     }
 
@@ -204,7 +203,7 @@ public class EntityHelper {
             if (e1 == null || e2 == null) {
                 return 0;
             }
-            return Double.compare(e1.getDistanceSq((Entity) this.player), e2.getDistanceSq((Entity) this.player));
+            return Double.compare(e1.getDistanceSq(this.player), e2.getDistanceSq(this.player));
         }
     }
 }

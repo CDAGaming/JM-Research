@@ -23,7 +23,7 @@ public class RegionLoader {
     private static final Pattern anvilPattern;
 
     static {
-        anvilPattern = Pattern.compile("r\\.([^\\.]+)\\.([^\\.]+)\\.mca");
+        anvilPattern = Pattern.compile("r\\.([^.]+)\\.([^.]+)\\.mca");
     }
 
     final Logger logger;
@@ -40,14 +40,12 @@ public class RegionLoader {
 
     public static File getRegionFile(final Minecraft minecraft, final int dimension, final int chunkX, final int chunkZ) {
         final File regionDir = new File(FileHandler.getWorldSaveDir(minecraft), "region");
-        final File regionFile = new File(regionDir, String.format("r.%s.%s.mca", chunkX >> 5, chunkZ >> 5));
-        return regionFile;
+        return new File(regionDir, String.format("r.%s.%s.mca", chunkX >> 5, chunkZ >> 5));
     }
 
     public static File getRegionFile(final Minecraft minecraft, final int chunkX, final int chunkZ) {
         final File regionDir = new File(FileHandler.getWorldSaveDir(minecraft), "region");
-        final File regionFile = new File(regionDir, String.format("r.%s.%s.mca", chunkX >> 5, chunkZ >> 5));
-        return regionFile;
+        return new File(regionDir, String.format("r.%s.%s.mca", chunkX >> 5, chunkZ >> 5));
     }
 
     public Iterator<RegionCoord> regionIterator() {
@@ -75,12 +73,12 @@ public class RegionLoader {
         final File regionDir = new File(mcWorldDir, "region");
         if (!regionDir.exists() && !regionDir.mkdirs()) {
             this.logger.warn("MC world region directory isn't usable: " + regionDir);
-            return new Stack<RegionCoord>();
+            return new Stack<>();
         }
         RegionImageCache.INSTANCE.flushToDisk(false);
         RegionImageCache.INSTANCE.clear();
         final File jmImageWorldDir = FileHandler.getJMWorldDir(mc);
-        final Stack<RegionCoord> stack = new Stack<RegionCoord>();
+        final Stack<RegionCoord> stack = new Stack<>();
         final AnvilChunkLoader anvilChunkLoader = new AnvilChunkLoader(FileHandler.getWorldSaveDir(mc), DataFixesManager.createFixer());
         int validFileCount = 0;
         int existingImageCount = 0;
@@ -99,7 +97,7 @@ public class RegionLoader {
                     } else if (!RegionImageHandler.getRegionImageFile(rc, mapType, false).exists()) {
                         final List<ChunkPos> chunkCoords = rc.getChunkCoordsInRegion();
                         for (final ChunkPos coord : chunkCoords) {
-                            if (anvilChunkLoader.chunkExists((World) mc.world, coord.x, coord.z)) {
+                            if (anvilChunkLoader.chunkExists(mc.world, coord.x, coord.z)) {
                                 stack.add(rc);
                                 break;
                             }
@@ -114,10 +112,8 @@ public class RegionLoader {
             this.logger.warn("Anvil region files in " + regionDir + ": " + validFileCount + ", matching image files: " + existingImageCount + ", but found nothing to do for mapType " + mapType);
         }
         final RegionCoord playerRc = RegionCoord.fromChunkPos(jmImageWorldDir, mapType, mc.player.chunkCoordX, mc.player.chunkCoordZ);
-        if (stack.contains(playerRc)) {
-            stack.remove(playerRc);
-        }
-        Collections.sort(stack, new Comparator<RegionCoord>() {
+        stack.remove(playerRc);
+        stack.sort(new Comparator<RegionCoord>() {
             @Override
             public int compare(final RegionCoord o1, final RegionCoord o2) {
                 final Float d1 = this.distanceToPlayer(o1);

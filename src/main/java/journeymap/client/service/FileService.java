@@ -224,8 +224,8 @@ public class FileService extends BaseService {
     }
 
     public void serveStream(final InputStream input, final Event event) throws Event, IOException {
-        ReadableByteChannel inputChannel = null;
-        WritableByteChannel outputChannel = null;
+        ReadableByteChannel inputChannel;
+        WritableByteChannel outputChannel;
         try {
             inputChannel = Channels.newChannel(input);
             final ByteArrayOutputStream bout = new ByteArrayOutputStream();
@@ -255,7 +255,7 @@ public class FileService extends BaseService {
 
     @Override
     protected byte[] gzip(final String data) {
-        ByteArrayOutputStream bout = null;
+        ByteArrayOutputStream bout;
         try {
             bout = new ByteArrayOutputStream();
             final GZIPOutputStream output = new GZIPOutputStream(bout);

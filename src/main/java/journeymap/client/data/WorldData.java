@@ -174,8 +174,8 @@ public class WorldData extends CacheLoader<Class, WorldData> {
 
     public static List<DimensionProvider> getDimensionProviders(final List<Integer> requiredDimensionList) {
         try {
-            final HashSet<Integer> requiredDims = new HashSet<Integer>(requiredDimensionList);
-            final HashMap<Integer, DimensionProvider> dimProviders = new HashMap<Integer, DimensionProvider>();
+            final HashSet<Integer> requiredDims = new HashSet<>(requiredDimensionList);
+            final HashMap<Integer, DimensionProvider> dimProviders = new HashMap<>();
             final Level logLevel = Level.DEBUG;
             Journeymap.getLogger().log(logLevel, String.format("Required dimensions from waypoints: %s", requiredDimensionList));
             Integer[] dims = DimensionManager.getIDs();
@@ -224,13 +224,8 @@ public class WorldData extends CacheLoader<Class, WorldData> {
                     Journeymap.getLogger().warn(String.format("Used DummyProvider for required dim: %s", dim));
                 }
             }
-            final ArrayList<DimensionProvider> providerList = new ArrayList<DimensionProvider>(dimProviders.values());
-            Collections.sort(providerList, new Comparator<DimensionProvider>() {
-                @Override
-                public int compare(final DimensionProvider o1, final DimensionProvider o2) {
-                    return Integer.valueOf(o1.getDimension()).compareTo(Integer.valueOf(o2.getDimension()));
-                }
-            });
+            final ArrayList<DimensionProvider> providerList = new ArrayList<>(dimProviders.values());
+            providerList.sort(Comparator.comparing(DimensionProvider::getDimension));
             return providerList;
         } catch (Throwable t3) {
             Journeymap.getLogger().error("Unexpected error in WorldData.getDimensionProviders(): ", t3);

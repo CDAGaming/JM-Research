@@ -50,7 +50,7 @@ public abstract class PropertiesBase {
     }
 
     public <T extends PropertiesBase> T fromJsonString(final String jsonString, final Class<T> propertiesClass, final boolean verbose) {
-        return (T) this.getGson(verbose).fromJson(jsonString, (Class) propertiesClass);
+        return this.getGson(verbose).fromJson(jsonString, propertiesClass);
     }
 
     public abstract String getName();
@@ -167,7 +167,7 @@ public abstract class PropertiesBase {
                 }
                 final String header = sb.toString();
                 final String json = this.toJsonString(verbose);
-                Files.write((CharSequence) (header + json), configFile, PropertiesBase.UTF8);
+                Files.write(header + json, configFile, PropertiesBase.UTF8);
                 saved = true;
             } catch (Exception e) {
                 this.error(String.format("Can't save config file %s: %s", configFile, e), e);
@@ -179,7 +179,7 @@ public abstract class PropertiesBase {
 
     public String toJsonString(final boolean verbose) {
         this.ensureInit();
-        return this.getGson(verbose).toJson((Object) this);
+        return this.getGson(verbose).toJson(this);
     }
 
     public boolean isValid(final boolean fix) {
@@ -204,7 +204,7 @@ public abstract class PropertiesBase {
 
     public Map<String, ConfigField<?>> getConfigFields() {
         if (this.configFields == null) {
-            final HashMap<String, ConfigField<?>> map = new HashMap<String, ConfigField<?>>();
+            final HashMap<String, ConfigField<?>> map = new HashMap<>();
             try {
                 for (final Field field : this.getClass().getFields()) {
                     final Class<?> fieldType = field.getType();
@@ -223,7 +223,7 @@ public abstract class PropertiesBase {
             } catch (Throwable t) {
                 this.error("Unexpected error getting fields: " + LogFormatter.toString(t));
             }
-            this.configFields = Collections.unmodifiableMap((Map<? extends String, ? extends ConfigField<?>>) map);
+            this.configFields = Collections.unmodifiableMap(map);
         }
         return this.configFields;
     }
@@ -285,8 +285,7 @@ public abstract class PropertiesBase {
     }
 
     protected MoreObjects.ToStringHelper toStringHelper() {
-        final MoreObjects.ToStringHelper toStringHelper = MoreObjects.toStringHelper((Object) this).add("state", (Object) this.currentState).add("file", (Object) this.getFileName()).add("configVersion", (Object) this.configVersion);
-        return toStringHelper;
+        return MoreObjects.toStringHelper(this).add("state", this.currentState).add("file", this.getFileName()).add("configVersion", this.configVersion);
     }
 
     @Override
@@ -294,7 +293,7 @@ public abstract class PropertiesBase {
         final MoreObjects.ToStringHelper toStringHelper = this.toStringHelper();
         for (final Map.Entry<String, ConfigField<?>> entry : this.getConfigFields().entrySet()) {
             final ConfigField<?> configField = entry.getValue();
-            toStringHelper.add((String) entry.getKey(), (Object) configField.get());
+            toStringHelper.add(entry.getKey(), configField.get());
         }
         return toStringHelper.toString();
     }
@@ -308,12 +307,12 @@ public abstract class PropertiesBase {
             return false;
         }
         final PropertiesBase that = (PropertiesBase) o;
-        return Objects.equal((Object) this.getFileName(), (Object) that.getFileName());
+        return Objects.equal(this.getFileName(), that.getFileName());
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hashCode(new Object[]{this.getConfigFields()});
+        return Objects.hashCode(this.getConfigFields());
     }
 
     protected void info(final String message) {
@@ -340,6 +339,6 @@ public abstract class PropertiesBase {
         Valid,
         Invalid,
         SavedOk,
-        SavedError;
+        SavedError
     }
 }

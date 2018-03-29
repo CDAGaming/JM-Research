@@ -18,7 +18,7 @@ public class EventHandlerManager {
     private static HashMap<Class<? extends EventHandler>, EventHandler> handlers;
 
     static {
-        EventHandlerManager.handlers = new HashMap<Class<? extends EventHandler>, EventHandler>();
+        EventHandlerManager.handlers = new HashMap<>();
     }
 
     public static void registerHandlers() {
@@ -31,14 +31,14 @@ public class EventHandlerManager {
         register(new MiniMapOverlayHandler());
         ColorManager.INSTANCE.getDeclaringClass();
         final ClientCommandInvoker clientCommandInvoker = new ClientCommandInvoker();
-        clientCommandInvoker.register((ICommand) new CmdChatPosition());
-        clientCommandInvoker.register((ICommand) new CmdEditWaypoint());
-        ClientCommandHandler.instance.registerCommand((ICommand) clientCommandInvoker);
+        clientCommandInvoker.register(new CmdChatPosition());
+        clientCommandInvoker.register(new CmdEditWaypoint());
+        ClientCommandHandler.instance.registerCommand(clientCommandInvoker);
         register(ChunkMonitor.INSTANCE);
     }
 
     public static void unregisterAll() {
-        final ArrayList<Class<? extends EventHandler>> list = new ArrayList<Class<? extends EventHandler>>(EventHandlerManager.handlers.keySet());
+        final ArrayList<Class<? extends EventHandler>> list = new ArrayList<>(EventHandlerManager.handlers.keySet());
         for (final Class<? extends EventHandler> handlerClass : list) {
             unregister(handlerClass);
         }
@@ -51,7 +51,7 @@ public class EventHandlerManager {
             return;
         }
         try {
-            MinecraftForge.EVENT_BUS.register((Object) handler);
+            MinecraftForge.EVENT_BUS.register(handler);
             Journeymap.getLogger().debug("Handler registered: " + handlerClass.getName());
             EventHandlerManager.handlers.put(handler.getClass(), handler);
         } catch (Throwable t) {
@@ -63,7 +63,7 @@ public class EventHandlerManager {
         final EventHandler handler = EventHandlerManager.handlers.remove(handlerClass);
         if (handler != null) {
             try {
-                MinecraftForge.EVENT_BUS.unregister((Object) handler);
+                MinecraftForge.EVENT_BUS.unregister(handler);
                 Journeymap.getLogger().debug("Handler unregistered: " + handlerClass.getName());
             } catch (Throwable t) {
                 Journeymap.getLogger().error(handler + " unregistration FAILED: " + LogFormatter.toString(t));

@@ -34,12 +34,12 @@ public enum WaypointGroupStore {
 
     public WaypointGroup get(final String origin, final String name) {
         this.ensureLoaded();
-        return (WaypointGroup) this.cache.getUnchecked(String.format("%s:%s", origin, name));
+        return this.cache.getUnchecked(String.format("%s:%s", origin, name));
     }
 
     public boolean exists(final WaypointGroup waypointGroup) {
         this.ensureLoaded();
-        return this.cache.getIfPresent((Object) waypointGroup.getKey()) != null;
+        return this.cache.getIfPresent(waypointGroup.getKey()) != null;
     }
 
     public void put(final WaypointGroup waypointGroup) {
@@ -58,7 +58,7 @@ public enum WaypointGroupStore {
 
     public void remove(final WaypointGroup waypointGroup) {
         this.ensureLoaded();
-        this.cache.invalidate((Object) waypointGroup.getKey());
+        this.cache.invalidate(waypointGroup.getKey());
         waypointGroup.setDirty(false);
         this.save();
     }
@@ -72,7 +72,7 @@ public enum WaypointGroupStore {
     private void load() {
         final File groupFile = new File(FileHandler.getWaypointDir(), "waypoint_groups.json");
         if (groupFile.exists()) {
-            HashMap<String, WaypointGroup> map = new HashMap<String, WaypointGroup>(0);
+            HashMap<String, WaypointGroup> map = new HashMap<>(0);
             try {
                 final String groupsString = Files.toString(groupFile, Charset.forName("UTF-8"));
                 map = (HashMap<String, WaypointGroup>) WaypointGroup.GSON.fromJson(groupsString, (Class) map.getClass());
@@ -86,7 +86,7 @@ public enum WaypointGroupStore {
             }
             if (!map.isEmpty()) {
                 this.cache.invalidateAll();
-                this.cache.putAll((Map) map);
+                this.cache.putAll(map);
                 Journeymap.getLogger().info(String.format("Loaded WaypointGroups file %s", groupFile));
                 this.cache.put(WaypointGroup.DEFAULT.getKey(), WaypointGroup.DEFAULT);
                 return;
@@ -111,9 +111,9 @@ public enum WaypointGroupStore {
             }
         }
         if (doWrite) {
-            TreeMap<String, WaypointGroup> map = null;
+            TreeMap<String, WaypointGroup> map;
             try {
-                map = new TreeMap<String, WaypointGroup>(new Comparator<String>() {
+                map = new TreeMap<>(new Comparator<String>() {
                     final String defaultKey = WaypointGroup.DEFAULT.getKey();
 
                     @Override
@@ -140,7 +140,7 @@ public enum WaypointGroupStore {
                 }
                 groupFile = new File(waypointDir, "waypoint_groups.json");
                 final boolean isNew = groupFile.exists();
-                Files.write((CharSequence) WaypointGroup.GSON.toJson((Object) map), groupFile, Charset.forName("UTF-8"));
+                Files.write(WaypointGroup.GSON.toJson(map), groupFile, Charset.forName("UTF-8"));
                 for (final WaypointGroup group2 : this.cache.asMap().values()) {
                     group2.setDirty(false);
                 }
@@ -154,10 +154,10 @@ public enum WaypointGroupStore {
     }
 
     private LoadingCache<String, WaypointGroup> createCache() {
-        final LoadingCache<String, WaypointGroup> cache = (LoadingCache<String, WaypointGroup>) CacheBuilder.newBuilder().concurrencyLevel(1).removalListener((RemovalListener) new RemovalListener<String, WaypointGroup>() {
+        return CacheBuilder.newBuilder().concurrencyLevel(1).removalListener(new RemovalListener<String, WaypointGroup>() {
             @ParametersAreNonnullByDefault
             public void onRemoval(final RemovalNotification<String, WaypointGroup> notification) {
-                for (final Waypoint orphan : WaypointStore.INSTANCE.getAll((WaypointGroup) notification.getValue())) {
+                for (final Waypoint orphan : WaypointStore.INSTANCE.getAll(notification.getValue())) {
                     orphan.setGroupName(WaypointGroup.DEFAULT.getName());
                     final Waypoint waypoint = orphan;
                     final WaypointGroup default1 = WaypointGroup.DEFAULT;
@@ -165,7 +165,7 @@ public enum WaypointGroupStore {
                 }
                 WaypointGroupStore.this.save();
             }
-        }).build((CacheLoader) new CacheLoader<String, WaypointGroup>() {
+        }).build(new CacheLoader<String, WaypointGroup>() {
             @ParametersAreNonnullByDefault
             public WaypointGroup load(final String key) throws Exception {
                 final int index = key.indexOf(":");
@@ -182,6 +182,5 @@ public enum WaypointGroupStore {
                 return new WaypointGroup(origin, name);
             }
         });
-        return cache;
     }
 }

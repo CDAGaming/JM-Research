@@ -109,12 +109,7 @@ public class FileHandler {
             }
             if (dims.length != 1) {
                 final List<File> list = Arrays.asList(dims);
-                Collections.sort(list, new Comparator<File>() {
-                    @Override
-                    public int compare(final File o1, final File o2) {
-                        return new Integer(o1.getName().length()).compareTo(Integer.valueOf(o2.getName().length()));
-                    }
-                });
+                list.sort(Comparator.comparingInt(o -> o.getName().length()));
                 return list.get(0);
             }
             dimDir = dims[0];
@@ -228,7 +223,7 @@ public class FileHandler {
                 Journeymap.getLogger().warn("Message file not found: " + filePrefix);
                 return null;
             }
-            return (M) new GsonBuilder().create().fromJson((Reader) new InputStreamReader(is), (Class) model);
+            return new GsonBuilder().create().fromJson(new InputStreamReader(is), model);
         } catch (Throwable e) {
             final String error = "Could not get Message model " + filePrefix + ": " + e.getMessage();
             Journeymap.getLogger().error(error);
@@ -275,9 +270,7 @@ public class FileHandler {
         }
         if ("file".equals(location.getProtocol())) {
             final File file = new File(location.getFile());
-            if (file.exists() && (file.getName().endsWith(".jar") || file.getName().endsWith(".jar"))) {
-                return true;
-            }
+            return file.exists() && (file.getName().endsWith(".jar") || file.getName().endsWith(".jar"));
         }
         return false;
     }
@@ -324,7 +317,7 @@ public class FileHandler {
             }
             try {
                 final Class desktopClass = Class.forName("java.awt.Desktop");
-                final Object method = desktopClass.getMethod("getDesktop", (Class[]) new Class[0]).invoke(null, new Object[0]);
+                final Object method = desktopClass.getMethod("getDesktop", (Class[]) new Class[0]).invoke(null);
                 desktopClass.getMethod("browse", URI.class).invoke(method, file.toURI());
             } catch (Throwable e3) {
                 Journeymap.getLogger().error("Could not open path with Desktop: " + path + " : " + LogFormatter.toString(e3));
@@ -423,7 +416,7 @@ public class FileHandler {
                     final File toFile = new File(destDir, entry.getName().split(zipEntryName)[1]);
                     if ((overWrite || !toFile.exists()) && !entry.isDirectory()) {
                         Files.createParentDirs(toFile);
-                        new ZipEntryByteSource(zipFile, entry).copyTo(Files.asByteSink(toFile, new FileWriteMode[0]));
+                        new ZipEntryByteSource(zipFile, entry).copyTo(Files.asByteSink(toFile));
                         success = true;
                     }
                 }
@@ -504,7 +497,7 @@ public class FileHandler {
         }
         File iconFile = null;
         try {
-            final String filePath = Joiner.on(File.separatorChar).join((Object) setName, (Object) iconPath.replace('/', File.separatorChar), new Object[0]);
+            final String filePath = Joiner.on(File.separatorChar).join(setName, iconPath.replace('/', File.separatorChar));
             iconFile = new File(parentdir, filePath);
             if (iconFile.exists()) {
                 img = getImage(iconFile);
@@ -533,10 +526,10 @@ public class FileHandler {
 
     public static InputStream getIconStream(final String assetsPath, final String setName, final String iconPath) {
         try {
-            final String pngPath = Joiner.on('/').join((Object) assetsPath, (Object) setName, new Object[]{iconPath});
+            final String pngPath = Joiner.on('/').join(assetsPath, setName, iconPath);
             final InputStream is = JourneymapClient.class.getResourceAsStream(pngPath);
             if (is == null) {
-                Journeymap.getLogger().warn(String.format("Icon Set asset not found: " + pngPath, new Object[0]));
+                Journeymap.getLogger().warn("Icon Set asset not found: " + pngPath);
                 return null;
             }
             return is;

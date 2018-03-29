@@ -27,8 +27,8 @@ public enum ModBlockDelegate {
 
     private ModBlockDelegate() {
         this.logger = Journeymap.getLogger();
-        this.handlerClasses = new HashMap<String, Class<? extends IModBlockHandler>>();
-        this.handlers = new HashMap<String, IModBlockHandler>(10);
+        this.handlerClasses = new HashMap<>();
+        this.handlers = new HashMap<>(10);
         this.reset();
     }
 
@@ -47,7 +47,7 @@ public enum ModBlockDelegate {
             if (Loader.isModLoaded(modId) || Loader.isModLoaded(modId.toLowerCase())) {
                 modId = modId.toLowerCase();
                 try {
-                    this.handlers.put(modId, (IModBlockHandler) handlerClass.newInstance());
+                    this.handlers.put(modId, handlerClass.newInstance());
                     this.logger.info("Custom modded block handling enabled for " + modId);
                 } catch (Exception e) {
                     this.logger.error(String.format("Couldn't initialize modded block handler for %s: %s", modId, LogFormatter.toPartialString(e)));

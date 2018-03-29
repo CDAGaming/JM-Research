@@ -44,7 +44,7 @@ public class ImageHolder implements IThreadedFileIO {
         this.blank = true;
         this.dirty = true;
         this.writeLock = new ReentrantLock();
-        this.updatedChunks = new HashSet<ChunkPos>();
+        this.updatedChunks = new HashSet<>();
         this.mapType = mapType;
         this.imagePath = imageFile.toPath();
         this.imageSize = imageSize;
@@ -146,7 +146,7 @@ public class ImageHolder implements IThreadedFileIO {
             return false;
         }
         if (async) {
-            ThreadedFileIOBase.getThreadedIOInstance().queueIO((IThreadedFileIO) this);
+            ThreadedFileIOBase.getThreadedIOInstance().queueIO(this);
             return true;
         }
         int tries = 0;
@@ -223,7 +223,7 @@ public class ImageHolder implements IThreadedFileIO {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper((Object) this).add("mapType", (Object) this.mapType).add("textureId", (Object) ((this.texture == null) ? null : (this.texture.isBound() ? this.texture.getGlTextureId(false) : -1))).add("dirty", this.dirty).add("imagePath", (Object) this.imagePath).toString();
+        return MoreObjects.toStringHelper(this).add("mapType", this.mapType).add("textureId", (this.texture == null) ? null : (this.texture.isBound() ? this.texture.getGlTextureId(false) : -1)).add("dirty", this.dirty).add("imagePath", this.imagePath).toString();
     }
 
     public void clear() {

@@ -15,19 +15,19 @@ public class DrawPolygonStep extends BaseOverlayDrawStep<PolygonOverlay> {
 
     public DrawPolygonStep(final PolygonOverlay polygon) {
         super(polygon);
-        this.screenPoints = new ArrayList<Point2D.Double>();
+        this.screenPoints = new ArrayList<>();
     }
 
     @Override
     public void draw(final DrawStep.Pass pass, final double xOffset, final double yOffset, final GridRenderer gridRenderer, final double fontScale, final double rotation) {
         if (pass == DrawStep.Pass.Object) {
-            if (((PolygonOverlay) this.overlay).getOuterArea().getPoints().isEmpty()) {
+            if (this.overlay.getOuterArea().getPoints().isEmpty()) {
                 this.onScreen = false;
                 return;
             }
             this.onScreen = this.isOnScreen(xOffset, yOffset, gridRenderer, rotation);
             if (this.onScreen) {
-                DrawUtil.drawPolygon(xOffset, yOffset, this.screenPoints, ((PolygonOverlay) this.overlay).getShapeProperties());
+                DrawUtil.drawPolygon(xOffset, yOffset, this.screenPoints, this.overlay.getShapeProperties());
             }
         } else if (this.onScreen) {
             super.drawText(pass, xOffset, yOffset, gridRenderer, fontScale, rotation);
@@ -36,11 +36,11 @@ public class DrawPolygonStep extends BaseOverlayDrawStep<PolygonOverlay> {
 
     @Override
     protected void updatePositions(final GridRenderer gridRenderer, final double rotation) {
-        if (((PolygonOverlay) this.overlay).getOuterArea().getPoints().isEmpty()) {
+        if (this.overlay.getOuterArea().getPoints().isEmpty()) {
             this.onScreen = false;
             return;
         }
-        final List<BlockPos> points = ((PolygonOverlay) this.overlay).getOuterArea().getPoints();
+        final List<BlockPos> points = this.overlay.getOuterArea().getPoints();
         this.screenPoints.clear();
         for (final BlockPos pos : points) {
             final Point2D.Double pixel = gridRenderer.getBlockPixelInGrid(pos);
@@ -52,7 +52,7 @@ public class DrawPolygonStep extends BaseOverlayDrawStep<PolygonOverlay> {
             }
             this.screenPoints.add(pixel);
         }
-        final TextProperties textProperties = ((PolygonOverlay) this.overlay).getTextProperties();
+        final TextProperties textProperties = this.overlay.getTextProperties();
         this.labelPosition.setLocation(this.screenBounds.getCenterX() + textProperties.getOffsetX(), this.screenBounds.getCenterY() + textProperties.getOffsetY());
     }
 }

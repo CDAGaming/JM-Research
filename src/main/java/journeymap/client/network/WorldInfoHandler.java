@@ -31,9 +31,9 @@ public class WorldInfoHandler {
         try {
             WorldInfoHandler.channel = NetworkRegistry.INSTANCE.newSimpleChannel("world_info");
             if (WorldInfoHandler.channel != null) {
-                WorldInfoHandler.channel.registerMessage((Class) WorldIdListener.class, (Class) WorldIDPacket.class, 0, Side.CLIENT);
+                WorldInfoHandler.channel.registerMessage(WorldIdListener.class, WorldIDPacket.class, 0, Side.CLIENT);
                 Journeymap.getLogger().info(String.format("Registered channel: %s", "world_info"));
-                MinecraftForge.EVENT_BUS.register((Object) this);
+                MinecraftForge.EVENT_BUS.register(this);
             }
         } catch (Throwable t) {
             Journeymap.getLogger().error(String.format("Failed to register channel %s: %s", "world_info", t));
@@ -45,7 +45,7 @@ public class WorldInfoHandler {
             final long now = System.currentTimeMillis();
             if (WorldInfoHandler.lastRequest + 1000L < now && WorldInfoHandler.lastResponse + 1000L < now) {
                 Journeymap.getLogger().info("Requesting World ID");
-                WorldInfoHandler.channel.sendToServer((IMessage) new WorldIDPacket());
+                WorldInfoHandler.channel.sendToServer(new WorldIDPacket());
                 WorldInfoHandler.lastRequest = System.currentTimeMillis();
             }
         }

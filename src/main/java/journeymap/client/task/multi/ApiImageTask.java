@@ -46,7 +46,7 @@ public class ApiImageTask implements Runnable {
             final int scale = (int) Math.pow(2.0, this.zoom);
             image = RegionImageHandler.getMergedChunks(this.jmWorldDir, this.startChunk, this.endChunk, this.mapType, scale, this.showGrid);
         } catch (Throwable t) {
-            Journeymap.getLogger().error("Error in ApiImageTask: " + t, (Object) LogFormatter.toString(t));
+            Journeymap.getLogger().error("Error in ApiImageTask: " + t, LogFormatter.toString(t));
         }
         final BufferedImage finalImage = image;
         Minecraft.getMinecraft().addScheduledTask(() -> this.callback.accept(finalImage));

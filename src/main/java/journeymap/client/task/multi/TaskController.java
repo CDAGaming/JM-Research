@@ -29,8 +29,8 @@ public class TaskController {
     private volatile ScheduledExecutorService taskExecutor;
 
     public TaskController() {
-        this.queue = new ArrayBlockingQueue<Future>(1);
-        this.managers = new LinkedList<ITaskManager>();
+        this.queue = new ArrayBlockingQueue<>(1);
+        this.managers = new LinkedList<>();
         this.minecraft = FMLClientHandler.instance().getClient();
         this.lock = new ReentrantLock();
         this.managers.add(new MapRegionTask.Manager());
@@ -53,7 +53,7 @@ public class TaskController {
     public void enableTasks() {
         this.queue.clear();
         this.ensureExecutor();
-        final List<ITaskManager> list = new LinkedList<ITaskManager>(this.managers);
+        final List<ITaskManager> list = new LinkedList<>(this.managers);
         for (final ITaskManager manager : this.managers) {
             final boolean enabled = manager.enableTask(this.minecraft, null);
             if (!enabled) {
@@ -170,7 +170,7 @@ public class TaskController {
                     }
                 }
                 if (this.queue.isEmpty()) {
-                    ITask task = null;
+                    ITask task;
                     final ITaskManager manager = this.getNextManager(this.minecraft);
                     if (manager == null) {
                         TaskController.logger.warn("No task managers enabled!");

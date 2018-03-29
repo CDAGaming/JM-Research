@@ -24,7 +24,7 @@ public class ClientEventManager {
     public void updateSubscribedTypes() {
         this.subscribedClientEventTypes = EnumSet.noneOf(ClientEvent.Type.class);
         for (final PluginWrapper wrapper : this.plugins) {
-            this.subscribedClientEventTypes.addAll((Collection<? extends ClientEvent.Type>) wrapper.getSubscribedClientEventTypes());
+            this.subscribedClientEventTypes.addAll(wrapper.getSubscribedClientEventTypes());
         }
     }
 

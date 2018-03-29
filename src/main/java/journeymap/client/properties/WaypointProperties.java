@@ -43,6 +43,6 @@ public class WaypointProperties extends ClientPropertiesBase implements Comparab
 
     @Override
     public int compareTo(final WaypointProperties other) {
-        return Integer.valueOf(this.hashCode()).compareTo(Integer.valueOf(other.hashCode()));
+        return Integer.compare(this.hashCode(), other.hashCode());
     }
 }

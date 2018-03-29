@@ -46,6 +46,6 @@ public class Location implements Serializable {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper((Object) this).add("x", this.x).add("y", this.y).add("z", this.z).add("dim", this.dim).toString();
+        return MoreObjects.toStringHelper(this).add("x", this.x).add("y", this.y).add("z", this.z).add("dim", this.dim).toString();
     }
 }

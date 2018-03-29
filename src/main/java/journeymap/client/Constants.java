@@ -31,21 +31,21 @@ public class Constants {
     private static String ICON_DIR;
 
     static {
-        CASE_INSENSITIVE_NULL_SAFE_ORDER = Ordering.from((Comparator) String.CASE_INSENSITIVE_ORDER).nullsLast();
+        CASE_INSENSITIVE_NULL_SAFE_ORDER = Ordering.from(String.CASE_INSENSITIVE_ORDER).nullsLast();
         GMT = TimeZone.getTimeZone("GMT");
         path = Joiner.on(File.separator).useForNull("");
         END = null;
         Constants.JOURNEYMAP_DIR = "journeymap";
-        Constants.CONFIG_DIR_LEGACY = Constants.path.join((Object) Constants.JOURNEYMAP_DIR, (Object) "config", new Object[0]);
-        Constants.CONFIG_DIR = Constants.path.join((Object) Constants.JOURNEYMAP_DIR, (Object) "config", new Object[]{Journeymap.JM_VERSION.toMajorMinorString(), Constants.END});
-        Constants.DATA_DIR = Constants.path.join((Object) Constants.JOURNEYMAP_DIR, (Object) "data", new Object[0]);
-        Constants.SP_DATA_DIR = Constants.path.join((Object) Constants.DATA_DIR, (Object) WorldType.sp, new Object[]{Constants.END});
-        Constants.MP_DATA_DIR = Constants.path.join((Object) Constants.DATA_DIR, (Object) WorldType.mp, new Object[]{Constants.END});
+        Constants.CONFIG_DIR_LEGACY = Constants.path.join(Constants.JOURNEYMAP_DIR, "config");
+        Constants.CONFIG_DIR = Constants.path.join(Constants.JOURNEYMAP_DIR, "config", Journeymap.JM_VERSION.toMajorMinorString(), Constants.END);
+        Constants.DATA_DIR = Constants.path.join(Constants.JOURNEYMAP_DIR, "data");
+        Constants.SP_DATA_DIR = Constants.path.join(Constants.DATA_DIR, WorldType.sp, Constants.END);
+        Constants.MP_DATA_DIR = Constants.path.join(Constants.DATA_DIR, WorldType.mp, Constants.END);
         Constants.RESOURCE_PACKS_DEFAULT = "Default";
-        Constants.ICON_DIR = Constants.path.join((Object) Constants.JOURNEYMAP_DIR, (Object) "icon", new Object[0]);
-        Constants.ENTITY_ICON_DIR = Constants.path.join((Object) Constants.ICON_DIR, (Object) "entity", new Object[]{Constants.END});
-        Constants.WAYPOINT_ICON_DIR = Constants.path.join((Object) Constants.ICON_DIR, (Object) "waypoint", new Object[]{Constants.END});
-        Constants.THEME_ICON_DIR = Constants.path.join((Object) Constants.ICON_DIR, (Object) "theme", new Object[]{Constants.END});
+        Constants.ICON_DIR = Constants.path.join(Constants.JOURNEYMAP_DIR, "icon");
+        Constants.ENTITY_ICON_DIR = Constants.path.join(Constants.ICON_DIR, "entity", Constants.END);
+        Constants.WAYPOINT_ICON_DIR = Constants.path.join(Constants.ICON_DIR, "waypoint", Constants.END);
+        Constants.THEME_ICON_DIR = Constants.path.join(Constants.ICON_DIR, "theme", Constants.END);
     }
 
     public static Locale getLocale() {
@@ -64,7 +64,7 @@ public class Constants {
             return key;
         }
         try {
-            final String result = I18n.format(key, new Object[0]);
+            final String result = I18n.format(key);
             if (result.equals(key)) {
                 Journeymap.getLogger().warn("Message key not found: " + key);
             }
@@ -97,7 +97,7 @@ public class Constants {
     }
 
     public static List<ResourcePackRepository.Entry> getResourcePacks() {
-        final ArrayList<ResourcePackRepository.Entry> entries = new ArrayList<ResourcePackRepository.Entry>();
+        final ArrayList<ResourcePackRepository.Entry> entries = new ArrayList<>();
         try {
             final ResourcePackRepository resourcepackrepository = FMLClientHandler.instance().getClient().getResourcePackRepository();
             entries.addAll(resourcepackrepository.getRepositoryEntries());
@@ -108,14 +108,14 @@ public class Constants {
     }
 
     public static String getModNames() {
-        final ArrayList<String> list = new ArrayList<String>();
+        final ArrayList<String> list = new ArrayList<>();
         for (final ModContainer mod : Loader.instance().getActiveModList()) {
             if (Loader.isModLoaded(mod.getModId())) {
                 list.add(String.format("%s:%s", mod.getName(), mod.getVersion()));
             }
         }
         Collections.sort(list);
-        return Joiner.on(", ").join((Iterable) list);
+        return Joiner.on(", ").join(list);
     }
 
     public static String birthdayMessage() {
@@ -133,6 +133,6 @@ public class Constants {
 
     public enum WorldType {
         mp,
-        sp;
+        sp
     }
 }

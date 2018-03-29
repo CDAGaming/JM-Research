@@ -33,7 +33,7 @@ public class TileService extends FileService {
         final Query query = event.query();
         query.parse();
         final Minecraft minecraft = FMLClientHandler.instance().getClient();
-        final World world = (World) minecraft.world;
+        final World world = minecraft.world;
         if (world == null) {
             this.throwEventException(503, "World not connected", event, false);
         }
@@ -45,11 +45,11 @@ public class TileService extends FileService {
             this.throwEventException(400, "World not found", event, true);
         }
         try {
-            final int zoom = this.getParameter(query, "zoom", Integer.valueOf(0));
-            final int x = this.getParameter(query, "x", Integer.valueOf(0));
+            final int zoom = this.getParameter(query, "zoom", 0);
+            final int x = this.getParameter(query, "x", 0);
             Integer vSlice = this.getParameter(query, "depth", (Integer) null);
-            final int z = this.getParameter(query, "z", Integer.valueOf(0));
-            final int dimension = this.getParameter(query, "dim", Integer.valueOf(0));
+            final int z = this.getParameter(query, "z", 0);
+            final int dimension = this.getParameter(query, "dim", 0);
             final String mapTypeString = this.getParameter(query, "mapType", MapType.Name.day.name());
             MapType.Name mapTypeName = null;
             try {

@@ -58,7 +58,7 @@ public abstract class ServerPropertiesBase extends PropertiesBase implements Clo
     public List<ExclusionStrategy> getExclusionStrategies(final boolean verbose) {
         final List<ExclusionStrategy> strategies = super.getExclusionStrategies(verbose);
         if (!verbose) {
-            strategies.add((ExclusionStrategy) new ExclusionStrategy() {
+            strategies.add(new ExclusionStrategy() {
                 public boolean shouldSkipField(final FieldAttributes f) {
                     return f.getDeclaringClass().equals(ServerPropertiesBase.class) && (f.getName().equals("displayName") || f.getName().equals("description"));
                 }

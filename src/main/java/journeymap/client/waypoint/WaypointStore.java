@@ -33,7 +33,7 @@ public enum WaypointStore {
         this.gson = new GsonBuilder().setPrettyPrinting().create();
         this.cache = CacheBuilder.newBuilder().build();
         this.groupCache = CacheBuilder.newBuilder().build();
-        this.dimensions = new HashSet<Integer>();
+        this.dimensions = new HashSet<>();
         this.loaded = false;
     }
 
@@ -42,7 +42,7 @@ public enum WaypointStore {
             File waypointFile = null;
             try {
                 waypointFile = new File(FileHandler.getWaypointDir(), waypoint.getFileName());
-                Files.write((CharSequence) this.gson.toJson((Object) waypoint), waypointFile, Charset.forName("UTF-8"));
+                Files.write(this.gson.toJson(waypoint), waypointFile, Charset.forName("UTF-8"));
                 return true;
             } catch (Exception e) {
                 Journeymap.getLogger().error(String.format("Can't save waypoint file %s: %s", waypointFile, LogFormatter.toString(e)));
@@ -53,15 +53,11 @@ public enum WaypointStore {
     }
 
     public Collection<Waypoint> getAll() {
-        return (Collection<Waypoint>) this.cache.asMap().values();
+        return this.cache.asMap().values();
     }
 
     public Collection<Waypoint> getAll(final WaypointGroup group) {
-        return Maps.filterEntries((Map) this.cache.asMap(), (Predicate) new Predicate<Map.Entry<String, Waypoint>>() {
-            public boolean apply(@Nullable final Map.Entry<String, Waypoint> input) {
-                return input != null && Objects.equals(group, input.getValue().getGroup());
-            }
-        }).values();
+        return Maps.filterEntries(this.cache.asMap(), input -> input != null && Objects.equals(group, input.getValue().getGroup())).values();
     }
 
     public void add(final Waypoint waypoint) {
@@ -91,7 +87,7 @@ public enum WaypointStore {
     }
 
     public void remove(final Waypoint waypoint) {
-        this.cache.invalidate((Object) waypoint.getId());
+        this.cache.invalidate(waypoint.getId());
         if (waypoint.isPersistent()) {
             final File waypointFile = new File(FileHandler.getWaypointDir(), waypoint.getFileName());
             if (waypointFile.exists()) {
@@ -120,12 +116,11 @@ public enum WaypointStore {
 
     private void load() {
         synchronized (this.cache) {
-            final ArrayList<Waypoint> waypoints = new ArrayList<Waypoint>();
             File waypointDir = null;
             try {
                 this.cache.invalidateAll();
                 waypointDir = FileHandler.getWaypointDir();
-                waypoints.addAll(new JmReader().loadWaypoints(waypointDir));
+                final ArrayList<Waypoint> waypoints = new ArrayList<>(new JmReader().loadWaypoints(waypointDir));
                 this.load(waypoints, false);
                 Journeymap.getLogger().info(String.format("Loaded %s waypoints from %s", this.cache.size(), waypointDir));
             } catch (Exception e) {
@@ -151,6 +146,6 @@ public enum WaypointStore {
     }
 
     public List<Integer> getLoadedDimensions() {
-        return new ArrayList<Integer>(this.dimensions);
+        return new ArrayList<>(this.dimensions);
     }
 }

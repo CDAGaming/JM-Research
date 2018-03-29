@@ -74,7 +74,7 @@ public class Journeymap {
     @Mod.EventHandler
     public void serverStartingEvent(final FMLServerStartingEvent event) {
         PropertiesManager.getInstance();
-        event.registerServerCommand((ICommand) new CommandJTP());
+        event.registerServerCommand(new CommandJTP());
     }
 
     @SideOnly(Side.SERVER)

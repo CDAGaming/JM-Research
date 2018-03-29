@@ -22,7 +22,7 @@ public class ForgeEvents {
     public void on(final EntityJoinWorldEvent event) {
         if (event.getEntity() instanceof EntityPlayerMP) {
             final EntityPlayerMP player = (EntityPlayerMP) event.getEntity();
-            final Boolean hasForge = (Boolean) player.connection.getNetworkManager().channel().attr(NetworkRegistry.FML_MARKER).get();
+            final Boolean hasForge = player.connection.getNetworkManager().channel().attr(NetworkRegistry.FML_MARKER).get();
             if (!hasForge) {
                 Journeymap.getLogger().debug(player.getName() + " is connecting with a vanilla client, ignoring JoinWorldEvent");
                 return;
@@ -44,7 +44,7 @@ public class ForgeEvents {
                 }
                 PacketHandler.sendDimensionPacketToPlayer(player, prop);
             } catch (CloneNotSupportedException e) {
-                Journeymap.getLogger().error("CloneNotSupportedException: ", (Throwable) e);
+                Journeymap.getLogger().error("CloneNotSupportedException: ", e);
             }
         }
     }

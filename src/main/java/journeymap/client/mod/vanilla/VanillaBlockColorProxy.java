@@ -110,6 +110,6 @@ public class VanillaBlockColorProxy implements IBlockColorProxy {
         if (!this.blendWater && blockMD.isWater()) {
             return chunkMD.getBiome(blockPos).getWaterColorMultiplier();
         }
-        return this.blockColors.colorMultiplier(blockMD.getBlockState(), (IBlockAccess) JmBlockAccess.INSTANCE, blockPos, tintIndex);
+        return this.blockColors.colorMultiplier(blockMD.getBlockState(), JmBlockAccess.INSTANCE, blockPos, tintIndex);
     }
 }

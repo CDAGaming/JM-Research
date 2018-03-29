@@ -17,7 +17,7 @@ public class TeleportPacket implements IMessage {
     }
 
     public TeleportPacket(final Location location) {
-        this.location = Location.GSON.toJson((Object) location);
+        this.location = Location.GSON.toJson(location);
     }
 
     public String getLocation() {
@@ -45,8 +45,8 @@ public class TeleportPacket implements IMessage {
     public static class Listener implements IMessageHandler<TeleportPacket, IMessage> {
         public IMessage onMessage(final TeleportPacket message, final MessageContext ctx) {
             Entity player = null;
-            player = (Entity) ctx.getServerHandler().player;
-            final Location location = (Location) Location.GSON.fromJson(message.getLocation(), (Class) Location.class);
+            player = ctx.getServerHandler().player;
+            final Location location = Location.GSON.fromJson(message.getLocation(), Location.class);
             return null;
         }
     }

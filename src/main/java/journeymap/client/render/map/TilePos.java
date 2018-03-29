@@ -48,9 +48,9 @@ public class TilePos implements Comparable<TilePos> {
 
     @Override
     public int compareTo(final TilePos o) {
-        int result = new Integer(this.deltaZ).compareTo(Integer.valueOf(o.deltaZ));
+        int result = Integer.compare(this.deltaZ, o.deltaZ);
         if (result == 0) {
-            result = new Integer(this.deltaX).compareTo(Integer.valueOf(o.deltaX));
+            result = Integer.compare(this.deltaX, o.deltaX);
         }
         return result;
     }

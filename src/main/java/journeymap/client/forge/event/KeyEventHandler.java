@@ -69,41 +69,41 @@ public enum KeyEventHandler implements EventHandlerManager.EventHandler {
         this.mc = FMLClientHandler.instance().getClient();
         this.sortActionsNeeded = true;
         this.logger = Journeymap.getLogger();
-        this.kbMapZoomin = this.register("key.journeymap.zoom_in", (IKeyConflictContext) KeyConflictContext.UNIVERSAL, KeyModifier.NONE, 13);
+        this.kbMapZoomin = this.register("key.journeymap.zoom_in", KeyConflictContext.UNIVERSAL, KeyModifier.NONE, 13);
         this.setAction(this.minimapPreviewActions, this.kbMapZoomin, () -> MiniMap.state().zoomIn());
         this.setAction(this.inGuiActions, this.kbMapZoomin, () -> this.getFullscreen().zoomIn());
-        this.kbMapZoomout = this.register("key.journeymap.zoom_out", (IKeyConflictContext) KeyConflictContext.UNIVERSAL, KeyModifier.NONE, 12);
+        this.kbMapZoomout = this.register("key.journeymap.zoom_out", KeyConflictContext.UNIVERSAL, KeyModifier.NONE, 12);
         this.setAction(this.minimapPreviewActions, this.kbMapZoomout, () -> MiniMap.state().zoomOut());
         this.setAction(this.inGuiActions, this.kbMapZoomout, () -> this.getFullscreen().zoomOut());
-        this.kbMapToggleType = this.register("key.journeymap.minimap_type", (IKeyConflictContext) KeyConflictContext.UNIVERSAL, KeyModifier.NONE, 26);
+        this.kbMapToggleType = this.register("key.journeymap.minimap_type", KeyConflictContext.UNIVERSAL, KeyModifier.NONE, 26);
         this.setAction(this.minimapPreviewActions, this.kbMapToggleType, () -> MiniMap.state().toggleMapType());
         this.setAction(this.inGuiActions, this.kbMapToggleType, () -> this.getFullscreen().toggleMapType());
-        this.kbMinimapPreset = this.register("key.journeymap.minimap_preset", (IKeyConflictContext) KeyConflictContext.IN_GAME, KeyModifier.NONE, 43);
+        this.kbMinimapPreset = this.register("key.journeymap.minimap_preset", KeyConflictContext.IN_GAME, KeyModifier.NONE, 43);
         this.setAction(this.minimapPreviewActions, this.kbMinimapPreset, UIManager.INSTANCE::switchMiniMapPreset);
-        this.inGameActions.putAll((Multimap) this.minimapPreviewActions);
-        this.kbCreateWaypoint = this.register("key.journeymap.create_waypoint", (IKeyConflictContext) KeyConflictContext.IN_GAME, KeyModifier.NONE, 48);
-        this.setAction(this.inGameActions, this.kbCreateWaypoint, () -> UIManager.INSTANCE.openWaypointEditor(Waypoint.of((EntityPlayer) this.mc.player), true, null));
-        this.kbFullscreenCreateWaypoint = this.register("key.journeymap.fullscreen_create_waypoint", (IKeyConflictContext) KeyConflictContext.GUI, KeyModifier.NONE, 48);
+        this.inGameActions.putAll(this.minimapPreviewActions);
+        this.kbCreateWaypoint = this.register("key.journeymap.create_waypoint", KeyConflictContext.IN_GAME, KeyModifier.NONE, 48);
+        this.setAction(this.inGameActions, this.kbCreateWaypoint, () -> UIManager.INSTANCE.openWaypointEditor(Waypoint.of(this.mc.player), true, null));
+        this.kbFullscreenCreateWaypoint = this.register("key.journeymap.fullscreen_create_waypoint", KeyConflictContext.GUI, KeyModifier.NONE, 48);
         this.setAction(this.inGuiActions, this.kbFullscreenCreateWaypoint, () -> this.getFullscreen().createWaypointAtMouse());
-        this.kbFullscreenChatPosition = this.register("key.journeymap.fullscreen_chat_position", (IKeyConflictContext) KeyConflictContext.GUI, KeyModifier.NONE, 46);
+        this.kbFullscreenChatPosition = this.register("key.journeymap.fullscreen_chat_position", KeyConflictContext.GUI, KeyModifier.NONE, 46);
         this.setAction(this.inGuiActions, this.kbFullscreenChatPosition, () -> this.getFullscreen().chatPositionAtMouse());
-        this.kbFullscreenToggle = this.register("key.journeymap.map_toggle_alt", (IKeyConflictContext) KeyConflictContext.UNIVERSAL, KeyModifier.NONE, 36);
+        this.kbFullscreenToggle = this.register("key.journeymap.map_toggle_alt", KeyConflictContext.UNIVERSAL, KeyModifier.NONE, 36);
         this.setAction(this.inGameActions, this.kbFullscreenToggle, UIManager.INSTANCE::openFullscreenMap);
         this.setAction(this.inGuiActions, this.kbFullscreenToggle, UIManager.INSTANCE::closeAll);
-        this.kbWaypointManager = this.register("key.journeymap.fullscreen_waypoints", (IKeyConflictContext) KeyConflictContext.UNIVERSAL, KeyModifier.CONTROL, 48);
+        this.kbWaypointManager = this.register("key.journeymap.fullscreen_waypoints", KeyConflictContext.UNIVERSAL, KeyModifier.CONTROL, 48);
         this.setAction(this.inGameActions, this.kbWaypointManager, () -> UIManager.INSTANCE.openWaypointManager(null, null));
         this.setAction(this.inGuiActions, this.kbWaypointManager, () -> UIManager.INSTANCE.openWaypointManager(null, this.getFullscreen()));
-        this.kbMinimapToggle = this.register("key.journeymap.minimap_toggle_alt", (IKeyConflictContext) KeyConflictContext.IN_GAME, KeyModifier.CONTROL, 36);
+        this.kbMinimapToggle = this.register("key.journeymap.minimap_toggle_alt", KeyConflictContext.IN_GAME, KeyModifier.CONTROL, 36);
         this.setAction(this.inGameActions, this.kbMinimapToggle, UIManager.INSTANCE::toggleMinimap);
-        this.kbFullmapOptionsManager = this.register("key.journeymap.fullscreen_options", (IKeyConflictContext) KeyConflictContext.GUI, KeyModifier.NONE, 24);
-        this.setAction(this.inGuiActions, this.kbFullmapOptionsManager, () -> UIManager.INSTANCE.openOptionsManager(this.getFullscreen(), new Category[0]));
-        this.kbFullmapPanNorth = this.register("key.journeymap.fullscreen.north", (IKeyConflictContext) KeyConflictContext.GUI, KeyModifier.NONE, 200);
+        this.kbFullmapOptionsManager = this.register("key.journeymap.fullscreen_options", KeyConflictContext.GUI, KeyModifier.NONE, 24);
+        this.setAction(this.inGuiActions, this.kbFullmapOptionsManager, () -> UIManager.INSTANCE.openOptionsManager(this.getFullscreen()));
+        this.kbFullmapPanNorth = this.register("key.journeymap.fullscreen.north", KeyConflictContext.GUI, KeyModifier.NONE, 200);
         this.setAction(this.inGuiActions, this.kbFullmapPanNorth, () -> this.getFullscreen().moveCanvas(0, -16));
-        this.kbFullmapPanSouth = this.register("key.journeymap.fullscreen.south", (IKeyConflictContext) KeyConflictContext.GUI, KeyModifier.NONE, 208);
+        this.kbFullmapPanSouth = this.register("key.journeymap.fullscreen.south", KeyConflictContext.GUI, KeyModifier.NONE, 208);
         this.setAction(this.inGuiActions, this.kbFullmapPanSouth, () -> this.getFullscreen().moveCanvas(0, 16));
-        this.kbFullmapPanEast = this.register("key.journeymap.fullscreen.east", (IKeyConflictContext) KeyConflictContext.GUI, KeyModifier.NONE, 205);
+        this.kbFullmapPanEast = this.register("key.journeymap.fullscreen.east", KeyConflictContext.GUI, KeyModifier.NONE, 205);
         this.setAction(this.inGuiActions, this.kbFullmapPanEast, () -> this.getFullscreen().moveCanvas(16, 0));
-        this.kbFullmapPanWest = this.register("key.journeymap.fullscreen.west", (IKeyConflictContext) KeyConflictContext.GUI, KeyModifier.NONE, 203);
+        this.kbFullmapPanWest = this.register("key.journeymap.fullscreen.west", KeyConflictContext.GUI, KeyModifier.NONE, 203);
         this.setAction(this.inGuiActions, this.kbFullmapPanWest, () -> this.getFullscreen().moveCanvas(-16, 0));
     }
 
@@ -126,7 +126,7 @@ public enum KeyEventHandler implements EventHandlerManager.EventHandler {
     public void onGameKeyboardEvent(final InputEvent.KeyInputEvent event) {
         final int key = Keyboard.getEventKey();
         if (Keyboard.isKeyDown(key)) {
-            this.onInputEvent((Multimap<Integer, KeyBindingAction>) this.inGameActions, key, true);
+            this.onInputEvent(this.inGameActions, key, true);
         }
     }
 
@@ -135,8 +135,8 @@ public enum KeyEventHandler implements EventHandlerManager.EventHandler {
         final int key = Keyboard.getEventKey();
         if (Keyboard.isKeyDown(key)) {
             if (this.inFullscreenWithoutChat()) {
-                this.onInputEvent((Multimap<Integer, KeyBindingAction>) this.inGuiActions, key, true);
-            } else if (this.inMinimapPreview() && this.onInputEvent((Multimap<Integer, KeyBindingAction>) this.minimapPreviewActions, key, false)) {
+                this.onInputEvent(this.inGuiActions, key, true);
+            } else if (this.inMinimapPreview() && this.onInputEvent(this.minimapPreviewActions, key, false)) {
                 ((OptionsManager) this.mc.currentScreen).refreshMinimapOptions();
             }
         }
@@ -147,17 +147,15 @@ public enum KeyEventHandler implements EventHandlerManager.EventHandler {
         final int key = -100 + Mouse.getEventButton();
         if (!Mouse.isButtonDown(key)) {
             if (this.inFullscreenWithoutChat()) {
-                this.onInputEvent((Multimap<Integer, KeyBindingAction>) this.inGuiActions, key, true);
-            } else if (this.inMinimapPreview() && this.onInputEvent((Multimap<Integer, KeyBindingAction>) this.minimapPreviewActions, key, false)) {
+                this.onInputEvent(this.inGuiActions, key, true);
+            } else if (this.inMinimapPreview() && this.onInputEvent(this.minimapPreviewActions, key, false)) {
                 ((OptionsManager) this.mc.currentScreen).refreshMinimapOptions();
             }
         }
     }
 
     public List<KeyBinding> getInGuiKeybindings() {
-        final List<KeyBinding> list = this.inGuiActions.values().stream().map(KeyBindingAction::getKeyBinding).collect(Collectors.toList());
-        list.sort(Comparator.comparing(kb -> Constants.getString(kb.getKeyDescription())));
-        return list;
+        return this.inGuiActions.values().stream().map(KeyBindingAction::getKeyBinding).sorted(Comparator.comparing(kb -> Constants.getString(kb.getKeyDescription()))).collect(Collectors.toList());
     }
 
     private boolean onInputEvent(final Multimap<Integer, KeyBindingAction> multimap, final int key, final boolean useContext) {
@@ -173,7 +171,7 @@ public enum KeyEventHandler implements EventHandlerManager.EventHandler {
                 }
             }
         } catch (Exception e) {
-            this.logger.error("Error checking keybinding", (Object) LogFormatter.toPartialString(e));
+            this.logger.error("Error checking keybinding", LogFormatter.toPartialString(e));
         }
         return false;
     }
@@ -186,14 +184,14 @@ public enum KeyEventHandler implements EventHandlerManager.EventHandler {
     }
 
     private void sortActions(final ListMultimap<Integer, KeyBindingAction> multimap) {
-        final List<KeyBindingAction> copy = new ArrayList<KeyBindingAction>(multimap.values());
+        final List<KeyBindingAction> copy = new ArrayList<>(multimap.values());
         multimap.clear();
         for (final KeyBindingAction kba : copy) {
             multimap.put(kba.getKeyBinding().getKeyCode(), kba);
         }
         for (final Integer key : multimap.keySet()) {
             multimap.get(key).sort(this.kbaComparator);
-            Journeymap.getLogger().debug((Object) multimap.get(key));
+            Journeymap.getLogger().debug(multimap.get(key));
         }
     }
 

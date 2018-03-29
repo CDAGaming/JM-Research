@@ -44,10 +44,7 @@ public class RegionImageHandler {
     }
 
     public static File getRegionImageFile(final RegionCoord rCoord, final MapType mapType, final boolean allowLegacy) {
-        final StringBuffer sb = new StringBuffer();
-        sb.append(rCoord.regionX).append(",").append(rCoord.regionZ).append(".png");
-        final File regionFile = new File(getImageDir(rCoord, mapType), sb.toString());
-        return regionFile;
+        return new File(getImageDir(rCoord, mapType), String.valueOf(rCoord.regionX) + "," + rCoord.regionZ + ".png");
     }
 
     public static BufferedImage createBlankImage(final int width, final int height) {
@@ -218,7 +215,7 @@ public class RegionImageHandler {
         final int rx2 = RegionCoord.getRegionPos(endCoord.x);
         final int rz1 = RegionCoord.getRegionPos(startCoord.z);
         final int rz2 = RegionCoord.getRegionPos(endCoord.z);
-        final List<TileDrawStep> drawSteps = new ArrayList<TileDrawStep>();
+        final List<TileDrawStep> drawSteps = new ArrayList<>();
         for (int rx3 = rx1; rx3 <= rx2; ++rx3) {
             for (int rz3 = rz1; rz3 <= rz2; ++rz3) {
                 final RegionCoord rc = new RegionCoord(worldDir, rx3, rz3, mapType.dimension);

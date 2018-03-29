@@ -13,6 +13,6 @@ public class DisplayUpdateEvent extends ClientEvent {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper((Object) this).add("uiState", (Object) this.uiState).toString();
+        return MoreObjects.toStringHelper(this).add("uiState", this.uiState).toString();
     }
 }

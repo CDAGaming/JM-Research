@@ -50,9 +50,9 @@ public class VanillaBlockSpriteProxy implements IBlockSpritesProxy {
             return Collections.singletonList(new ColoredSprite(tas, null));
         }
         if (blockState.getPropertyKeys().contains(BlockDoublePlant.HALF)) {
-            blockState = blockState.withProperty((IProperty) BlockDoublePlant.HALF, (Comparable) BlockDoublePlant.EnumBlockHalf.UPPER);
+            blockState = blockState.withProperty(BlockDoublePlant.HALF, BlockDoublePlant.EnumBlockHalf.UPPER);
         }
-        final HashMap<String, ColoredSprite> map = new HashMap<String, ColoredSprite>();
+        final HashMap<String, ColoredSprite> map = new HashMap<>();
         try {
             final IBakedModel model = this.bms.getModelForState(blockState);
             Label_0220:
@@ -87,7 +87,7 @@ public class VanillaBlockSpriteProxy implements IBlockSpritesProxy {
             for (final BlockRenderLayer layer : BlockRenderLayer.values()) {
                 if (blockMD.getBlock().canRenderInLayer(blockState, layer)) {
                     ForgeHooksClient.setRenderLayer(layer);
-                    final List<BakedQuad> quads = (List<BakedQuad>) model.getQuads(blockState, facing, 0L);
+                    final List<BakedQuad> quads = model.getQuads(blockState, facing, 0L);
                     if (this.addSprites(map, quads)) {
                         if (!blockMD.isVanillaBlock() && VanillaBlockSpriteProxy.logger.isDebugEnabled()) {
                             VanillaBlockSpriteProxy.logger.debug(String.format("Success during [%s] %s.getQuads(%s, %s, %s)", layer, model.getClass(), blockState, facing, 0));
@@ -111,9 +111,9 @@ public class VanillaBlockSpriteProxy implements IBlockSpritesProxy {
             return false;
         }
         if (quads.size() > 1) {
-            final HashSet<BakedQuad> culled = new HashSet<BakedQuad>(quads.size());
+            final HashSet<BakedQuad> culled = new HashSet<>(quads.size());
             culled.addAll(quads);
-            quads = new ArrayList<BakedQuad>(culled);
+            quads = new ArrayList<>(culled);
         }
         boolean added = false;
         for (final BakedQuad quad : quads) {
@@ -124,7 +124,7 @@ public class VanillaBlockSpriteProxy implements IBlockSpritesProxy {
                     continue;
                 }
                 final ResourceLocation resourceLocation = new ResourceLocation(iconName);
-                if (resourceLocation.equals((Object) TextureMap.LOCATION_MISSING_TEXTURE)) {
+                if (resourceLocation.equals(TextureMap.LOCATION_MISSING_TEXTURE)) {
                     continue;
                 }
                 sprites.put(iconName, new ColoredSprite(quad));

@@ -27,7 +27,7 @@ public final class MapPolygon {
         if (points.size() < 3) {
             throw new IllegalArgumentException("MapPolygon must have at least 3 points.");
         }
-        this.points = Collections.unmodifiableList((List<? extends BlockPos>) points);
+        this.points = Collections.unmodifiableList(points);
         return this;
     }
 
@@ -37,6 +37,6 @@ public final class MapPolygon {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper((Object) this).add("points", (Object) this.points).toString();
+        return MoreObjects.toStringHelper(this).add("points", this.points).toString();
     }
 }

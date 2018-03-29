@@ -53,16 +53,16 @@ public final class UIState {
             return false;
         }
         final UIState mapState = (UIState) o;
-        return Objects.equal((Object) this.active, (Object) mapState.active) && Objects.equal((Object) this.dimension, (Object) mapState.dimension) && Objects.equal((Object) this.zoom, (Object) mapState.zoom) && Objects.equal((Object) this.ui, (Object) mapState.ui) && Objects.equal((Object) this.mapType, (Object) mapState.mapType) && Objects.equal((Object) this.displayBounds, (Object) mapState.displayBounds);
+        return Objects.equal(this.active, mapState.active) && Objects.equal(this.dimension, mapState.dimension) && Objects.equal(this.zoom, mapState.zoom) && Objects.equal(this.ui, mapState.ui) && Objects.equal(this.mapType, mapState.mapType) && Objects.equal(this.displayBounds, mapState.displayBounds);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(new Object[]{this.ui, this.active, this.dimension, this.zoom, this.mapType, this.displayBounds});
+        return Objects.hashCode(this.ui, this.active, this.dimension, this.zoom, this.mapType, this.displayBounds);
     }
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper((Object) this).add("ui", (Object) this.ui).add("active", this.active).add("dimension", this.dimension).add("mapType", (Object) this.mapType).add("zoom", this.zoom).add("mapCenter", (Object) this.mapCenter).add("chunkY", (Object) this.chunkY).add("blockBounds", (Object) this.blockBounds).add("displayBounds", (Object) this.displayBounds).add("blockSize", this.blockSize).toString();
+        return MoreObjects.toStringHelper(this).add("ui", this.ui).add("active", this.active).add("dimension", this.dimension).add("mapType", this.mapType).add("zoom", this.zoom).add("mapCenter", this.mapCenter).add("chunkY", this.chunkY).add("blockBounds", this.blockBounds).add("displayBounds", this.displayBounds).add("blockSize", this.blockSize).toString();
     }
 }

@@ -99,7 +99,7 @@ public class TopoRenderer extends BaseRenderer implements IChunkRenderer {
         try {
             for (int x = 0; x < 16; ++x) {
                 for (int z = 0; z < 16; ++z) {
-                    BlockMD topBlockMd = null;
+                    BlockMD topBlockMd;
                     int y = Math.max(0, this.getBlockHeight(chunkMd, x, null, z, null, null));
                     if (this.mapBathymetry) {
                         final Integer[][] waterHeights = this.getFluidHeights(chunkMd, null);

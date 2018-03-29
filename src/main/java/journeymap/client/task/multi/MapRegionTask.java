@@ -55,10 +55,10 @@ public class MapRegionTask extends BaseMapTask {
     }
 
     public static BaseMapTask create(final ChunkRenderController renderController, final RegionCoord rCoord, final MapType mapType, final Minecraft minecraft) {
-        final World world = (World) minecraft.world;
+        final World world = minecraft.world;
         final List<ChunkPos> renderCoords = rCoord.getChunkCoordsInRegion();
-        final List<ChunkPos> retainedCoords = new ArrayList<ChunkPos>(renderCoords.size());
-        final HashMap<RegionCoord, Boolean> existingRegions = new HashMap<RegionCoord, Boolean>();
+        final List<ChunkPos> retainedCoords = new ArrayList<>(renderCoords.size());
+        final HashMap<RegionCoord, Boolean> existingRegions = new HashMap<>();
         for (final ChunkPos coord : renderCoords) {
             for (final ChunkPos keepAliveOffset : MapRegionTask.keepAliveOffsets) {
                 final ChunkPos keepAliveCoord = new ChunkPos(coord.x + keepAliveOffset.x, coord.z + keepAliveOffset.z);
@@ -123,7 +123,7 @@ public class MapRegionTask extends BaseMapTask {
         final BlockPos se = new BlockPos(maxX, y, maxZ);
         final BlockPos ne = new BlockPos(maxX, y, z);
         final BlockPos nw = new BlockPos(x, y, z);
-        final MapPolygon polygon = new MapPolygon(new BlockPos[]{sw, se, ne, nw});
+        final MapPolygon polygon = new MapPolygon(sw, se, ne, nw);
         final PolygonOverlay regionOverlay = new PolygonOverlay("journeymap", displayId, this.rCoord.dimension, shapeProps, polygon);
         regionOverlay.setOverlayGroupName(groupName).setLabel(label).setTextProperties(textProps).setActiveUIs(EnumSet.of(Context.UI.Fullscreen, Context.UI.Webmap)).setActiveMapTypes(EnumSet.of(Context.MapType.Any));
         return regionOverlay;
@@ -135,7 +135,7 @@ public class MapRegionTask extends BaseMapTask {
         RegionImageCache.INSTANCE.flushToDiskAsync(true);
         DataCache.INSTANCE.stopChunkMDRetention();
         if (hadError || cancelled) {
-            MapRegionTask.logger.warn("MapRegionTask cancelled %s hadError %s", (Object) cancelled, (Object) hadError);
+            MapRegionTask.logger.warn("MapRegionTask cancelled %s hadError %s", cancelled, hadError);
         } else {
             MapRegionTask.logger.info(String.format("Actual chunks mapped in %s: %s ", this.rCoord, mappedChunks));
             this.regionOverlay.setTitle(Constants.getString("jm.common.automap_region_chunks", mappedChunks));
@@ -220,7 +220,7 @@ public class MapRegionTask extends BaseMapTask {
                 if (this.regionLoader.isUnderground()) {
                     ChatLog.announceI18N("jm.common.automap_complete_underground", this.regionLoader.getVSlice());
                 } else {
-                    ChatLog.announceI18N("jm.common.automap_complete", new Object[0]);
+                    ChatLog.announceI18N("jm.common.automap_complete");
                 }
             }
             this.enabled = false;
@@ -244,8 +244,7 @@ public class MapRegionTask extends BaseMapTask {
             }
             final RegionCoord rCoord = this.regionLoader.getRegions().peek();
             final ChunkRenderController chunkRenderController = Journeymap.getClient().getChunkRenderController();
-            final BaseMapTask baseMapTask = MapRegionTask.create(chunkRenderController, rCoord, this.regionLoader.getMapType(), minecraft);
-            return baseMapTask;
+            return MapRegionTask.create(chunkRenderController, rCoord, this.regionLoader.getMapType(), minecraft);
         }
 
         @Override

@@ -15,7 +15,7 @@ public class WaypointsData extends CacheLoader<Class, Collection<Waypoint>> {
     }
 
     protected static List<Waypoint> getWaypoints() {
-        final ArrayList<Waypoint> list = new ArrayList<Waypoint>(0);
+        final ArrayList<Waypoint> list = new ArrayList<>(0);
         if (isManagerEnabled()) {
             list.addAll(WaypointStore.INSTANCE.getAll());
         }

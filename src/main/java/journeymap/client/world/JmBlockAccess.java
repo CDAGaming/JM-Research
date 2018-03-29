@@ -60,7 +60,7 @@ public enum JmBlockAccess implements IBlockAccess {
             }
         }
         if (FMLClientHandler.instance().getClient().isSingleplayer()) {
-            final MinecraftServer server = (MinecraftServer) FMLClientHandler.instance().getClient().getIntegratedServer();
+            final MinecraftServer server = FMLClientHandler.instance().getClient().getIntegratedServer();
             if (server != null) {
                 return server.getEntityWorld().getBiomeProvider().getBiome(pos);
             }
@@ -73,7 +73,7 @@ public enum JmBlockAccess implements IBlockAccess {
     }
 
     public World getWorld() {
-        return (World) FMLClientHandler.instance().getClient().world;
+        return FMLClientHandler.instance().getClient().world;
     }
 
     public WorldType getWorldType() {

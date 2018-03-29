@@ -51,7 +51,7 @@ public class ModPropertyEnum<T> {
             final Class declaringClass = Class.forName(declaringClassName);
             return (PropertyEnum) ReflectionHelper.findField(declaringClass, new String[]{propertyEnumStaticFieldName}).get(declaringClass);
         } catch (Exception e) {
-            Journeymap.getLogger().error("Error reflecting PropertyEnum on %s.%s: %s", (Object) declaringClassName, (Object) propertyEnumStaticFieldName, (Object) LogFormatter.toPartialString(e));
+            Journeymap.getLogger().error("Error reflecting PropertyEnum on %s.%s: %s", declaringClassName, propertyEnumStaticFieldName, LogFormatter.toPartialString(e));
             return null;
         }
     }
@@ -66,9 +66,9 @@ public class ModPropertyEnum<T> {
     public static Method lookupMethod(final String declaringClassName, final String methodName, final Class... methodArgTypes) {
         try {
             final Class declaringClass = Class.forName(declaringClassName);
-            return ReflectionHelper.findMethod(declaringClass, methodName, (String) null, methodArgTypes);
+            return ReflectionHelper.findMethod(declaringClass, methodName, null, methodArgTypes);
         } catch (Exception e) {
-            Journeymap.getLogger().error("Error reflecting method %s.%s(): %s", (Object) declaringClassName, (Object) methodName, (Object) LogFormatter.toPartialString(e));
+            Journeymap.getLogger().error("Error reflecting method %s.%s(): %s", declaringClassName, methodName, LogFormatter.toPartialString(e));
             return null;
         }
     }
@@ -96,7 +96,7 @@ public class ModPropertyEnum<T> {
     public T getValue(final IBlockState blockState, @Nullable final Object... args) {
         if (this.valid) {
             try {
-                final Comparable<?> enumValue = (Comparable<?>) blockState.getProperties().get((Object) this.propertyEnum);
+                final Comparable<?> enumValue = blockState.getProperties().get(this.propertyEnum);
                 if (enumValue != null) {
                     return (T) this.method.invoke(enumValue, args);
                 }

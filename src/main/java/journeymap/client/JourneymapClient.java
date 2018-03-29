@@ -157,7 +157,7 @@ public class JourneymapClient implements CommonProxy {
     @Override
     public void initialize(final FMLInitializationEvent event) throws Throwable {
         PacketHandler.init(Side.CLIENT);
-        StatTimer timer = null;
+        StatTimer timer;
         try {
             timer = StatTimer.getDisposable("elapsed").start();
             final boolean migrationOk = new Migration("journeymap.client.task.migrate").performTasks();

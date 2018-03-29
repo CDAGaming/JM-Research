@@ -73,16 +73,16 @@ public class ShapeProperties {
             return false;
         }
         final ShapeProperties that = (ShapeProperties) o;
-        return Objects.equal((Object) this.strokeColor, (Object) that.strokeColor) && Objects.equal((Object) this.fillColor, (Object) that.fillColor) && Objects.equal((Object) this.strokeOpacity, (Object) that.strokeOpacity) && Objects.equal((Object) this.fillOpacity, (Object) that.fillOpacity) && Objects.equal((Object) this.strokeWidth, (Object) that.strokeWidth);
+        return Objects.equal(this.strokeColor, that.strokeColor) && Objects.equal(this.fillColor, that.fillColor) && Objects.equal(this.strokeOpacity, that.strokeOpacity) && Objects.equal(this.fillOpacity, that.fillOpacity) && Objects.equal(this.strokeWidth, that.strokeWidth);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(new Object[]{this.strokeColor, this.fillColor, this.strokeOpacity, this.fillOpacity, this.strokeWidth});
+        return Objects.hashCode(this.strokeColor, this.fillColor, this.strokeOpacity, this.fillOpacity, this.strokeWidth);
     }
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper((Object) this).add("fillColor", this.fillColor).add("fillOpacity", this.fillOpacity).add("strokeColor", this.strokeColor).add("strokeOpacity", this.strokeOpacity).add("strokeWidth", this.strokeWidth).toString();
+        return MoreObjects.toStringHelper(this).add("fillColor", this.fillColor).add("fillOpacity", this.fillOpacity).add("strokeColor", this.strokeColor).add("strokeOpacity", this.strokeOpacity).add("strokeWidth", this.strokeWidth).toString();
     }
 }

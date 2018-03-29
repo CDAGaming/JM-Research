@@ -177,7 +177,7 @@ public class CaveRenderer extends BaseRenderer implements IChunkRenderer {
             return false;
         }
         try {
-            Stratum stratum = null;
+            Stratum stratum;
             BlockMD blockMD = null;
             while (!strata.isEmpty()) {
                 stratum = strata.nextUp(this, true);

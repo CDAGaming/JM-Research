@@ -14,7 +14,7 @@ import java.util.Map;
 public class PlayersData extends CacheLoader<Class, Map<String, EntityDTO>> {
     public Map<String, EntityDTO> load(final Class aClass) throws Exception {
         if (!FeatureManager.isAllowed(Feature.RadarPlayers)) {
-            return new HashMap<String, EntityDTO>();
+            return new HashMap<>();
         }
         final List<EntityDTO> list = EntityHelper.getPlayersNearby();
         return EntityHelper.buildEntityIdMap(list, true);

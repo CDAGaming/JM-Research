@@ -33,7 +33,7 @@ public class CmdChatPosition implements ICommand {
     public void execute(final MinecraftServer server, final ICommandSender sender, final String[] args) throws CommandException {
         String text;
         if (args.length > 1) {
-            text = Joiner.on("").skipNulls().join((Object[]) args);
+            text = Joiner.on("").skipNulls().join(args);
         } else {
             final BlockPos pos = sender.getPosition();
             text = String.format("[x:%s, y:%s, z:%s]", pos.getX(), pos.getY(), pos.getZ());
@@ -42,7 +42,7 @@ public class CmdChatPosition implements ICommand {
         Journeymap.getClient().queueMainThreadTask(new IMainThreadTask() {
             @Override
             public IMainThreadTask perform(final Minecraft mc, final JourneymapClient jm) {
-                FMLClientHandler.instance().getClient().displayGuiScreen((GuiScreen) new WaypointChat(pos2));
+                FMLClientHandler.instance().getClient().displayGuiScreen(new WaypointChat(pos2));
                 return null;
             }
 

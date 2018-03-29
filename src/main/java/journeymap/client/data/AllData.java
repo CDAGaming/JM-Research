@@ -48,6 +48,6 @@ public class AllData extends CacheLoader<Long, Map> {
         players,
         villagers,
         waypoints,
-        world;
+        world
     }
 }

@@ -42,8 +42,8 @@ public class Strata {
         this.renderCaveColor = null;
         this.lightAttenuation = 0;
         this.blocksFound = false;
-        this.unusedStack = new Stack<Stratum>();
-        this.stack = new Stack<Stratum>();
+        this.unusedStack = new Stack<>();
+        this.stack = new Stack<>();
         this.name = name;
         this.underground = underground;
         this.initialPoolSize = initialPoolSize;
@@ -125,7 +125,7 @@ public class Strata {
     }
 
     public Stratum nextUp(final IChunkRenderer renderer, final boolean ignoreMiddleFluid) {
-        Stratum stratum = null;
+        Stratum stratum;
         try {
             stratum = this.stack.peek();
             if (stratum.isUninitialized()) {

@@ -26,18 +26,18 @@ public abstract class ConfigField<T> {
     protected transient String fieldName;
 
     public ConfigField() {
-        this.attributes = new TreeMap<String, Object>();
+        this.attributes = new TreeMap<>();
         this.put("type", this.getClass().getSimpleName());
     }
 
     protected ConfigField(final Category category) {
-        this.attributes = new TreeMap<String, Object>();
+        this.attributes = new TreeMap<>();
         this.put("type", this.getClass().getSimpleName());
         this.put("category", category);
     }
 
     protected ConfigField(final Category category, final String key) {
-        this.attributes = new TreeMap<String, Object>();
+        this.attributes = new TreeMap<>();
         this.put("type", this.getClass().getSimpleName());
         this.put("category", category);
         this.put("key", key);
@@ -237,12 +237,12 @@ public abstract class ConfigField<T> {
             return false;
         }
         final ConfigField<?> that = (ConfigField<?>) o;
-        return Objects.equal((Object) this.getKey(), (Object) that.getKey()) && this.getCategory() == that.getCategory() && Objects.equal(this.get(), (Object) that.get());
+        return Objects.equal(this.getKey(), that.getKey()) && this.getCategory() == that.getCategory() && Objects.equal(this.get(), that.get());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(new Object[]{this.getKey(), this.getCategory(), this.get()});
+        return Objects.hashCode(this.getKey(), this.getCategory(), this.get());
     }
 
     public String getDeclaredField() {
@@ -254,6 +254,6 @@ public abstract class ConfigField<T> {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper((Object) this).add("on", (Object) this.getDeclaredField()).add("attributes", (Object) this.attributes).toString();
+        return MoreObjects.toStringHelper(this).add("on", this.getDeclaredField()).add("attributes", this.attributes).toString();
     }
 }

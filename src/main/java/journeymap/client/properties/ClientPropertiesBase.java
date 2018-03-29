@@ -66,8 +66,7 @@ public abstract class ClientPropertiesBase extends PropertiesBase {
 
     @Override
     public boolean isValid(final boolean fix) {
-        final boolean valid = super.isValid(fix);
-        return valid;
+        return super.isValid(fix);
     }
 
     @Override

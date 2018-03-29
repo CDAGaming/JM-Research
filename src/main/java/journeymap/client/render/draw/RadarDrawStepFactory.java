@@ -25,12 +25,12 @@ public class RadarDrawStepFactory {
         final boolean showMobHeading = mapProperties.showMobHeading.get();
         final boolean showPlayerHeading = mapProperties.showPlayerHeading.get();
         final boolean showEntityNames = mapProperties.showEntityNames.get();
-        final List<DrawStep> drawStepList = new ArrayList<DrawStep>();
+        final List<DrawStep> drawStepList = new ArrayList<>();
         try {
             for (final EntityDTO dto : entityDTOs) {
                 try {
-                    TextureImpl entityIcon = null;
-                    TextureImpl locatorImg = null;
+                    TextureImpl entityIcon;
+                    TextureImpl locatorImg;
                     final EntityLivingBase entityLiving = dto.entityLivingRef.get();
                     if (entityLiving == null) {
                         continue;

@@ -86,7 +86,7 @@ public class Waypoint implements Serializable {
     public Waypoint(final journeymap.client.api.display.Waypoint modWaypoint) {
         this(modWaypoint.getName(), modWaypoint.getPosition(), (modWaypoint.getColor() == null) ? Color.WHITE : new Color(modWaypoint.getColor()), Type.Normal, modWaypoint.getDimension());
         final int[] prim = modWaypoint.getDisplayDimensions();
-        final ArrayList<Integer> dims = new ArrayList<Integer>(prim.length);
+        final ArrayList<Integer> dims = new ArrayList<>(prim.length);
         for (final int aPrim : prim) {
             dims.add(aPrim);
         }
@@ -109,10 +109,10 @@ public class Waypoint implements Serializable {
             name = createName(x, z);
         }
         if (dimensions == null || dimensions.size() == 0) {
-            dimensions = new TreeSet<Integer>();
+            dimensions = new TreeSet<>();
             dimensions.add(FMLClientHandler.instance().getClient().player.world.provider.getDimension());
         }
-        (this.dimensions = new TreeSet<Integer>(dimensions)).add(currentDimension);
+        (this.dimensions = new TreeSet<>(dimensions)).add(currentDimension);
         this.name = name;
         this.setLocation(x, y, z, currentDimension);
         this.r = red;
@@ -157,7 +157,7 @@ public class Waypoint implements Serializable {
     }
 
     public static Waypoint fromString(final String json) {
-        return (Waypoint) Waypoint.GSON.fromJson(json, (Class) Waypoint.class);
+        return Waypoint.GSON.fromJson(json, Waypoint.class);
     }
 
     public Waypoint setLocation(final int x, final int y, final int z, final int currentDimension) {
@@ -194,7 +194,7 @@ public class Waypoint implements Serializable {
 
     public WaypointGroup getGroup() {
         if (this.group == null) {
-            if (Strings.isEmpty((CharSequence) this.origin) || Strings.isEmpty((CharSequence) this.groupName)) {
+            if (Strings.isEmpty(this.origin) || Strings.isEmpty(this.groupName)) {
                 this.setGroup(WaypointGroup.DEFAULT);
             } else {
                 this.setGroup(WaypointGroupStore.INSTANCE.get(this.origin, this.groupName));
@@ -238,7 +238,7 @@ public class Waypoint implements Serializable {
     }
 
     public Waypoint setDimensions(final Collection<Integer> dims) {
-        this.dimensions = new TreeSet<Integer>(dims);
+        this.dimensions = new TreeSet<>(dims);
         return this.setDirty();
     }
 
@@ -411,8 +411,8 @@ public class Waypoint implements Serializable {
 
     public String toChatString(final boolean useName) {
         final boolean useDim = this.dimensions.first() != 0;
-        final List<String> parts = new ArrayList<String>();
-        final List<Object> args = new ArrayList<Object>();
+        final List<String> parts = new ArrayList<>();
+        final List<Object> args = new ArrayList<>();
         if (useName) {
             parts.add("name:\"%s\"");
             args.add(this.getName().replaceAll("\"", " "));
@@ -425,7 +425,7 @@ public class Waypoint implements Serializable {
             parts.add("dim:%s");
             args.add(this.dimensions.first());
         }
-        final String format = "[" + Joiner.on(", ").join((Iterable) parts) + "]";
+        final String format = "[" + Joiner.on(", ").join(parts) + "]";
         final String result = String.format(format, args.toArray());
         if (WaypointParser.parse(result) == null) {
             Journeymap.getLogger().warn("Couldn't produce parsable chat string from Waypoint: " + this);
@@ -438,7 +438,7 @@ public class Waypoint implements Serializable {
 
     @Override
     public String toString() {
-        return Waypoint.GSON.toJson((Object) this);
+        return Waypoint.GSON.toJson(this);
     }
 
     @Override
@@ -450,7 +450,7 @@ public class Waypoint implements Serializable {
             return false;
         }
         final Waypoint waypoint = (Waypoint) o;
-        return this.b == waypoint.b && this.enable == waypoint.enable && this.g == waypoint.g && this.r == waypoint.r && this.x == waypoint.x && this.y == waypoint.y && this.z == waypoint.z && this.dimensions.equals(waypoint.dimensions) && this.icon.equals(waypoint.icon) && this.id.equals(waypoint.id) && this.name.equals(waypoint.name) && this.origin == waypoint.origin && this.type == waypoint.type;
+        return this.b == waypoint.b && this.enable == waypoint.enable && this.g == waypoint.g && this.r == waypoint.r && this.x == waypoint.x && this.y == waypoint.y && this.z == waypoint.z && this.dimensions.equals(waypoint.dimensions) && this.icon.equals(waypoint.icon) && this.id.equals(waypoint.id) && this.name.equals(waypoint.name) && this.origin.equals(waypoint.origin) && this.type == waypoint.type;
     }
 
     @Override
@@ -460,6 +460,6 @@ public class Waypoint implements Serializable {
 
     public enum Type {
         Normal,
-        Death;
+        Death
     }
 }

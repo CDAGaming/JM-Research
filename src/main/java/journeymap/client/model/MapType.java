@@ -186,13 +186,8 @@ public class MapType {
             return false;
         }
         if (this.vSlice != null) {
-            if (this.vSlice.equals(mapType.vSlice)) {
-                return true;
-            }
-        } else if (mapType.vSlice == null) {
-            return true;
-        }
-        return false;
+            return this.vSlice.equals(mapType.vSlice);
+        } else return mapType.vSlice == null;
     }
 
     public enum Name {
@@ -201,6 +196,6 @@ public class MapType {
         underground,
         surface,
         topo,
-        none;
+        none
     }
 }

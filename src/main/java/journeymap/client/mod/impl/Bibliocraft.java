@@ -24,8 +24,8 @@ public class Bibliocraft implements IModBlockHandler, IBlockSpritesProxy {
     List<ModPropertyEnum<String>> colorProperties;
 
     public Bibliocraft() {
-        (this.colorProperties = new ArrayList<ModPropertyEnum<String>>(2)).add(new ModPropertyEnum<String>("jds.bibliocraft.blocks.BiblioColorBlock", "COLOR", "getWoolTextureString", String.class));
-        this.colorProperties.add(new ModPropertyEnum<String>("jds.bibliocraft.blocks.BiblioWoodBlock", "WOOD_TYPE", "getTextureString", String.class));
+        (this.colorProperties = new ArrayList<>(2)).add(new ModPropertyEnum<>("jds.bibliocraft.blocks.BiblioColorBlock", "COLOR", "getWoolTextureString", String.class));
+        this.colorProperties.add(new ModPropertyEnum<>("jds.bibliocraft.blocks.BiblioWoodBlock", "WOOD_TYPE", "getTextureString", String.class));
     }
 
     @Override
@@ -37,7 +37,7 @@ public class Bibliocraft implements IModBlockHandler, IBlockSpritesProxy {
     @Override
     public Collection<ColoredSprite> getSprites(final BlockMD blockMD) {
         final IBlockState blockState = blockMD.getBlockState();
-        final String textureString = ModPropertyEnum.getFirstValue(this.colorProperties, blockState, new Object[0]);
+        final String textureString = ModPropertyEnum.getFirstValue(this.colorProperties, blockState);
         if (!Strings.isNullOrEmpty(textureString)) {
             try {
                 final ResourceLocation loc = new ResourceLocation(textureString);

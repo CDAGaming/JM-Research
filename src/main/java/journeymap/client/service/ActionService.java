@@ -36,7 +36,7 @@ public class ActionService extends BaseService {
         final Query query = event.query();
         query.parse();
         final Minecraft minecraft = FMLClientHandler.instance().getClient();
-        final World world = (World) minecraft.world;
+        final World world = minecraft.world;
         if (world == null) {
             this.throwEventException(503, "World not connected", event, false);
         }
@@ -57,7 +57,7 @@ public class ActionService extends BaseService {
     private void saveMap(final Event event) throws Event, Exception {
         final Query query = event.query();
         final Minecraft minecraft = FMLClientHandler.instance().getClient();
-        final World world = (World) minecraft.world;
+        final World world = minecraft.world;
         try {
             final File worldDir = FileHandler.getJMWorldDir(minecraft);
             if (!worldDir.exists() || !worldDir.isDirectory()) {
@@ -65,9 +65,9 @@ public class ActionService extends BaseService {
                 this.throwEventException(500, error, event, true);
             }
             Integer vSlice = this.getParameter(query, "depth", (Integer) null);
-            final int dimension = this.getParameter(query, "dim", Integer.valueOf(0));
+            final int dimension = this.getParameter(query, "dim", 0);
             final String mapTypeString = this.getParameter(query, "mapType", MapType.Name.day.name());
-            MapType mapType = null;
+            MapType mapType;
             MapType.Name mapTypeName = null;
             try {
                 mapTypeName = MapType.Name.valueOf(mapTypeString);

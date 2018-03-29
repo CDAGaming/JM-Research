@@ -156,6 +156,6 @@ public abstract class Overlay extends Displayable {
     }
 
     protected final MoreObjects.ToStringHelper toStringHelper(final Overlay instance) {
-        return MoreObjects.toStringHelper((Object) this).add("label", (Object) this.label).add("title", (Object) this.title).add("overlayGroupName", (Object) this.overlayGroupName).add("activeMapTypes", (Object) this.activeMapTypes).add("activeUIs", (Object) this.activeUIs).add("dimension", this.dimension).add("displayOrder", this.displayOrder).add("maxZoom", this.maxZoom).add("minZoom", this.minZoom).add("textProperties", (Object) this.textProperties).add("hasOverlayListener", this.overlayListener != null);
+        return MoreObjects.toStringHelper(this).add("label", this.label).add("title", this.title).add("overlayGroupName", this.overlayGroupName).add("activeMapTypes", this.activeMapTypes).add("activeUIs", this.activeUIs).add("dimension", this.dimension).add("displayOrder", this.displayOrder).add("maxZoom", this.maxZoom).add("minZoom", this.minZoom).add("textProperties", this.textProperties).add("hasOverlayListener", this.overlayListener != null);
     }
 }

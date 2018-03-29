@@ -54,7 +54,7 @@ public class SplashInfo {
                 if (action != null) {
                     final String arg = (parts.length == 3) ? parts[2] : null;
                     try {
-                        Object instance = null;
+                        Object instance;
                         if (JmUI.class.isAssignableFrom(uiClass)) {
                             instance = UIManager.INSTANCE.open(uiClass, returnUi);
                         } else {

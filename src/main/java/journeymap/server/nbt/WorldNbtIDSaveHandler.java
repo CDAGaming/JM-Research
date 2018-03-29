@@ -17,8 +17,8 @@ public class WorldNbtIDSaveHandler {
 
     public WorldNbtIDSaveHandler() {
         this.world = Constants.SERVER.getEntityWorld();
-        this.legacyData = (NBTWorldSaveDataHandler) this.world.getPerWorldStorage().getOrLoadData((Class) NBTWorldSaveDataHandler.class, "JourneyMapWorldID");
-        this.data = (NBTWorldSaveDataHandler) this.world.getPerWorldStorage().getOrLoadData((Class) NBTWorldSaveDataHandler.class, "WorldUUID");
+        this.legacyData = (NBTWorldSaveDataHandler) this.world.getPerWorldStorage().getOrLoadData(NBTWorldSaveDataHandler.class, "JourneyMapWorldID");
+        this.data = (NBTWorldSaveDataHandler) this.world.getPerWorldStorage().getOrLoadData(NBTWorldSaveDataHandler.class, "WorldUUID");
     }
 
     public String getWorldID() {
@@ -35,7 +35,7 @@ public class WorldNbtIDSaveHandler {
             this.legacyData.getData().removeTag("JourneyMapWorldID");
             this.legacyData.markDirty();
             this.data = new NBTWorldSaveDataHandler("WorldUUID");
-            this.world.getPerWorldStorage().setData("world_uuid", (WorldSavedData) this.data);
+            this.world.getPerWorldStorage().setData("world_uuid", this.data);
             this.saveWorldID(worldId);
             return worldId;
         }
@@ -51,7 +51,7 @@ public class WorldNbtIDSaveHandler {
     private String createNewWorldID() {
         final String worldID = UUID.randomUUID().toString();
         this.data = new NBTWorldSaveDataHandler("WorldUUID");
-        this.world.getPerWorldStorage().setData("world_uuid", (WorldSavedData) this.data);
+        this.world.getPerWorldStorage().setData("world_uuid", this.data);
         this.saveWorldID(worldID);
         return worldID;
     }

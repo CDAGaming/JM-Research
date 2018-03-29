@@ -50,7 +50,7 @@ public class WaypointParser {
                     final Waypoint waypoint = parse(candidate);
                     if (waypoint != null) {
                         if (list == null) {
-                            list = new ArrayList<Waypoint>(1);
+                            list = new ArrayList<>(1);
                         }
                         list.add(waypoint);
                     }
@@ -114,8 +114,7 @@ public class WaypointParser {
                 name = String.format("%s,%s", x, z);
             }
             final Random r = new Random();
-            final Waypoint waypoint = new Waypoint(name, new BlockPos((int) x, (int) y, (int) z), new Color(r.nextInt(255), r.nextInt(255), r.nextInt(255)), Waypoint.Type.Normal, dim);
-            return waypoint;
+            return new Waypoint(name, new BlockPos(x, y, z), new Color(r.nextInt(255), r.nextInt(255), r.nextInt(255)), Waypoint.Type.Normal, dim);
         }
         return null;
     }
@@ -144,7 +143,7 @@ public class WaypointParser {
                     }
                 }
                 if (changed) {
-                    event.setMessage((ITextComponent) new TextComponentTranslation(((TextComponentTranslation) event.getMessage()).getKey(), formatArgs));
+                    event.setMessage(new TextComponentTranslation(((TextComponentTranslation) event.getMessage()).getKey(), formatArgs));
                 }
             } else if (event.getMessage() instanceof TextComponentString) {
                 final ITextComponent result2 = addWaypointMarkup(event.getMessage().getUnformattedText(), matches);
@@ -162,7 +161,7 @@ public class WaypointParser {
     }
 
     private static ITextComponent addWaypointMarkup(final String text, final List<String> matches) {
-        final List<ITextComponent> newParts = new ArrayList<ITextComponent>();
+        final List<ITextComponent> newParts = new ArrayList<>();
         int index = 0;
         boolean matched = false;
         final Iterator<String> iterator = matches.iterator();
@@ -171,7 +170,7 @@ public class WaypointParser {
             if (text.contains(match)) {
                 final int start = text.indexOf(match);
                 if (start > index) {
-                    newParts.add((ITextComponent) new TextComponentString(text.substring(index, start)));
+                    newParts.add(new TextComponentString(text.substring(index, start)));
                 }
                 matched = true;
                 final TextComponentString clickable = new TextComponentString(match);
@@ -181,10 +180,10 @@ public class WaypointParser {
                 hover.getStyle().setColor(TextFormatting.YELLOW);
                 final TextComponentString hover2 = new TextComponentString("Click to create Waypoint.\nCtrl+Click to view on map.");
                 hover2.getStyle().setColor(TextFormatting.AQUA);
-                hover.appendSibling((ITextComponent) hover2);
-                chatStyle.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, (ITextComponent) hover));
+                hover.appendSibling(hover2);
+                chatStyle.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover));
                 chatStyle.setColor(TextFormatting.AQUA);
-                newParts.add((ITextComponent) clickable);
+                newParts.add(clickable);
                 index = start + match.length();
                 iterator.remove();
             }
@@ -193,14 +192,14 @@ public class WaypointParser {
             return null;
         }
         if (index < text.length() - 1) {
-            newParts.add((ITextComponent) new TextComponentString(text.substring(index, text.length())));
+            newParts.add(new TextComponentString(text.substring(index, text.length())));
         }
         if (!newParts.isEmpty()) {
             final TextComponentString replacement = new TextComponentString("");
             for (final ITextComponent sib : newParts) {
                 replacement.appendSibling(sib);
             }
-            return (ITextComponent) replacement;
+            return replacement;
         }
         return null;
     }

@@ -43,7 +43,7 @@ public class LogFormatter {
                 if (!(thrown instanceof Exception)) {
                     continue;
                 }
-                thrown = ((Exception) thrown).getCause();
+                thrown = thrown.getCause();
                 --maxRecursion;
             }
         }
@@ -53,7 +53,7 @@ public class LogFormatter {
         final StringBuilder sb = new StringBuilder(t.toString());
         final StackTraceElement caller = Thread.currentThread().getStackTrace()[2];
         for (final StackTraceElement ste : t.getStackTrace()) {
-            sb.append("\n\tat " + ste);
+            sb.append("\n\tat ").append(ste);
             if (ste.getClassName().equals(caller.getClassName()) && ste.getMethodName().equals(caller.getMethodName())) {
                 break;
             }

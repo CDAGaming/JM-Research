@@ -20,13 +20,13 @@ public class DataService extends BaseService {
     private static final long serialVersionUID = 4412225358529161454L;
 
     static {
-        (providerMap = new HashMap<String, Class>(14)).put("/data/all", AllData.class);
+        (providerMap = new HashMap<>(14)).put("/data/all", AllData.class);
         DataService.providerMap.put("/data/image", ImagesData.class);
         DataService.providerMap.put("/data/messages", MessagesData.class);
         DataService.providerMap.put("/data/player", PlayerData.class);
         DataService.providerMap.put("/data/world", WorldData.class);
         DataService.providerMap.put("/data/waypoints", WaypointsData.class);
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         for (final String key : DataService.providerMap.keySet()) {
             sb.append(key).append(":");
         }
@@ -83,14 +83,14 @@ public class DataService extends BaseService {
                 data = DataCache.INSTANCE.getVillagers(false);
             } else if (dpClass == WaypointsData.class) {
                 final Collection<Waypoint> waypoints = DataCache.INSTANCE.getWaypoints(false);
-                final Map<String, Waypoint> wpMap = new HashMap<String, Waypoint>();
+                final Map<String, Waypoint> wpMap = new HashMap<>();
                 for (final Waypoint waypoint : waypoints) {
                     wpMap.put(waypoint.getId(), waypoint);
                 }
                 data = wpMap;
             }
             final String dataString = DataService.GSON.toJson(data);
-            final StringBuffer jsonData = new StringBuffer();
+            final StringBuilder jsonData = new StringBuilder();
             final boolean useJsonP = query.containsKey("callback");
             if (useJsonP) {
                 jsonData.append(URLEncoder.encode(query.get("callback").toString(), DataService.UTF8.name()));

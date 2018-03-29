@@ -32,7 +32,7 @@ public class CmdEditWaypoint implements ICommand {
     }
 
     public void execute(final MinecraftServer server, final ICommandSender sender, final String[] args) throws CommandException {
-        final String text = Joiner.on(" ").skipNulls().join((Object[]) args);
+        final String text = Joiner.on(" ").skipNulls().join(args);
         final Waypoint waypoint = WaypointParser.parse(text);
         if (waypoint != null) {
             final boolean controlDown = Keyboard.isKeyDown(29) || Keyboard.isKeyDown(157);

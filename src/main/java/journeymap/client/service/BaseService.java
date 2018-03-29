@@ -58,7 +58,7 @@ public abstract class BaseService extends Service {
     }
 
     protected String debugRequestHeaders(final Event event) throws Exception {
-        final StringBuffer sb = new StringBuffer("HTTP Request:");
+        final StringBuilder sb = new StringBuilder("HTTP Request:");
         if (event.query() != null) {
             event.query().parse();
             sb.append("\n request=").append(event.query().path());
@@ -136,7 +136,7 @@ public abstract class BaseService extends Service {
 
     protected void respondJson(final Event event, final Map responseObj) throws Exception {
         final Query query = event.query();
-        final StringBuffer jsonData = new StringBuffer();
+        final StringBuilder jsonData = new StringBuilder();
         final boolean useJsonP = query.containsKey("callback");
         if (useJsonP) {
             try {
@@ -148,7 +148,7 @@ public abstract class BaseService extends Service {
         } else {
             jsonData.append("data=");
         }
-        jsonData.append(BaseService.GSON.toJson((Object) responseObj));
+        jsonData.append(BaseService.GSON.toJson(responseObj));
         if (useJsonP) {
             jsonData.append(")");
         }
@@ -167,7 +167,7 @@ public abstract class BaseService extends Service {
     }
 
     protected byte[] gzip(final byte[] data) {
-        ByteArrayOutputStream bout = null;
+        ByteArrayOutputStream bout;
         try {
             bout = new ByteArrayOutputStream();
             final GZIPOutputStream output = new GZIPOutputStream(bout);

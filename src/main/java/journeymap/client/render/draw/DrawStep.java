@@ -12,6 +12,6 @@ public interface DrawStep {
     public enum Pass {
         Object,
         Text,
-        Tooltip;
+        Tooltip
     }
 }

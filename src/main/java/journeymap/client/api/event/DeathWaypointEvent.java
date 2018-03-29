@@ -13,6 +13,6 @@ public class DeathWaypointEvent extends ClientEvent {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper((Object) this).add("location", (Object) this.location).toString();
+        return MoreObjects.toStringHelper(this).add("location", this.location).toString();
     }
 }

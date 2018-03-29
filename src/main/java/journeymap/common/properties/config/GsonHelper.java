@@ -23,20 +23,20 @@ public abstract class GsonHelper<T extends ConfigField> {
 
     public JsonElement serializeAttributes(final ConfigField<?> src, final Type typeOfSrc, final JsonSerializationContext context) {
         if (!this.verbose) {
-            return context.serialize((Object) src.getStringAttr("value"));
+            return context.serialize(src.getStringAttr("value"));
         }
         final JsonObject jsonObject = new JsonObject();
         for (final String attrName : src.getAttributeNames()) {
             jsonObject.addProperty(attrName, src.getStringAttr(attrName));
         }
-        return (JsonElement) jsonObject;
+        return jsonObject;
     }
 
     protected T deserializeAttributes(final T result, final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
         if (!this.verbose || !json.isJsonObject()) {
             result.put("value", json.getAsString());
         } else {
-            final Set<Map.Entry<String, JsonElement>> set = (Set<Map.Entry<String, JsonElement>>) json.getAsJsonObject().entrySet();
+            final Set<Map.Entry<String, JsonElement>> set = json.getAsJsonObject().entrySet();
             for (final Map.Entry<String, JsonElement> entry : set) {
                 try {
                     result.put(entry.getKey(), entry.getValue().getAsString());
@@ -60,7 +60,7 @@ public abstract class GsonHelper<T extends ConfigField> {
                 return null;
             }
             final Category[] array = new Category[src.size()];
-            return context.serialize((Object) src.toArray(array));
+            return context.serialize(src.toArray(array));
         }
 
         public CategorySet deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
@@ -68,7 +68,7 @@ public abstract class GsonHelper<T extends ConfigField> {
             if (this.verbose) {
                 final JsonArray jsonArray = json.getAsJsonArray();
                 for (final JsonElement jsonElement : jsonArray) {
-                    categorySet.add((Category) context.deserialize(jsonElement, (Type) Category.class));
+                    categorySet.add(context.deserialize(jsonElement, Category.class));
                 }
             }
             return categorySet;
@@ -80,7 +80,7 @@ public abstract class GsonHelper<T extends ConfigField> {
         }
 
         public JsonElement serialize(final Version src, final Type typeOfSrc, final JsonSerializationContext context) {
-            return context.serialize((Object) src.toString());
+            return context.serialize(src.toString());
         }
 
         public Version deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
@@ -97,8 +97,8 @@ public abstract class GsonHelper<T extends ConfigField> {
         }
 
         public JsonElement serialize(final GridSpec src, final Type typeOfSrc, final JsonSerializationContext context) {
-            final String string = Joiner.on(",").join((Object) src.style, (Object) RGB.toHexString(src.getColor()), new Object[]{src.alpha, src.getColorX(), src.getColorY()});
-            return context.serialize((Object) string);
+            final String string = Joiner.on(",").join(src.style, RGB.toHexString(src.getColor()), src.alpha, src.getColorX(), src.getColorY());
+            return context.serialize(string);
         }
 
         public GridSpec deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {

@@ -30,7 +30,7 @@ public class Policy {
     }
 
     public static Set<Policy> bulkCreate(final EnumSet<Feature> features, final boolean allowInSingleplayer, final boolean allowInMultiplayer) {
-        final Set<Policy> policies = new HashSet<Policy>();
+        final Set<Policy> policies = new HashSet<>();
         for (final Feature feature : features) {
             policies.add(new Policy(feature, allowInSingleplayer, allowInMultiplayer));
         }

@@ -43,7 +43,7 @@ public final class PolygonOverlay extends Overlay {
         if (holes == null) {
             this.holes = null;
         } else {
-            this.holes = new ArrayList<MapPolygon>(holes);
+            this.holes = new ArrayList<>(holes);
         }
         return this;
     }
@@ -59,6 +59,6 @@ public final class PolygonOverlay extends Overlay {
 
     @Override
     public String toString() {
-        return this.toStringHelper(this).add("holes", (Object) this.holes).add("outerArea", (Object) this.outerArea).add("shapeProperties", (Object) this.shapeProperties).toString();
+        return this.toStringHelper(this).add("holes", this.holes).add("outerArea", this.outerArea).add("shapeProperties", this.shapeProperties).toString();
     }
 }

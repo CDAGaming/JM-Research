@@ -43,7 +43,7 @@ public class Tile {
     int textureWrap;
 
     private Tile(final int tileX, final int tileZ, final int zoom) {
-        this.drawSteps = new ArrayList<TileDrawStep>();
+        this.drawSteps = new ArrayList<>();
         this.logger = Journeymap.getLogger();
         this.renderType = 0;
         this.textureFilter = 0;
@@ -68,8 +68,7 @@ public class Tile {
     }
 
     public static int blockPosToTile(final int b, final int zoom) {
-        final int tile = b >> 9 - zoom;
-        return tile;
+        return b >> 9 - zoom;
     }
 
     public static int tileToBlock(final int t, final int zoom) {
@@ -96,7 +95,7 @@ public class Tile {
     public static void switchTileDisplayQuality() {
         final CoreProperties coreProperties = Journeymap.getClient().getCoreProperties();
         final boolean high = !coreProperties.tileHighDisplayQuality.get();
-        coreProperties.tileHighDisplayQuality.set(Boolean.valueOf(high));
+        coreProperties.tileHighDisplayQuality.set(high);
         coreProperties.save();
         ChatLog.announceError(Constants.getString("jm.common.tile_display_quality") + ": " + (high ? Constants.getString("jm.common.on") : Constants.getString("jm.common.off")));
         resetTileDisplay();

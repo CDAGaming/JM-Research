@@ -103,7 +103,7 @@ public class CoreProperties extends ClientPropertiesBase implements Comparable<C
         this.renderDistanceCaveMax = new IntegerField(ClientCategory.Cartography, "jm.common.renderdistance_cave_max", 1, 32, 3, 102);
         this.renderDistanceSurfaceMax = new IntegerField(ClientCategory.Cartography, "jm.common.renderdistance_surface_max", 1, 32, 7, 104);
         this.renderDelay = new IntegerField(ClientCategory.Cartography, "jm.common.renderdelay", 0, 10, 2);
-        this.revealShape = new EnumField<RenderSpec.RevealShape>(ClientCategory.Cartography, "jm.common.revealshape", RenderSpec.RevealShape.Circle);
+        this.revealShape = new EnumField<>(ClientCategory.Cartography, "jm.common.revealshape", RenderSpec.RevealShape.Circle);
         this.alwaysMapCaves = new BooleanField(ClientCategory.Cartography, "jm.common.alwaysmapcaves", false);
         this.alwaysMapSurface = new BooleanField(ClientCategory.Cartography, "jm.common.alwaysmapsurface", false);
         this.tileHighDisplayQuality = new BooleanField(ClientCategory.Advanced, "jm.common.tile_display_quality", true);
@@ -116,7 +116,7 @@ public class CoreProperties extends ClientPropertiesBase implements Comparable<C
         this.radarVerticalDistance = new IntegerField(ClientCategory.Advanced, "jm.common.radar_vertical_distance", 8, 256, 16);
         this.tileRenderType = new IntegerField(ClientCategory.Advanced, "jm.advanced.tile_render_type", 1, 4, 1);
         this.mappingEnabled = new BooleanField(Category.Hidden, "", true);
-        this.renderOverlayEventTypeName = new EnumField<RenderGameOverlayEvent.ElementType>(Category.Hidden, "", RenderGameOverlayEvent.ElementType.ALL);
+        this.renderOverlayEventTypeName = new EnumField<>(Category.Hidden, "", RenderGameOverlayEvent.ElementType.ALL);
         this.renderOverlayPreEvent = new BooleanField(Category.Hidden, "", true);
         this.optionsManagerViewed = new StringField(Category.Hidden, "", null);
         this.splashViewed = new StringField(Category.Hidden, "", null);
@@ -128,7 +128,7 @@ public class CoreProperties extends ClientPropertiesBase implements Comparable<C
         this.colorPlayer = new StringField(Category.Hidden, "jm.common.radar_color_player", null, "#ffffff").pattern("^#[a-f0-9]{6}$");
         this.colorSelf = new StringField(Category.Hidden, "jm.common.radar_color_self", null, "#0000ff").pattern("^#[a-f0-9]{6}$");
         this.verboseColorPalette = new BooleanField(Category.Hidden, "", false);
-        this.mobColors = new HashMap<StringField, Integer>(6);
+        this.mobColors = new HashMap<>(6);
     }
 
     @Override
@@ -138,7 +138,7 @@ public class CoreProperties extends ClientPropertiesBase implements Comparable<C
 
     @Override
     public int compareTo(final CoreProperties other) {
-        return Integer.valueOf(this.hashCode()).compareTo(Integer.valueOf(other.hashCode()));
+        return Integer.compare(this.hashCode(), other.hashCode());
     }
 
     @Override

@@ -34,21 +34,21 @@ public class MiniMapProperties extends InGameMapProperties {
 
     public MiniMapProperties(final int id) {
         this.enabled = new BooleanField(Category.Inherit, "jm.minimap.enable_minimap", true, true);
-        this.shape = new EnumField<Shape>(Category.Inherit, "jm.minimap.shape", Shape.Circle);
-        this.position = new EnumField<Position>(Category.Inherit, "jm.minimap.position", Position.TopRight);
+        this.shape = new EnumField<>(Category.Inherit, "jm.minimap.shape", Shape.Circle);
+        this.position = new EnumField<>(Category.Inherit, "jm.minimap.position", Position.TopRight);
         this.showDayNight = new BooleanField(Category.Inherit, "jm.common.show_day_night", true);
-        this.info1Label = new EnumField<ThemeLabelSource>(Category.Inherit, "jm.minimap.info1_label.button", ThemeLabelSource.Blank);
-        this.info2Label = new EnumField<ThemeLabelSource>(Category.Inherit, "jm.minimap.info2_label.button", ThemeLabelSource.GameTime);
-        this.info3Label = new EnumField<ThemeLabelSource>(Category.Inherit, "jm.minimap.info3_label.button", ThemeLabelSource.Location);
-        this.info4Label = new EnumField<ThemeLabelSource>(Category.Inherit, "jm.minimap.info4_label.button", ThemeLabelSource.Biome);
+        this.info1Label = new EnumField<>(Category.Inherit, "jm.minimap.info1_label.button", ThemeLabelSource.Blank);
+        this.info2Label = new EnumField<>(Category.Inherit, "jm.minimap.info2_label.button", ThemeLabelSource.GameTime);
+        this.info3Label = new EnumField<>(Category.Inherit, "jm.minimap.info3_label.button", ThemeLabelSource.Location);
+        this.info4Label = new EnumField<>(Category.Inherit, "jm.minimap.info4_label.button", ThemeLabelSource.Biome);
         this.sizePercent = new IntegerField(Category.Inherit, "jm.minimap.size", 1, 100, 30);
         this.frameAlpha = new IntegerField(Category.Inherit, "jm.minimap.frame_alpha", 0, 100, 100);
         this.terrainAlpha = new IntegerField(Category.Inherit, "jm.minimap.terrain_alpha", 0, 100, 100);
-        this.orientation = new EnumField<Orientation>(Category.Inherit, "jm.minimap.orientation.button", Orientation.North);
+        this.orientation = new EnumField<>(Category.Inherit, "jm.minimap.orientation.button", Orientation.North);
         this.compassFontScale = new IntegerField(Category.Inherit, "jm.minimap.compass_font_scale", 1, 4, 1);
         this.showCompass = new BooleanField(Category.Inherit, "jm.minimap.show_compass", true);
         this.showReticle = new BooleanField(Category.Inherit, "jm.minimap.show_reticle", true);
-        this.reticleOrientation = new EnumField<ReticleOrientation>(Category.Inherit, "jm.minimap.reticle_orientation", ReticleOrientation.Compass);
+        this.reticleOrientation = new EnumField<>(Category.Inherit, "jm.minimap.reticle_orientation", ReticleOrientation.Compass);
         this.active = false;
         this.id = id;
     }

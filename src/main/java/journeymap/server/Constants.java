@@ -21,6 +21,6 @@ public class Constants {
         END = null;
         MC_DATA_DIR = Constants.SERVER.getDataDirectory();
         Constants.JOURNEYMAP_DIR = "journeymap";
-        Constants.CONFIG_DIR = Constants.path.join((Object) Constants.MC_DATA_DIR, (Object) Constants.JOURNEYMAP_DIR, new Object[]{"server", Journeymap.JM_VERSION.toMajorMinorString(), Constants.END});
+        Constants.CONFIG_DIR = Constants.path.join(Constants.MC_DATA_DIR, Constants.JOURNEYMAP_DIR, "server", Journeymap.JM_VERSION.toMajorMinorString(), Constants.END);
     }
 }

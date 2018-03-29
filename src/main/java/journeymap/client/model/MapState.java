@@ -74,18 +74,18 @@ public class MapState {
         this.caveMappingAllowed = false;
         this.caveMappingEnabled = false;
         this.topoMappingAllowed = false;
-        this.drawStepList = new ArrayList<DrawStep>();
-        this.drawWaypointStepList = new ArrayList<DrawWayPointStep>();
+        this.drawStepList = new ArrayList<>();
+        this.drawWaypointStepList = new ArrayList<>();
         this.playerBiome = "";
         this.lastMapProperties = null;
-        this.entityList = new ArrayList<EntityDTO>(32);
+        this.entityList = new ArrayList<>(32);
         this.lastPlayerChunkX = 0;
         this.lastPlayerChunkY = 0;
         this.lastPlayerChunkZ = 0;
     }
 
     public void refresh(final Minecraft mc, final EntityPlayer player, final InGameMapProperties mapProperties) {
-        final World world = (World) mc.world;
+        final World world = mc.world;
         if (world == null || world.provider == null) {
             return;
         }
@@ -144,7 +144,7 @@ public class MapState {
         if (playerEntity == null) {
             return name;
         }
-        final List<MapType.Name> types = new ArrayList<MapType.Name>(4);
+        final List<MapType.Name> types = new ArrayList<>(4);
         if (this.surfaceMappingAllowed) {
             types.add(MapType.Name.day);
             types.add(MapType.Name.night);
@@ -159,7 +159,7 @@ public class MapState {
             return types.get(0);
         }
         if (types.contains(name)) {
-            final Iterator<MapType.Name> cyclingIterator = Iterables.cycle((Iterable) types).iterator();
+            final Iterator<MapType.Name> cyclingIterator = Iterables.cycle(types).iterator();
             while (cyclingIterator.hasNext()) {
                 final MapType.Name current = cyclingIterator.next();
                 if (current == name) {
@@ -220,7 +220,7 @@ public class MapState {
     }
 
     private void setLastMapTypeChange(final MapType mapType) {
-        if (!Objects.equal((Object) mapType, (Object) this.lastMapType)) {
+        if (!Objects.equal(mapType, this.lastMapType)) {
             this.lastMapTypeChange = System.currentTimeMillis();
             this.requireRefresh();
         }
@@ -267,7 +267,7 @@ public class MapState {
             this.entityList.addAll(DataCache.INSTANCE.getPlayers(false).values());
         }
         if (!this.entityList.isEmpty()) {
-            Collections.sort(this.entityList, EntityHelper.entityMapComparator);
+            this.entityList.sort(EntityHelper.entityMapComparator);
             this.drawStepList.addAll(radarRenderer.prepareSteps(this.entityList, gridRenderer, mapProperties));
         }
         if (mapProperties.showWaypoints.get()) {

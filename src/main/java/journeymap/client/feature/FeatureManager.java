@@ -12,7 +12,7 @@ public enum FeatureManager {
     private final HashMap<Feature, Policy> policyMap;
 
     private FeatureManager() {
-        this.policyMap = new HashMap<Feature, Policy>();
+        this.policyMap = new HashMap<>();
         this.reset();
     }
 
@@ -36,7 +36,7 @@ public enum FeatureManager {
     }
 
     public static Map<Feature, Boolean> getAllowedFeatures() {
-        final Map<Feature, Boolean> map = new HashMap<Feature, Boolean>(Feature.values().length * 2);
+        final Map<Feature, Boolean> map = new HashMap<>(Feature.values().length * 2);
         for (final Feature feature : Feature.values()) {
             map.put(feature, isAllowed(feature));
         }

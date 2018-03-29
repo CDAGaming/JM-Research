@@ -44,9 +44,9 @@ public class DeleteMapTask implements IMainThreadTask {
             DataCache.INSTANCE.invalidateChunkMDCache();
             final boolean ok = RegionImageCache.INSTANCE.deleteMap(Fullscreen.state(), this.allDims);
             if (ok) {
-                ChatLog.announceI18N("jm.common.deletemap_status_done", new Object[0]);
+                ChatLog.announceI18N("jm.common.deletemap_status_done");
             } else {
-                ChatLog.announceI18N("jm.common.deletemap_status_error", new Object[0]);
+                ChatLog.announceI18N("jm.common.deletemap_status_error");
             }
             if (wasMapping) {
                 Journeymap.getClient().startMapping();

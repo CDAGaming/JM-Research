@@ -33,7 +33,7 @@ public class ClientCommandInvoker implements ICommand {
         final StringBuffer sb = new StringBuffer();
         for (final ICommand command : this.commandMap.values()) {
             final String usage = command.getUsage(sender);
-            if (!Strings.isEmpty((CharSequence) usage)) {
+            if (!Strings.isEmpty(usage)) {
                 if (sb.length() > 0) {
                     sb.append("\n");
                 }
@@ -56,11 +56,11 @@ public class ClientCommandInvoker implements ICommand {
                     command.execute(server, sender, subArgs);
                 }
             } else {
-                sender.sendMessage((ITextComponent) new TextComponentString(this.getUsage(sender)));
+                sender.sendMessage(new TextComponentString(this.getUsage(sender)));
             }
         } catch (Throwable t) {
             Journeymap.getLogger().error(LogFormatter.toPartialString(t));
-            throw new CommandException("Error in /jm: " + t, new Object[0]);
+            throw new CommandException("Error in /jm: " + t);
         }
     }
 
@@ -73,7 +73,7 @@ public class ClientCommandInvoker implements ICommand {
             final ICommand command = this.getSubCommand(args);
             if (command != null) {
                 final String[] subArgs = Arrays.copyOfRange(args, 1, args.length);
-                return (List<String>) command.getTabCompletions(server, sender, subArgs, pos);
+                return command.getTabCompletions(server, sender, subArgs, pos);
             }
         } catch (Throwable t) {
             Journeymap.getLogger().error("Error in addTabCompletionOptions: " + LogFormatter.toPartialString(t));

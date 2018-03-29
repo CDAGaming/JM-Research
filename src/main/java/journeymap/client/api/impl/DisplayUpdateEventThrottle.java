@@ -18,13 +18,8 @@ class DisplayUpdateEventThrottle {
         this.fullscreenQueue = new Queue(1000L);
         this.minimapQueue = new Queue(2000L);
         this.queues = new Queue[]{this.fullscreenQueue, this.minimapQueue};
-        this.readyEvents = new ArrayList<DisplayUpdateEvent>(3);
-        this.comparator = new Comparator<DisplayUpdateEvent>() {
-            @Override
-            public int compare(final DisplayUpdateEvent o1, final DisplayUpdateEvent o2) {
-                return Long.compare(o1.timestamp, o2.timestamp);
-            }
-        };
+        this.readyEvents = new ArrayList<>(3);
+        this.comparator = Comparator.comparingLong(o -> o.timestamp);
     }
 
     public void add(final DisplayUpdateEvent event) {
@@ -51,7 +46,7 @@ class DisplayUpdateEventThrottle {
             }
         }
         if (this.readyEvents.size() > 0) {
-            Collections.sort(this.readyEvents, this.comparator);
+            this.readyEvents.sort(this.comparator);
         }
         return this.readyEvents.iterator();
     }

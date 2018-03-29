@@ -1,6 +1,5 @@
 package journeymap.server.nbt;
 
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.storage.WorldSavedData;
 
@@ -19,7 +18,7 @@ public class NBTWorldSaveDataHandler extends WorldSavedData {
     }
 
     public NBTTagCompound writeToNBT(final NBTTagCompound compound) {
-        compound.setTag(this.tagName, (NBTBase) this.data);
+        compound.setTag(this.tagName, this.data);
         return compound;
     }
 

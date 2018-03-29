@@ -29,10 +29,10 @@ public class DebugService extends FileService {
         sb.append(LogFormatter.LINEBREAK).append("<h1>Properties</h1><div>");
         sb.append(LogFormatter.LINEBREAK).append(JMLogger.getPropertiesSummary().replaceAll(LogFormatter.LINEBREAK, "<p>")).append("</div>");
         sb.append(LogFormatter.LINEBREAK).append("</div> <!-- /accordion -->");
-        String debug = null;
+        String debug;
         final InputStream debugHtmlStream = this.getStream("/debug.html", null);
         if (debugHtmlStream != null) {
-            final String debugHtml = CharStreams.toString((Readable) new InputStreamReader(debugHtmlStream, "UTF-8"));
+            final String debugHtml = CharStreams.toString(new InputStreamReader(debugHtmlStream, "UTF-8"));
             debug = debugHtml.replace("<output/>", sb.toString());
         } else {
             debug = sb.toString();

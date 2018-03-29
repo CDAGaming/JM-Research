@@ -12,5 +12,5 @@ public enum BlockFlag {
     Error,
     Plant,
     Crop,
-    NoTopo;
+    NoTopo
 }

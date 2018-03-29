@@ -99,7 +99,7 @@ public class IconSetFileHandler {
         } catch (Throwable t) {
             Journeymap.getLogger().error("Could not prepare iconset directories for " + parentDir + ": " + LogFormatter.toString(t));
         }
-        final ArrayList<String> names = new ArrayList<String>();
+        final ArrayList<String> names = new ArrayList<>();
         for (final File iconSetDir2 : parentDir.listFiles()) {
             if (iconSetDir2.isDirectory()) {
                 names.add(iconSetDir2.getName());

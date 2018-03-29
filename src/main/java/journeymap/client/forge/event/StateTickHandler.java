@@ -85,7 +85,7 @@ public class StateTickHandler implements EventHandlerManager.EventHandler {
 
     private void createDeathpoint() {
         try {
-            final EntityPlayer player = (EntityPlayer) this.mc.player;
+            final EntityPlayer player = this.mc.player;
             if (player == null) {
                 Journeymap.getLogger().error("Lost reference to player before Deathpoint could be created");
                 return;
@@ -117,8 +117,8 @@ public class StateTickHandler implements EventHandlerManager.EventHandler {
             Class.forName("java.util.Objects");
         } catch (ClassNotFoundException e3) {
             try {
-                final String error = I18n.format("jm.error.java6", new Object[0]);
-                FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage((ITextComponent) new TextComponentString(error));
+                final String error = I18n.format("jm.error.java6");
+                FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().printChatMessage(new TextComponentString(error));
                 Journeymap.getLogger().fatal("JourneyMap requires Java 7 or Java 8. Update your launcher profile to use a newer version of Java.");
             } catch (Exception e2) {
                 e2.printStackTrace();

@@ -41,9 +41,7 @@ public class Migrate54to55 implements MigrationTask {
                 Journeymap.getClient().loadConfigProperties();
             }
             final String optionsManagerViewed = Journeymap.getClient().getCoreProperties().optionsManagerViewed.get();
-            if (Strings.isNullOrEmpty(optionsManagerViewed)) {
-                return true;
-            }
+            return Strings.isNullOrEmpty(optionsManagerViewed);
         }
         return false;
     }
@@ -55,7 +53,7 @@ public class Migrate54to55 implements MigrationTask {
 
     private boolean migrateConfigs() {
         try {
-            final String path5_4 = Joiner.on(File.separator).join((Object) Constants.JOURNEYMAP_DIR, (Object) "config", new Object[]{"5.4"});
+            final String path5_4 = Joiner.on(File.separator).join(Constants.JOURNEYMAP_DIR, "config", "5.4");
             final File legacyConfigDir = new File(FileHandler.MinecraftDirectory, path5_4);
             if (!legacyConfigDir.canRead()) {
                 return true;

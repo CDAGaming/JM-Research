@@ -8,7 +8,7 @@ public class BlockDataArrays {
     private HashMap<MapType, Dataset> datasets;
 
     public BlockDataArrays() {
-        this.datasets = new HashMap<MapType, Dataset>(8);
+        this.datasets = new HashMap<>(8);
     }
 
     public static boolean areIdentical(final int[][] arr, final int[][] arr2) {
@@ -58,28 +58,28 @@ public class BlockDataArrays {
 
         public DataArray<Integer> ints() {
             if (this.ints == null) {
-                this.ints = new DataArray<Integer>(() -> new Integer[16][16]);
+                this.ints = new DataArray<>(() -> new Integer[16][16]);
             }
             return this.ints;
         }
 
         public DataArray<Float> floats() {
             if (this.floats == null) {
-                this.floats = new DataArray<Float>(() -> new Float[16][16]);
+                this.floats = new DataArray<>(() -> new Float[16][16]);
             }
             return this.floats;
         }
 
         public DataArray<Boolean> booleans() {
             if (this.booleans == null) {
-                this.booleans = new DataArray<Boolean>(() -> new Boolean[16][16]);
+                this.booleans = new DataArray<>(() -> new Boolean[16][16]);
             }
             return this.booleans;
         }
 
         public DataArray<Object> objects() {
             if (this.objects == null) {
-                this.objects = new DataArray<Object>(() -> new Object[16][16]);
+                this.objects = new DataArray<>(() -> new Object[16][16]);
             }
             return this.objects;
         }
@@ -90,7 +90,7 @@ public class BlockDataArrays {
         private final Supplier<T[][]> initFn;
 
         protected DataArray(final Supplier<T[][]> initFn) {
-            this.map = new HashMap<String, T[][]>(4);
+            this.map = new HashMap<>(4);
             this.initFn = initFn;
         }
 

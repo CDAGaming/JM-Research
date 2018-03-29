@@ -21,12 +21,10 @@ public class TileDrawStepCache {
 
     private TileDrawStepCache() {
         this.logger = Journeymap.getLogger();
-        this.drawStepCache = (Cache<String, TileDrawStep>) CacheBuilder.newBuilder().expireAfterAccess(30L, TimeUnit.SECONDS).removalListener((RemovalListener) new RemovalListener<String, TileDrawStep>() {
-            public void onRemoval(final RemovalNotification<String, TileDrawStep> notification) {
-                final TileDrawStep oldDrawStep = (TileDrawStep) notification.getValue();
-                if (oldDrawStep != null) {
-                    oldDrawStep.clearTexture();
-                }
+        this.drawStepCache = CacheBuilder.newBuilder().expireAfterAccess(30L, TimeUnit.SECONDS).removalListener((RemovalListener<String, TileDrawStep>) notification -> {
+            final TileDrawStep oldDrawStep = notification.getValue();
+            if (oldDrawStep != null) {
+                oldDrawStep.clearTexture();
             }
         }).build();
     }
@@ -58,7 +56,7 @@ public class TileDrawStepCache {
     private TileDrawStep _getOrCreate(final MapType mapType, final RegionCoord regionCoord, final Integer zoom, final boolean highQuality, final int sx1, final int sy1, final int sx2, final int sy2) {
         this.checkWorldChange(regionCoord);
         final String key = TileDrawStep.toCacheKey(regionCoord, mapType, zoom, highQuality, sx1, sy1, sx2, sy2);
-        TileDrawStep tileDrawStep = (TileDrawStep) this.drawStepCache.getIfPresent((Object) key);
+        TileDrawStep tileDrawStep = this.drawStepCache.getIfPresent(key);
         if (tileDrawStep == null) {
             tileDrawStep = new TileDrawStep(regionCoord, mapType, zoom, highQuality, sx1, sy1, sx2, sy2);
             this.drawStepCache.put(key, tileDrawStep);

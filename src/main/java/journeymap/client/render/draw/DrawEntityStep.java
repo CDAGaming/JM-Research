@@ -46,7 +46,7 @@ public class DrawEntityStep implements DrawStep {
         this.showName = true;
         this.minecraft = Minecraft.getMinecraft();
         this.drawScale = 1.0f;
-        this.entityLivingRef = new WeakReference<EntityLivingBase>(entityLiving);
+        this.entityLivingRef = new WeakReference<>(entityLiving);
         this.hideSneaks = Journeymap.getClient().getCoreProperties().hideSneakingEntities.get();
     }
 
@@ -79,7 +79,7 @@ public class DrawEntityStep implements DrawStep {
         }
         final EntityLivingBase entityLiving = this.entityLivingRef.get();
         if (pass == Pass.Object) {
-            if (entityLiving == null || entityLiving.isDead || entityLiving.isInvisibleToPlayer((EntityPlayer) this.minecraft.player) || !entityLiving.addedToChunk || (this.hideSneaks && entityLiving.isSneaking())) {
+            if (entityLiving == null || entityLiving.isDead || entityLiving.isInvisibleToPlayer(this.minecraft.player) || !entityLiving.addedToChunk || (this.hideSneaks && entityLiving.isSneaking())) {
                 this.screenPosition = null;
                 return;
             }
@@ -145,7 +145,7 @@ public class DrawEntityStep implements DrawStep {
         final int labelOffset = (this.entityTexture == null) ? 8 : ((rotation == 0.0) ? this.entityTexture.getHeight() : (-this.entityTexture.getHeight()));
         if (pass == Pass.Text && this.showName && this.customName != null) {
             final Point2D labelPoint = gridRenderer.shiftWindowPosition(drawX, drawY, 0, labelOffset);
-            DrawUtil.drawCenteredLabel(this.customName, labelPoint.getX(), labelPoint.getY(), DrawEntityStep.labelBg, 180.0f, Integer.valueOf(16777215), 225.0f, fontScale, rotation);
+            DrawUtil.drawCenteredLabel(this.customName, labelPoint.getX(), labelPoint.getY(), DrawEntityStep.labelBg, 180.0f, 16777215, 225.0f, fontScale, rotation);
         }
         if (pass == Pass.Object && this.entityTexture != null) {
             if (this.useDots) {

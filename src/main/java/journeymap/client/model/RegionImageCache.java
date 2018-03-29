@@ -41,10 +41,10 @@ public enum RegionImageCache {
     }
 
     public LoadingCache<RegionImageSet.Key, RegionImageSet> initRegionImageSetsCache(final CacheBuilder<Object, Object> builder) {
-        return (LoadingCache<RegionImageSet.Key, RegionImageSet>) builder.expireAfterAccess(this.textureCacheAgeSecs, TimeUnit.SECONDS).removalListener((RemovalListener) new RemovalListener<RegionImageSet.Key, RegionImageSet>() {
+        return builder.expireAfterAccess(this.textureCacheAgeSecs, TimeUnit.SECONDS).removalListener(new RemovalListener<RegionImageSet.Key, RegionImageSet>() {
             @ParametersAreNonnullByDefault
             public void onRemoval(final RemovalNotification<RegionImageSet.Key, RegionImageSet> notification) {
-                final RegionImageSet regionImageSet = (RegionImageSet) notification.getValue();
+                final RegionImageSet regionImageSet = notification.getValue();
                 if (regionImageSet != null) {
                     final int count = regionImageSet.writeToDisk(false);
                     if (count > 0 && Journeymap.getLogger().isDebugEnabled()) {
@@ -53,7 +53,7 @@ public enum RegionImageCache {
                     regionImageSet.clear();
                 }
             }
-        }).build((CacheLoader) new CacheLoader<RegionImageSet.Key, RegionImageSet>() {
+        }).build(new CacheLoader<RegionImageSet.Key, RegionImageSet>() {
             @ParametersAreNonnullByDefault
             public RegionImageSet load(final RegionImageSet.Key key) throws Exception {
                 return new RegionImageSet(key);
@@ -72,15 +72,15 @@ public enum RegionImageCache {
     }
 
     public RegionImageSet getRegionImageSet(final RegionCoord rCoord) {
-        return (RegionImageSet) DataCache.INSTANCE.getRegionImageSets().getUnchecked((RegionImageSet.Key.from(rCoord)));
+        return DataCache.INSTANCE.getRegionImageSets().getUnchecked((RegionImageSet.Key.from(rCoord)));
     }
 
     public RegionImageSet getRegionImageSet(final RegionImageSet.Key rCoordKey) {
-        return (RegionImageSet) DataCache.INSTANCE.getRegionImageSets().getUnchecked(rCoordKey);
+        return DataCache.INSTANCE.getRegionImageSets().getUnchecked(rCoordKey);
     }
 
     private Collection<RegionImageSet> getRegionImageSets() {
-        return (Collection<RegionImageSet>) DataCache.INSTANCE.getRegionImageSets().asMap().values();
+        return DataCache.INSTANCE.getRegionImageSets().asMap().values();
     }
 
     public void updateTextures(final boolean forceFlush, final boolean async) {
@@ -119,7 +119,7 @@ public enum RegionImageCache {
     }
 
     public List<RegionCoord> getChangedSince(final MapType mapType, final long time) {
-        final ArrayList<RegionCoord> list = new ArrayList<RegionCoord>();
+        final ArrayList<RegionCoord> list = new ArrayList<>();
         for (final RegionImageSet regionImageSet : this.getRegionImageSets()) {
             if (regionImageSet.updatedSince(mapType, time)) {
                 list.add(regionImageSet.getRegionCoord());
@@ -153,12 +153,7 @@ public enum RegionImageCache {
         }
         File[] dirs;
         if (allDims) {
-            dirs = imageDir.getParentFile().listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(final File dir, final String name) {
-                    return dir.isDirectory() && name.startsWith("DIM");
-                }
-            });
+            dirs = imageDir.getParentFile().listFiles((dir, name) -> dir.isDirectory() && name.startsWith("DIM"));
         } else {
             dirs = new File[]{imageDir};
         }

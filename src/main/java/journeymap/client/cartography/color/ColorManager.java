@@ -30,7 +30,7 @@ public enum ColorManager {
 
     private ColorManager() {
         this.logger = Journeymap.getLogger();
-        this.iconColorCache = new HashMap<String, float[]>();
+        this.iconColorCache = new HashMap<>();
     }
 
     public static String getResourcePackNames() {
@@ -39,12 +39,12 @@ public enum ColorManager {
         if (entries.isEmpty()) {
             packs = Constants.RESOURCE_PACKS_DEFAULT;
         } else {
-            final ArrayList<String> entryStrings = new ArrayList<String>(entries.size());
+            final ArrayList<String> entryStrings = new ArrayList<>(entries.size());
             for (final ResourcePackRepository.Entry entry : entries) {
                 entryStrings.add(entry.toString());
             }
             Collections.sort(entryStrings);
-            packs = Joiner.on(", ").join((Iterable) entryStrings);
+            packs = Joiner.on(", ").join(entryStrings);
         }
         return packs;
     }
@@ -166,9 +166,8 @@ public enum ColorManager {
         if (sprites == null || sprites.isEmpty()) {
             return null;
         }
-        final List<String> names = sprites.stream().map(ColoredSprite::getIconName).collect(Collectors.toList());
-        Collections.sort(names);
-        final String name = Joiner.on(",").join((Iterable) names);
+        final List<String> names = sprites.stream().map(ColoredSprite::getIconName).sorted().collect(Collectors.toList());
+        final String name = Joiner.on(",").join(names);
         float[] rgba;
         if (this.iconColorCache.containsKey(name)) {
             rgba = this.iconColorCache.get(name);
@@ -185,7 +184,7 @@ public enum ColorManager {
     }
 
     private float[] calculateAverageColor(final Collection<ColoredSprite> sprites) {
-        final List<BufferedImage> images = new ArrayList<BufferedImage>(sprites.size());
+        final List<BufferedImage> images = new ArrayList<>(sprites.size());
         for (final ColoredSprite coloredSprite : sprites) {
             final BufferedImage img = coloredSprite.getColoredImage();
             if (img != null) {

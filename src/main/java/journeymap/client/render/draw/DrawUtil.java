@@ -168,7 +168,7 @@ public class DrawUtil {
                 color = RGB.toArbg(color, alpha);
             }
             GlStateManager.translate(textX - Math.floor(textX), textY - Math.floor(textY), 0.0);
-            fontRenderer.drawString(text, textX, textY, (int) color, fontShadow);
+            fontRenderer.drawString(text, textX, textY, color, fontShadow);
         } finally {
             GlStateManager.popMatrix();
         }
@@ -425,12 +425,12 @@ public class DrawUtil {
     public enum HAlign {
         Left,
         Center,
-        Right;
+        Right
     }
 
     public enum VAlign {
         Above,
         Middle,
-        Below;
+        Below
     }
 }

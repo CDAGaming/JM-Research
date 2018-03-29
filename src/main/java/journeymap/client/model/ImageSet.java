@@ -13,7 +13,7 @@ public abstract class ImageSet {
     protected final Map<MapType, ImageHolder> imageHolders;
 
     public ImageSet() {
-        this.imageHolders = Collections.synchronizedMap(new HashMap<MapType, ImageHolder>(8));
+        this.imageHolders = Collections.synchronizedMap(new HashMap<>(8));
     }
 
     protected abstract ImageHolder getHolder(final MapType p0);
@@ -83,7 +83,7 @@ public abstract class ImageSet {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper((Object) this).add("imageHolders", (Object) this.imageHolders.entrySet()).toString();
+        return MoreObjects.toStringHelper(this).add("imageHolders", this.imageHolders.entrySet()).toString();
     }
 
     protected abstract int getImageSize();

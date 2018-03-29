@@ -17,7 +17,7 @@ public class PropertyService extends BaseService {
     HashMap<String, BooleanField> propMap;
 
     public PropertyService() {
-        this.propMap = new HashMap<String, BooleanField>();
+        this.propMap = new HashMap<>();
     }
 
     @Override
@@ -48,7 +48,7 @@ public class PropertyService extends BaseService {
             if (query.method() != 1) {
                 throw new Exception("HTTP method not allowed");
             }
-            final StringBuffer jsonData = new StringBuffer();
+            final StringBuilder jsonData = new StringBuilder();
             final boolean useJsonP = query.containsKey("callback");
             if (useJsonP) {
                 jsonData.append(URLEncoder.encode(query.get("callback").toString(), PropertyService.UTF8.name()));
@@ -56,11 +56,11 @@ public class PropertyService extends BaseService {
             } else {
                 jsonData.append("data=");
             }
-            final Map<String, Boolean> valMap = new HashMap<String, Boolean>();
+            final Map<String, Boolean> valMap = new HashMap<>();
             for (final Map.Entry<String, BooleanField> entry : this.propMap.entrySet()) {
                 valMap.put(entry.getKey(), entry.getValue().get());
             }
-            jsonData.append(PropertyService.GSON.toJson((Object) valMap));
+            jsonData.append(PropertyService.GSON.toJson(valMap));
             if (useJsonP) {
                 jsonData.append(")");
                 ResponseHeader.on(event).noCache().contentType(ContentType.jsonp);

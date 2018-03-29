@@ -89,7 +89,7 @@ public class TileDrawStep implements TextureImpl.Listener<RegionTextureImpl> {
         if (this.highQuality && !regionUpdatePending) {
             this.updateScaledTexture();
         }
-        Integer textureId = -1;
+        Integer textureId;
         boolean useScaled = false;
         if (this.highQuality && this.scaledTexture != null) {
             textureId = this.scaledTexture.getGlTextureId();
@@ -188,11 +188,11 @@ public class TileDrawStep implements TextureImpl.Listener<RegionTextureImpl> {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper((Object) this).add("rc", (Object) this.regionCoord).add("type", (Object) this.mapType).add("high", this.highQuality).add("zoom", (Object) this.zoom).add("sx1", this.sx1).add("sy1", this.sy1).toString();
+        return MoreObjects.toStringHelper(this).add("rc", this.regionCoord).add("type", this.mapType).add("high", this.highQuality).add("zoom", this.zoom).add("sx1", this.sx1).add("sy1", this.sy1).toString();
     }
 
     boolean hasTexture(final MapType mapType) {
-        if (!Objects.equal((Object) this.mapType, (Object) mapType)) {
+        if (!Objects.equal(this.mapType, mapType)) {
             return false;
         }
         if (this.highQuality) {
@@ -260,7 +260,7 @@ public class TileDrawStep implements TextureImpl.Listener<RegionTextureImpl> {
         try {
             (this.scaledTexture = this.scaledFuture.get()).bindTexture();
         } catch (Throwable e) {
-            TileDrawStep.logger.error((Object) e);
+            TileDrawStep.logger.error(e);
         }
         this.scaledFuture = null;
         this.updateScaledTimer.stop();
@@ -278,7 +278,7 @@ public class TileDrawStep implements TextureImpl.Listener<RegionTextureImpl> {
             g.dispose();
             return scaledImage;
         } catch (Throwable e) {
-            TileDrawStep.logger.error((Object) e);
+            TileDrawStep.logger.error(e);
             return null;
         }
     }

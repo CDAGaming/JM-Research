@@ -181,16 +181,16 @@ public final class MapImage {
             return false;
         }
         final MapImage mapImage = (MapImage) o;
-        return Objects.equal((Object) this.color, (Object) mapImage.color) && Objects.equal((Object) this.opacity, (Object) mapImage.opacity) && Objects.equal((Object) this.anchorX, (Object) mapImage.anchorX) && Objects.equal((Object) this.anchorY, (Object) mapImage.anchorY) && Objects.equal((Object) this.textureX, (Object) mapImage.textureX) && Objects.equal((Object) this.textureY, (Object) mapImage.textureY) && Objects.equal((Object) this.textureWidth, (Object) mapImage.textureWidth) && Objects.equal((Object) this.textureHeight, (Object) mapImage.textureHeight) && Objects.equal((Object) this.imageLocation, (Object) mapImage.imageLocation);
+        return Objects.equal(this.color, mapImage.color) && Objects.equal(this.opacity, mapImage.opacity) && Objects.equal(this.anchorX, mapImage.anchorX) && Objects.equal(this.anchorY, mapImage.anchorY) && Objects.equal(this.textureX, mapImage.textureX) && Objects.equal(this.textureY, mapImage.textureY) && Objects.equal(this.textureWidth, mapImage.textureWidth) && Objects.equal(this.textureHeight, mapImage.textureHeight) && Objects.equal(this.imageLocation, mapImage.imageLocation);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(new Object[]{this.imageLocation, this.color, this.opacity, this.anchorX, this.anchorY, this.textureX, this.textureY, this.textureWidth, this.textureHeight});
+        return Objects.hashCode(this.imageLocation, this.color, this.opacity, this.anchorX, this.anchorY, this.textureX, this.textureY, this.textureWidth, this.textureHeight);
     }
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper((Object) this).add("imageLocation", (Object) this.imageLocation).add("anchorX", (Object) this.anchorX).add("anchorY", (Object) this.anchorY).add("color", (Object) this.color).add("textureHeight", (Object) this.textureHeight).add("opacity", (Object) this.opacity).add("textureX", (Object) this.textureX).add("textureY", (Object) this.textureY).add("textureWidth", (Object) this.textureWidth).toString();
+        return MoreObjects.toStringHelper(this).add("imageLocation", this.imageLocation).add("anchorX", this.anchorX).add("anchorY", this.anchorY).add("color", this.color).add("textureHeight", this.textureHeight).add("opacity", this.opacity).add("textureX", this.textureX).add("textureY", this.textureY).add("textureWidth", this.textureWidth).toString();
     }
 }

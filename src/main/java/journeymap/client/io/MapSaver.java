@@ -89,7 +89,7 @@ public class MapSaver {
             final String date = MapSaver.dateFormat.format(new Date());
             final String worldName = WorldData.getWorldName(mc, false);
             final String dimName = WorldData.getSafeDimensionName(new WorldData.WrappedProvider(mc.world.provider));
-            final String fileName = Joiner.on("_").skipNulls().join((Object) date, (Object) worldName, new Object[]{dimName, this.mapType.name, this.mapType.vSlice}) + ".png";
+            final String fileName = Joiner.on("_").skipNulls().join(date, worldName, dimName, this.mapType.name, this.mapType.vSlice) + ".png";
             final File screenshotsDir = new File(FileHandler.getMinecraftDirectory(), "screenshots");
             if (!screenshotsDir.exists()) {
                 screenshotsDir.mkdir();
@@ -98,7 +98,7 @@ public class MapSaver {
             RegionImageCache.INSTANCE.flushToDisk(false);
             final File imageDir = this.getImageDir();
             final File[] pngFiles = imageDir.listFiles();
-            final Pattern tilePattern = Pattern.compile("([^\\.]+)\\,([^\\.]+)\\.png");
+            final Pattern tilePattern = Pattern.compile("([^.]+),([^.]+)\\.png");
             Integer minX = null;
             Integer minZ = null;
             Integer maxX = null;
@@ -129,7 +129,7 @@ public class MapSaver {
             final long blankSize = RegionImageHandler.getBlank512x512ImageFile().length();
             this.outputColumns = maxX - minX + 1;
             this.outputRows = maxZ - minZ + 1;
-            this.files = new ArrayList<File>(this.outputColumns * this.outputRows);
+            this.files = new ArrayList<>(this.outputColumns * this.outputRows);
             for (int rz = minZ; rz <= maxZ; ++rz) {
                 for (int rx = minX; rx <= maxX; ++rx) {
                     final RegionCoord rc = new RegionCoord(this.worldDir, rx, rz, this.mapType.dimension);

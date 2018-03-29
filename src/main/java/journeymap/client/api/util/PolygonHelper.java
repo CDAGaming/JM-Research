@@ -15,6 +15,6 @@ public class PolygonHelper {
         final BlockPos se = new BlockPos(x + 16, y, z + 16);
         final BlockPos ne = new BlockPos(x + 16, y, z);
         final BlockPos nw = new BlockPos(x, y, z);
-        return new MapPolygon(new BlockPos[]{sw, se, ne, nw});
+        return new MapPolygon(sw, se, ne, nw);
     }
 }

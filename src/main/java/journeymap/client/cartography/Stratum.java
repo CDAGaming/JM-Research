@@ -76,13 +76,8 @@ public class Stratum {
             return false;
         }
         if (this.getBlockMD() != null) {
-            if (this.getBlockMD().equals(that.getBlockMD())) {
-                return true;
-            }
-        } else if (that.getBlockMD() == null) {
-            return true;
-        }
-        return false;
+            return this.getBlockMD().equals(that.getBlockMD());
+        } else return that.getBlockMD() == null;
     }
 
     @Override
@@ -207,7 +202,7 @@ public class Stratum {
     }
 
     public BlockPos getBlockPos() {
-        return new BlockPos((Vec3i) this.chunkMd.getBlockPos(this.localX, this.y, this.localZ));
+        return new BlockPos(this.chunkMd.getBlockPos(this.localX, this.y, this.localZ));
     }
 
     public boolean isUninitialized() {

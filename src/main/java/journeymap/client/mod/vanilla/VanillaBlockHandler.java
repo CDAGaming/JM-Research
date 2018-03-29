@@ -34,9 +34,9 @@ public final class VanillaBlockHandler implements IModBlockHandler {
         this.materialFlags = MultimapBuilder.ListMultimapBuilder.linkedHashKeys().arrayListValues().build();
         this.blockClassFlags = MultimapBuilder.ListMultimapBuilder.linkedHashKeys().arrayListValues().build();
         this.blockFlags = MultimapBuilder.ListMultimapBuilder.linkedHashKeys().arrayListValues().build();
-        this.materialAlphas = new HashMap<Material, Float>();
-        this.blockAlphas = new HashMap<Block, Float>();
-        this.blockClassAlphas = new HashMap<Class<?>, Float>();
+        this.materialAlphas = new HashMap<>();
+        this.blockAlphas = new HashMap<>();
+        this.blockClassAlphas = new HashMap<>();
         this.preInitialize();
     }
 
@@ -47,32 +47,32 @@ public final class VanillaBlockHandler implements IModBlockHandler {
         this.mapPlantShadows = coreProperties.mapPlantShadows.get();
         this.setFlags(Material.BARRIER, BlockFlag.Ignore);
         this.setFlags(Material.AIR, BlockFlag.Ignore);
-        this.setFlags(Material.GLASS, Float.valueOf(0.4f), BlockFlag.Transparency);
+        this.setFlags(Material.GLASS, 0.4f, BlockFlag.Transparency);
         this.setFlags(Material.GRASS, BlockFlag.Grass);
         if (coreProperties.caveIgnoreGlass.get()) {
             this.setFlags(Material.GLASS, BlockFlag.OpenToSky);
         }
-        this.setFlags(Material.LAVA, Float.valueOf(1.0f), BlockFlag.NoShadow);
-        this.setFlags(Material.WATER, Float.valueOf(0.25f), BlockFlag.Water, BlockFlag.NoShadow);
+        this.setFlags(Material.LAVA, 1.0f, BlockFlag.NoShadow);
+        this.setFlags(Material.WATER, 0.25f, BlockFlag.Water, BlockFlag.NoShadow);
         this.materialAlphas.put(Material.ICE, 0.8f);
         this.materialAlphas.put(Material.PACKED_ICE, 0.8f);
-        this.setFlags(Blocks.IRON_BARS, Float.valueOf(0.4f), BlockFlag.Transparency);
-        this.setFlags((Block) Blocks.FIRE, BlockFlag.NoShadow);
+        this.setFlags(Blocks.IRON_BARS, 0.4f, BlockFlag.Transparency);
+        this.setFlags(Blocks.FIRE, BlockFlag.NoShadow);
         this.setFlags(Blocks.LADDER, BlockFlag.OpenToSky);
         this.setFlags(Blocks.SNOW_LAYER, BlockFlag.NoTopo, BlockFlag.NoShadow);
         this.setFlags(Blocks.TRIPWIRE, BlockFlag.Ignore);
-        this.setFlags((Block) Blocks.TRIPWIRE_HOOK, BlockFlag.Ignore);
+        this.setFlags(Blocks.TRIPWIRE_HOOK, BlockFlag.Ignore);
         this.setFlags(Blocks.WEB, BlockFlag.OpenToSky, BlockFlag.NoShadow);
         this.setFlags(BlockBush.class, BlockFlag.Plant);
-        this.setFlags(BlockFence.class, Float.valueOf(0.4f), BlockFlag.Transparency);
-        this.setFlags(BlockFenceGate.class, Float.valueOf(0.4f), BlockFlag.Transparency);
+        this.setFlags(BlockFence.class, 0.4f, BlockFlag.Transparency);
+        this.setFlags(BlockFenceGate.class, 0.4f, BlockFlag.Transparency);
         this.setFlags(BlockGrass.class, BlockFlag.Grass);
         this.setFlags(BlockLeaves.class, BlockFlag.OpenToSky, BlockFlag.Foliage, BlockFlag.NoTopo);
         this.setFlags(BlockLog.class, BlockFlag.OpenToSky, BlockFlag.NoTopo);
         this.setFlags(BlockRailBase.class, BlockFlag.NoShadow, BlockFlag.NoTopo);
         this.setFlags(BlockRedstoneWire.class, BlockFlag.Ignore);
         this.setFlags(BlockTorch.class, BlockFlag.Ignore);
-        this.setFlags(BlockVine.class, Float.valueOf(0.2f), BlockFlag.OpenToSky, BlockFlag.Foliage, BlockFlag.NoShadow);
+        this.setFlags(BlockVine.class, 0.2f, BlockFlag.OpenToSky, BlockFlag.Foliage, BlockFlag.NoShadow);
         this.setFlags(IPlantable.class, BlockFlag.Plant, BlockFlag.NoTopo);
     }
 
@@ -90,7 +90,7 @@ public final class VanillaBlockHandler implements IModBlockHandler {
         if (alpha != null) {
             blockMD.setAlpha(alpha);
         }
-        if (this.blockFlags.containsKey((Object) block)) {
+        if (this.blockFlags.containsKey(block)) {
             blockMD.addFlags(this.blockFlags.get(block));
         }
         alpha = this.blockAlphas.get(block);
@@ -116,7 +116,7 @@ public final class VanillaBlockHandler implements IModBlockHandler {
             blockMD.removeFlags(BlockFlag.OpenToSky, BlockFlag.Transparency);
             blockMD.setAlpha(1.0f);
         }
-        if (block instanceof BlockBush && blockMD.getBlockState().getProperties().get((Object) BlockDoublePlant.HALF) == BlockDoublePlant.EnumBlockHalf.UPPER) {
+        if (block instanceof BlockBush && blockMD.getBlockState().getProperties().get(BlockDoublePlant.HALF) == BlockDoublePlant.EnumBlockHalf.UPPER) {
             blockMD.addFlags(BlockFlag.Ignore);
         }
         if (block instanceof BlockCrops) {
@@ -151,7 +151,7 @@ public final class VanillaBlockHandler implements IModBlockHandler {
     }
 
     private void setFlags(final Material material, final BlockFlag... flags) {
-        this.materialFlags.putAll(material, (Iterable) new ArrayList(Arrays.asList(flags)));
+        this.materialFlags.putAll(material, new ArrayList(Arrays.asList(flags)));
     }
 
     private void setFlags(final Material material, final Float alpha, final BlockFlag... flags) {
@@ -160,7 +160,7 @@ public final class VanillaBlockHandler implements IModBlockHandler {
     }
 
     private void setFlags(final Class parentClass, final BlockFlag... flags) {
-        this.blockClassFlags.putAll(parentClass, (Iterable) new ArrayList(Arrays.asList(flags)));
+        this.blockClassFlags.putAll(parentClass, new ArrayList(Arrays.asList(flags)));
     }
 
     private void setFlags(final Class parentClass, final Float alpha, final BlockFlag... flags) {
@@ -169,7 +169,7 @@ public final class VanillaBlockHandler implements IModBlockHandler {
     }
 
     private void setFlags(final Block block, final BlockFlag... flags) {
-        this.blockFlags.putAll(block, (Iterable) new ArrayList(Arrays.asList(flags)));
+        this.blockFlags.putAll(block, new ArrayList(Arrays.asList(flags)));
     }
 
     private void setFlags(final Block block, final Float alpha, final BlockFlag... flags) {

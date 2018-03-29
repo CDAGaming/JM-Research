@@ -48,7 +48,7 @@ public class CmdTeleportWaypoint {
     public void run() {
         double x = this.waypoint.getBlockCenteredX();
         double z = this.waypoint.getBlockCenteredZ();
-        final TreeSet<Integer> dim = (TreeSet<Integer>) (TreeSet) this.waypoint.getDimensions();
+        final TreeSet<Integer> dim = (TreeSet<Integer>) this.waypoint.getDimensions();
         if (dim.first() == -1 && this.mc.player.dimension != -1) {
             x /= 8.0;
             z /= 8.0;

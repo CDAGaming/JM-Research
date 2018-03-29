@@ -9,6 +9,7 @@ import journeymap.client.api.event.ClientEvent;
 import journeymap.client.api.util.PluginHelper;
 import journeymap.client.api.util.UIState;
 import journeymap.client.io.FileHandler;
+import journeymap.client.render.draw.DrawStep;
 import journeymap.client.render.draw.OverlayDrawStep;
 import journeymap.client.task.multi.ApiImageTask;
 import journeymap.client.ui.fullscreen.Fullscreen;
@@ -41,8 +42,8 @@ public enum ClientAPI implements IClientAPI {
 
     private ClientAPI() {
         this.LOGGER = Journeymap.getLogger();
-        this.lastDrawSteps = new ArrayList<OverlayDrawStep>();
-        this.plugins = new HashMap<String, PluginWrapper>();
+        this.lastDrawSteps = new ArrayList<>();
+        this.plugins = new HashMap<>();
         this.clientEventManager = new ClientEventManager(this.plugins.values());
         this.drawStepsUpdateNeeded = true;
         this.lastUi = Context.UI.Any;
@@ -196,12 +197,7 @@ public enum ClientAPI implements IClientAPI {
             for (final PluginWrapper pluginWrapper : this.plugins.values()) {
                 pluginWrapper.getDrawSteps(this.lastDrawSteps, uiState);
             }
-            Collections.sort(this.lastDrawSteps, new Comparator<OverlayDrawStep>() {
-                @Override
-                public int compare(final OverlayDrawStep o1, final OverlayDrawStep o2) {
-                    return Integer.compare(o1.getDisplayOrder(), o2.getDisplayOrder());
-                }
-            });
+            this.lastDrawSteps.sort(Comparator.comparingInt(DrawStep::getDisplayOrder));
             this.drawStepsUpdateNeeded = false;
         }
         list.addAll(this.lastDrawSteps);
@@ -228,7 +224,7 @@ public enum ClientAPI implements IClientAPI {
     }
 
     private PluginWrapper getPlugin(final String modId) {
-        if (Strings.isEmpty((CharSequence) modId)) {
+        if (Strings.isEmpty(modId)) {
             throw new IllegalArgumentException("Invalid modId: " + modId);
         }
         PluginWrapper pluginWrapper = this.plugins.get(modId);

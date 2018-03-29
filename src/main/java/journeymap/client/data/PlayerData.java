@@ -44,9 +44,9 @@ public class PlayerData extends CacheLoader<Class, EntityDTO> {
 
     public EntityDTO load(final Class aClass) throws Exception {
         final Minecraft mc = FMLClientHandler.instance().getClient();
-        final EntityPlayer player = (EntityPlayer) mc.player;
-        final EntityDTO dto = DataCache.INSTANCE.getEntityDTO((EntityLivingBase) player);
-        dto.update((EntityLivingBase) player, false);
+        final EntityPlayer player = mc.player;
+        final EntityDTO dto = DataCache.INSTANCE.getEntityDTO(player);
+        dto.update(player, false);
         dto.biome = this.getPlayerBiome(player);
         dto.underground = playerIsUnderground(mc, player);
         return dto;

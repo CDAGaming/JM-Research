@@ -40,12 +40,12 @@ public class BooleanField extends ConfigField<Boolean> {
     }
 
     public boolean toggle() {
-        this.set(Boolean.valueOf(!this.get()));
+        this.set(!this.get());
         return this.get();
     }
 
     public boolean toggleAndSave() {
-        this.set(Boolean.valueOf(!this.get()));
+        this.set(!this.get());
         this.save();
         return this.get();
     }

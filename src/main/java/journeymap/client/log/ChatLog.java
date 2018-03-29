@@ -26,43 +26,43 @@ public class ChatLog {
     private static boolean initialized;
 
     static {
-        announcements = Collections.synchronizedList(new LinkedList<TextComponentTranslation>());
+        announcements = Collections.synchronizedList(new LinkedList<>());
         ChatLog.enableAnnounceMod = false;
         ChatLog.initialized = false;
     }
 
     public static void queueAnnouncement(final ITextComponent chat) {
-        final TextComponentTranslation wrap = new TextComponentTranslation("jm.common.chat_announcement", new Object[]{chat});
+        final TextComponentTranslation wrap = new TextComponentTranslation("jm.common.chat_announcement", chat);
         ChatLog.announcements.add(wrap);
     }
 
     public static void announceURL(final String message, final String url) {
         final TextComponentString chat = new TextComponentString(message);
         chat.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
-        chat.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, (ITextComponent) new TextComponentString(url)));
-        queueAnnouncement((ITextComponent) chat);
+        chat.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString(url)));
+        queueAnnouncement(chat);
     }
 
     public static void announceFile(final String message, final File file) {
         final TextComponentString chat = new TextComponentString(message);
         try {
             chat.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getCanonicalPath()));
-            chat.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, (ITextComponent) new TextComponentString(file.getCanonicalPath())));
+            chat.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString(file.getCanonicalPath())));
         } catch (Exception e) {
             Journeymap.getLogger().warn("Couldn't build ClickEvent for file: " + LogFormatter.toString(e));
         }
-        queueAnnouncement((ITextComponent) chat);
+        queueAnnouncement(chat);
     }
 
     public static void announceI18N(final String key, final Object... parms) {
         final String text = Constants.getString(key, parms);
         final TextComponentString chat = new TextComponentString(text);
-        queueAnnouncement((ITextComponent) chat);
+        queueAnnouncement(chat);
     }
 
     public static void announceError(final String text) {
         final ErrorChat chat = new ErrorChat(text);
-        queueAnnouncement((ITextComponent) chat);
+        queueAnnouncement(chat);
     }
 
     public static void showChatAnnouncements(final Minecraft mc) {
@@ -78,7 +78,7 @@ public class ChatLog {
             final TextComponentTranslation message = ChatLog.announcements.remove(0);
             if (message != null) {
                 try {
-                    mc.ingameGUI.getChatGUI().printChatMessage((ITextComponent) message);
+                    mc.ingameGUI.getChatGUI().printChatMessage(message);
                 } catch (Exception e) {
                     Journeymap.getLogger().error("Could not display announcement in chat: " + LogFormatter.toString(e));
                 } finally {
@@ -105,7 +105,7 @@ public class ChatLog {
                 announceI18N("jm.common.mapgui_only_ready", keyName);
             }
             if (!Journeymap.getClient().getCoreProperties().mappingEnabled.get()) {
-                announceI18N("jm.common.enable_mapping_false_text", new Object[0]);
+                announceI18N("jm.common.enable_mapping_false_text");
             }
             ChatLog.enableAnnounceMod = false;
         }

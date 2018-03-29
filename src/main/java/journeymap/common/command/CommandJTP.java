@@ -23,9 +23,9 @@ public class CommandJTP extends CommandBase {
 
     public void execute(final MinecraftServer server, final ICommandSender sender, final String[] args) throws CommandException {
         if (args.length < 4) {
-            throw new CommandException(this.getUsage(sender), new Object[0]);
+            throw new CommandException(this.getUsage(sender));
         }
-        final Entity player = (Entity) getCommandSenderAsPlayer(sender);
+        final Entity player = getCommandSenderAsPlayer(sender);
         try {
             final double x = Double.parseDouble(args[0]);
             final double y = Double.parseDouble(args[1]);
@@ -34,9 +34,9 @@ public class CommandJTP extends CommandBase {
             final Location location = new Location(x, y, z, dim);
             JourneyMapTeleport.attemptTeleport(player, location);
         } catch (NumberFormatException nfe) {
-            throw new CommandException("Numbers only! Usage: " + this.getUsage(sender) + nfe, new Object[0]);
+            throw new CommandException("Numbers only! Usage: " + this.getUsage(sender) + nfe);
         } catch (Exception e) {
-            throw new CommandException("/jtp failed Usage: " + this.getUsage(sender), new Object[0]);
+            throw new CommandException("/jtp failed Usage: " + this.getUsage(sender));
         }
     }
 }

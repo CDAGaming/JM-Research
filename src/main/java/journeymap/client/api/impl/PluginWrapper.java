@@ -33,7 +33,7 @@ class PluginWrapper {
     private EnumSet<ClientEvent.Type> subscribedClientEventTypes;
 
     public PluginWrapper(final IClientPlugin plugin) {
-        this.dimensionOverlays = new HashMap<Integer, HashBasedTable<String, Overlay, OverlayDrawStep>>();
+        this.dimensionOverlays = new HashMap<>();
         this.waypoints = HashBasedTable.create();
         this.subscribedClientEventTypes = EnumSet.noneOf(ClientEvent.Type.class);
         this.modId = plugin.getModId();
@@ -88,7 +88,7 @@ class PluginWrapper {
                 }
                 default: {
                     final Overlay overlay = (Overlay) displayable;
-                    final OverlayDrawStep drawStep = (OverlayDrawStep) this.getOverlays(overlay.getDimension()).remove((Object) displayId, (Object) displayable);
+                    final OverlayDrawStep drawStep = this.getOverlays(overlay.getDimension()).remove(displayId, displayable);
                     if (drawStep != null) {
                         drawStep.setEnabled(false);
                         break;
@@ -97,13 +97,13 @@ class PluginWrapper {
                 }
             }
         } catch (Throwable t) {
-            Journeymap.getLogger().error("Error removing DrawMarkerStep: " + t, (Object) LogFormatter.toString(t));
+            Journeymap.getLogger().error("Error removing DrawMarkerStep: " + t, LogFormatter.toString(t));
         }
     }
 
     public void remove(final Waypoint modWaypoint) {
         final String displayId = modWaypoint.getId();
-        journeymap.client.model.Waypoint waypoint = (journeymap.client.model.Waypoint) this.waypoints.remove((Object) displayId, (Object) modWaypoint);
+        journeymap.client.model.Waypoint waypoint = this.waypoints.remove(displayId, modWaypoint);
         if (waypoint == null) {
             waypoint = new journeymap.client.model.Waypoint(modWaypoint);
         }
@@ -112,13 +112,13 @@ class PluginWrapper {
 
     public void removeAll(final DisplayType displayType) {
         if (displayType == DisplayType.Waypoint) {
-            final List<Waypoint> list = new ArrayList<Waypoint>(this.waypoints.columnKeySet());
+            final List<Waypoint> list = new ArrayList<>(this.waypoints.columnKeySet());
             for (final Waypoint modWaypoint : list) {
                 this.remove(modWaypoint);
             }
         } else {
             for (final HashBasedTable<String, Overlay, OverlayDrawStep> overlays : this.dimensionOverlays.values()) {
-                final List<Displayable> list2 = new ArrayList<Displayable>(overlays.columnKeySet());
+                final List<Displayable> list2 = new ArrayList<>(overlays.columnKeySet());
                 for (final Displayable displayable : list2) {
                     if (displayable.getDisplayType() == displayType) {
                         this.remove(displayable);
@@ -130,7 +130,7 @@ class PluginWrapper {
 
     public void removeAll() {
         if (!this.waypoints.isEmpty()) {
-            final List<Waypoint> list = new ArrayList<Waypoint>(this.waypoints.columnKeySet());
+            final List<Waypoint> list = new ArrayList<>(this.waypoints.columnKeySet());
             for (final Waypoint modWaypoint : list) {
                 this.remove(modWaypoint);
             }
@@ -144,12 +144,12 @@ class PluginWrapper {
         final String displayId = displayable.getId();
         switch (displayable.getDisplayType()) {
             case Waypoint: {
-                return this.waypoints.containsRow((Object) displayId);
+                return this.waypoints.containsRow(displayId);
             }
             default: {
                 if (displayable instanceof Overlay) {
                     final int dimension = ((Overlay) displayable).getDimension();
-                    return this.getOverlays(dimension).containsRow((Object) displayId);
+                    return this.getOverlays(dimension).containsRow(displayId);
                 }
                 return false;
             }
@@ -159,8 +159,8 @@ class PluginWrapper {
     public void getDrawSteps(final List<OverlayDrawStep> list, final UIState uiState) {
         final HashBasedTable<String, Overlay, OverlayDrawStep> table = this.getOverlays(uiState.dimension);
         for (final Table.Cell<String, Overlay, OverlayDrawStep> cell : table.cellSet()) {
-            if (((Overlay) cell.getColumnKey()).isActiveIn(uiState)) {
-                list.add((OverlayDrawStep) cell.getValue());
+            if (cell.getColumnKey().isActiveIn(uiState)) {
+                list.add(cell.getValue());
             }
         }
     }
@@ -208,16 +208,16 @@ class PluginWrapper {
             return false;
         }
         final PluginWrapper that = (PluginWrapper) o;
-        return Objects.equal((Object) this.modId, (Object) that.modId);
+        return Objects.equal(this.modId, that.modId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(new Object[]{this.modId});
+        return Objects.hashCode(this.modId);
     }
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper((Object) this.plugin).add("modId", (Object) this.modId).toString();
+        return MoreObjects.toStringHelper(this.plugin).add("modId", this.modId).toString();
     }
 }
