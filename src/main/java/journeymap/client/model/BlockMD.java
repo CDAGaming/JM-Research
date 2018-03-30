@@ -20,7 +20,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.translation.I18n;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.registries.GameData;
 import org.apache.logging.log4j.Logger;
@@ -156,7 +156,7 @@ public class BlockMD implements Comparable<BlockMD> {
             final Item item = Item.getItemFromBlock(block);
             if (item != null) {
                 final ItemStack idPicked = new ItemStack(item, 1, block.getMetaFromState(blockState));
-                displayName = I18n.translateToLocal(item.getUnlocalizedName(idPicked) + ".name");
+                displayName = new TextComponentTranslation(item.getUnlocalizedName(idPicked) + ".name").getFormattedText();
             }
             if (Strings.isNullOrEmpty(displayName)) {
                 displayName = block.getLocalizedName();

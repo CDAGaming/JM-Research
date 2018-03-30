@@ -121,7 +121,7 @@ public class TileDrawStep implements TextureImpl.Listener<RegionTextureImpl> {
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         GlStateManager.enableTexture2D();
         if (textureId != -1) {
-            GlStateManager.bindTexture((int) textureId);
+            GlStateManager.bindTexture(textureId);
             GlStateManager.color(1.0f, 1.0f, 1.0f, alpha);
             GL11.glTexParameteri(3553, 10241, textureFilter);
             GL11.glTexParameteri(3553, 10240, textureFilter);
