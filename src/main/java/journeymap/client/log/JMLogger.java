@@ -1,33 +1,39 @@
 package journeymap.client.log;
 
-import java.util.concurrent.atomic.*;
-import org.apache.logging.log4j.core.appender.*;
-import journeymap.client.io.*;
-import org.apache.logging.log4j.core.layout.*;
-import org.apache.logging.log4j.core.config.*;
-import org.apache.logging.log4j.core.pattern.*;
-import java.nio.charset.*;
-import journeymap.common.log.*;
-import journeymap.common.*;
-import org.apache.logging.log4j.*;
-import org.apache.logging.log4j.core.impl.*;
-import org.apache.logging.log4j.message.*;
-import org.apache.logging.log4j.core.*;
-import net.minecraftforge.common.*;
-import net.minecraft.client.*;
-import journeymap.client.*;
-import java.util.*;
-import journeymap.common.properties.config.*;
-import java.io.*;
+import journeymap.client.Constants;
+import journeymap.client.JourneymapClient;
+import journeymap.client.io.FileHandler;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import journeymap.common.properties.config.StringField;
+import net.minecraft.client.Minecraft;
+import net.minecraftforge.common.ForgeVersion;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.MarkerManager;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.RandomAccessFileAppender;
+import org.apache.logging.log4j.core.impl.Log4jLogEvent;
+import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.apache.logging.log4j.message.SimpleMessage;
 
-public class JMLogger
-{
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class JMLogger {
     public static final String DEPRECATED_LOG_FILE = "journeyMap.log";
     public static final String LOG_FILE = "journeymap.log";
     private static final HashSet<Integer> singletonErrors;
     private static final AtomicInteger singletonErrorsCounter;
     private static RandomAccessFileAppender fileAppender;
-    
+
+    static {
+        singletonErrors = new HashSet<>();
+        singletonErrorsCounter = new AtomicInteger(0);
+    }
+
     public static Logger init() {
         final Logger logger = LogManager.getLogger("journeymap");
         if (!logger.isInfoEnabled()) {
@@ -38,62 +44,57 @@ public class JMLogger
             if (deprecatedLog.exists()) {
                 deprecatedLog.delete();
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Error removing deprecated logfile: " + e.getMessage());
         }
         try {
             final File logFile = getLogFile();
             if (logFile.exists()) {
                 logFile.delete();
-            }
-            else {
+            } else {
                 logFile.getParentFile().mkdirs();
             }
-            final PatternLayout layout = PatternLayout.createLayout("[%d{HH:mm:ss}] [%t/%level] [%C{1}] %msg%n", (PatternSelector)null, (Configuration)null, (RegexReplacement)null, (Charset)null, true, false, (String)null, (String)null);
-            JMLogger.fileAppender = RandomAccessFileAppender.createAppender(logFile.getAbsolutePath(), "treu", "journeymap-logfile", "true", (String)null, "true", (Layout)layout, (Filter)null, "false", (String)null, (Configuration)null);
-            ((org.apache.logging.log4j.core.Logger)logger).addAppender((Appender)JMLogger.fileAppender);
+            final PatternLayout layout = PatternLayout.createLayout("[%d{HH:mm:ss}] [%t/%level] [%C{1}] %msg%n", null, null, null, null, true, false, null, null);
+            JMLogger.fileAppender = RandomAccessFileAppender.createAppender(logFile.getAbsolutePath(), "treu", "journeymap-logfile", "true", null, "true", layout, null, "false", null, null);
+            ((org.apache.logging.log4j.core.Logger) logger).addAppender(JMLogger.fileAppender);
             if (!JMLogger.fileAppender.isStarted()) {
                 JMLogger.fileAppender.start();
             }
             logger.info("JourneyMap log initialized.");
-        }
-        catch (SecurityException e2) {
+        } catch (SecurityException e2) {
             logger.error("Error adding file handler: " + LogFormatter.toString(e2));
-        }
-        catch (Throwable e3) {
+        } catch (Throwable e3) {
             logger.error("Error adding file handler: " + LogFormatter.toString(e3));
         }
         return logger;
     }
-    
+
     public static void setLevelFromProperties() {
         try {
             final Logger logger = LogManager.getLogger("journeymap");
-            ((org.apache.logging.log4j.core.Logger)logger).setLevel(Level.toLevel(Journeymap.getClient().getCoreProperties().logLevel.get(), Level.INFO));
-        }
-        catch (Throwable t) {
+            ((org.apache.logging.log4j.core.Logger) logger).setLevel(Level.toLevel(Journeymap.getClient().getCoreProperties().logLevel.get(), Level.INFO));
+        } catch (Throwable t) {
             t.printStackTrace();
         }
     }
-    
+
     public static void logProperties() {
-        final LogEvent record = (LogEvent)new Log4jLogEvent(JourneymapClient.MOD_NAME, MarkerManager.getMarker(JourneymapClient.MOD_NAME), (String)null, Level.INFO, (Message)new SimpleMessage(getPropertiesSummary()), (Throwable)null);
+        final LogEvent record = new Log4jLogEvent(JourneymapClient.MOD_NAME, MarkerManager.getMarker(JourneymapClient.MOD_NAME), null, Level.INFO, new SimpleMessage(getPropertiesSummary()), null);
         if (JMLogger.fileAppender != null) {
             JMLogger.fileAppender.append(record);
         }
     }
-    
+
     public static String getPropertiesSummary() {
-        final LinkedHashMap<String, String> props = new LinkedHashMap<String, String>();
+        final LinkedHashMap<String, String> props = new LinkedHashMap<>();
         props.put("Version", JourneymapClient.MOD_NAME + ", built with Forge " + "14.23.1.2555");
         props.put("Forge", ForgeVersion.getVersion());
-        final List<String> envProps = Arrays.asList("os.name, os.arch, java.version, user.country, user.language");
+        final List<String> envProps = Collections.singletonList("os.name, os.arch, java.version, user.country, user.language");
         StringBuilder sb = new StringBuilder();
         for (final String env : envProps) {
             sb.append(env).append("=").append(System.getProperty(env)).append(", ");
         }
-        sb.append("game language=").append(Minecraft.func_71410_x().field_71474_y.field_74363_ab).append(", ");
+        sb.append("game language=").append(Minecraft.getMinecraft().gameSettings.language).append(", ");
         sb.append("locale=").append(Constants.getLocale());
         props.put("Environment", sb.toString());
         sb = new StringBuilder();
@@ -105,11 +106,11 @@ public class JMLogger
         }
         return sb.toString();
     }
-    
+
     public static File getLogFile() {
         return new File(FileHandler.getJourneyMapDir(), "journeymap.log");
     }
-    
+
     public static void logOnce(final String text, final Throwable throwable) {
         if (!JMLogger.singletonErrors.contains(text.hashCode())) {
             JMLogger.singletonErrors.add(text.hashCode());
@@ -117,8 +118,7 @@ public class JMLogger
             if (throwable != null) {
                 Journeymap.getLogger().error(LogFormatter.toString(throwable));
             }
-        }
-        else {
+        } else {
             final int count = JMLogger.singletonErrorsCounter.incrementAndGet();
             if (count > 1000) {
                 JMLogger.singletonErrors.clear();
@@ -126,14 +126,8 @@ public class JMLogger
             }
         }
     }
-    
-    static {
-        singletonErrors = new HashSet<Integer>();
-        singletonErrorsCounter = new AtomicInteger(0);
-    }
-    
-    public static class LogLevelStringProvider implements StringField.ValuesProvider
-    {
+
+    public static class LogLevelStringProvider implements StringField.ValuesProvider {
         @Override
         public List<String> getStrings() {
             final Level[] levels = Level.values();
@@ -143,7 +137,7 @@ public class JMLogger
             }
             return Arrays.asList(levelStrings);
         }
-        
+
         @Override
         public String getDefaultString() {
             return Level.INFO.toString();

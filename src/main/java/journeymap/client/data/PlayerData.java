@@ -1,33 +1,33 @@
 package journeymap.client.data;
 
-import com.google.common.cache.*;
-import net.minecraft.client.*;
-import net.minecraft.entity.player.*;
-import net.minecraft.world.*;
-import net.minecraft.util.math.*;
-import journeymap.client.model.*;
-import net.minecraftforge.fml.client.*;
-import journeymap.common.*;
-import net.minecraft.entity.*;
-import journeymap.client.log.*;
-import net.minecraft.world.biome.*;
+import com.google.common.cache.CacheLoader;
+import journeymap.client.log.JMLogger;
+import journeymap.client.model.ChunkMD;
+import journeymap.client.model.EntityDTO;
+import journeymap.common.Journeymap;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.WorldProviderHell;
+import net.minecraft.world.biome.Biome;
+import net.minecraftforge.fml.client.FMLClientHandler;
 
-public class PlayerData extends CacheLoader<Class, EntityDTO>
-{
+public class PlayerData extends CacheLoader<Class, EntityDTO> {
     public static boolean playerIsUnderground(final Minecraft mc, final EntityPlayer player) {
-        if (player.func_130014_f_().field_73011_w instanceof WorldProviderHell) {
+        if (player.getEntityWorld().provider instanceof WorldProviderHell) {
             return true;
         }
-        final int posX = MathHelper.func_76128_c(player.field_70165_t);
-        final int posY = MathHelper.func_76128_c(player.func_174813_aQ().field_72338_b);
-        final int posZ = MathHelper.func_76128_c(player.field_70161_v);
+        final int posX = MathHelper.floor(player.posX);
+        final int posY = MathHelper.floor(player.getEntityBoundingBox().minY);
+        final int posZ = MathHelper.floor(player.posZ);
         final int offset = 1;
         boolean isUnderground = true;
         if (posY < 0) {
             return true;
         }
         boolean chunksLoaded = false;
-    Label_0160:
+        Label_0160:
         for (int x = posX - 1; x <= posX + 1; ++x) {
             for (int z = posZ - 1; z <= posZ + 1; ++z) {
                 final int y = posY + 1;
@@ -43,32 +43,31 @@ public class PlayerData extends CacheLoader<Class, EntityDTO>
         }
         return chunksLoaded && isUnderground;
     }
-    
+
     public EntityDTO load(final Class aClass) throws Exception {
         final Minecraft mc = FMLClientHandler.instance().getClient();
-        final EntityPlayer player = (EntityPlayer)Journeymap.clientPlayer();
-        final EntityDTO dto = DataCache.INSTANCE.getEntityDTO((Entity)player);
-        dto.update((Entity)player, false);
+        final EntityPlayer player = Journeymap.clientPlayer();
+        final EntityDTO dto = DataCache.INSTANCE.getEntityDTO(player);
+        dto.update(player, false);
         dto.biome = this.getPlayerBiome(player);
         dto.underground = playerIsUnderground(mc, player);
         return dto;
     }
-    
+
     private String getPlayerBiome(final EntityPlayer player) {
         if (player != null) {
             try {
-                final Biome biome = Journeymap.clientWorld().getBiomeForCoordsBody(player.func_180425_c());
+                final Biome biome = Journeymap.clientWorld().getBiomeForCoordsBody(player.getPosition());
                 if (biome != null) {
-                    return biome.func_185359_l();
+                    return biome.getBiomeName();
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 JMLogger.logOnce("Couldn't get player biome: " + e.getMessage(), e);
             }
         }
         return "?";
     }
-    
+
     public long getTTL() {
         return Journeymap.getClient().getCoreProperties().cachePlayerData.get();
     }
