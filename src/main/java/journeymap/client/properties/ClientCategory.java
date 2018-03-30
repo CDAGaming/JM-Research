@@ -1,12 +1,12 @@
 package journeymap.client.properties;
 
-import journeymap.client.Constants;
-import journeymap.common.properties.Category;
+import journeymap.common.properties.*;
+import journeymap.client.*;
+import java.util.*;
 
-import java.util.Arrays;
-import java.util.List;
-
-public class ClientCategory {
+public class ClientCategory
+{
+    private static int order;
     public static final Category MiniMap1;
     public static final Category MiniMap2;
     public static final Category FullMap;
@@ -16,8 +16,20 @@ public class ClientCategory {
     public static final Category Cartography;
     public static final Category Advanced;
     public static final List<Category> values;
-    private static int order;
-
+    
+    private static Category create(final String name, final String key) {
+        return new Category(name, ClientCategory.order++, Constants.getString(key), Constants.getString(key + ".tooltip"));
+    }
+    
+    public static Category valueOf(final String name) {
+        for (final Category category : ClientCategory.values) {
+            if (category.getName().equalsIgnoreCase(name)) {
+                return category;
+            }
+        }
+        return null;
+    }
+    
     static {
         ClientCategory.order = 1;
         MiniMap1 = create("MiniMap1", "jm.config.category.minimap");
@@ -29,18 +41,5 @@ public class ClientCategory {
         Cartography = create("Cartography", "jm.config.category.cartography");
         Advanced = create("Advanced", "jm.config.category.advanced");
         values = Arrays.asList(Category.Inherit, Category.Hidden, ClientCategory.MiniMap1, ClientCategory.MiniMap2, ClientCategory.FullMap, ClientCategory.WebMap, ClientCategory.Waypoint, ClientCategory.WaypointBeacon, ClientCategory.Cartography, ClientCategory.Advanced);
-    }
-
-    private static Category create(final String name, final String key) {
-        return new Category(name, ClientCategory.order++, Constants.getString(key), Constants.getString(key + ".tooltip"));
-    }
-
-    public static Category valueOf(final String name) {
-        for (final Category category : ClientCategory.values) {
-            if (category.getName().equalsIgnoreCase(name)) {
-                return category;
-            }
-        }
-        return null;
     }
 }

@@ -1,23 +1,18 @@
 package journeymap.client.properties;
 
-import journeymap.client.cartography.color.RGB;
-import journeymap.client.io.ThemeLoader;
-import journeymap.client.log.JMLogger;
-import journeymap.client.model.GridSpecs;
-import journeymap.client.task.multi.RenderSpec;
-import journeymap.common.properties.Category;
-import journeymap.common.properties.PropertiesBase;
-import journeymap.common.properties.config.BooleanField;
-import journeymap.common.properties.config.EnumField;
-import journeymap.common.properties.config.IntegerField;
-import journeymap.common.properties.config.StringField;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.fml.client.FMLClientHandler;
+import journeymap.common.properties.config.*;
+import journeymap.client.task.multi.*;
+import net.minecraftforge.client.event.*;
+import journeymap.client.model.*;
+import journeymap.client.log.*;
+import journeymap.client.io.*;
+import journeymap.common.properties.*;
+import net.minecraftforge.fml.client.*;
+import java.util.*;
+import journeymap.client.cartography.color.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
-
-public class CoreProperties extends ClientPropertiesBase implements Comparable<CoreProperties> {
+public class CoreProperties extends ClientPropertiesBase implements Comparable<CoreProperties>
+{
     public static final String PATTERN_COLOR = "^#[a-f0-9]{6}$";
     public final StringField logLevel;
     public final IntegerField autoMapPoll;
@@ -55,6 +50,7 @@ public class CoreProperties extends ClientPropertiesBase implements Comparable<C
     public final IntegerField maxMobsData;
     public final IntegerField maxPlayersData;
     public final IntegerField maxVillagersData;
+    public final IntegerField maxVehiclesData;
     public final BooleanField hideSneakingEntities;
     public final IntegerField radarLateralDistance;
     public final IntegerField radarVerticalDistance;
@@ -71,9 +67,10 @@ public class CoreProperties extends ClientPropertiesBase implements Comparable<C
     public final StringField colorVillager;
     public final StringField colorPlayer;
     public final StringField colorSelf;
+    public final StringField colorVehicle;
     public final BooleanField verboseColorPalette;
     private transient HashMap<StringField, Integer> mobColors;
-
+    
     public CoreProperties() {
         this.logLevel = new StringField(ClientCategory.Advanced, "jm.advanced.loglevel", JMLogger.LogLevelStringProvider.class);
         this.autoMapPoll = new IntegerField(ClientCategory.Advanced, "jm.advanced.automappoll", 500, 10000, 2000);
@@ -103,7 +100,7 @@ public class CoreProperties extends ClientPropertiesBase implements Comparable<C
         this.renderDistanceCaveMax = new IntegerField(ClientCategory.Cartography, "jm.common.renderdistance_cave_max", 1, 32, 3, 102);
         this.renderDistanceSurfaceMax = new IntegerField(ClientCategory.Cartography, "jm.common.renderdistance_surface_max", 1, 32, 7, 104);
         this.renderDelay = new IntegerField(ClientCategory.Cartography, "jm.common.renderdelay", 0, 10, 2);
-        this.revealShape = new EnumField<>(ClientCategory.Cartography, "jm.common.revealshape", RenderSpec.RevealShape.Circle);
+        this.revealShape = new EnumField<RenderSpec.RevealShape>(ClientCategory.Cartography, "jm.common.revealshape", RenderSpec.RevealShape.Circle);
         this.alwaysMapCaves = new BooleanField(ClientCategory.Cartography, "jm.common.alwaysmapcaves", false);
         this.alwaysMapSurface = new BooleanField(ClientCategory.Cartography, "jm.common.alwaysmapsurface", false);
         this.tileHighDisplayQuality = new BooleanField(ClientCategory.Advanced, "jm.common.tile_display_quality", true);
@@ -111,12 +108,13 @@ public class CoreProperties extends ClientPropertiesBase implements Comparable<C
         this.maxMobsData = new IntegerField(ClientCategory.Advanced, "jm.common.radar_max_mobs", 1, 128, 32);
         this.maxPlayersData = new IntegerField(ClientCategory.Advanced, "jm.common.radar_max_players", 1, 128, 32);
         this.maxVillagersData = new IntegerField(ClientCategory.Advanced, "jm.common.radar_max_villagers", 1, 128, 32);
+        this.maxVehiclesData = new IntegerField(ClientCategory.Advanced, "jm.common.radar_max_vehicles", 1, 128, 32);
         this.hideSneakingEntities = new BooleanField(ClientCategory.Advanced, "jm.common.radar_hide_sneaking", true);
         this.radarLateralDistance = new IntegerField(ClientCategory.Advanced, "jm.common.radar_lateral_distance", 16, 512, 64);
         this.radarVerticalDistance = new IntegerField(ClientCategory.Advanced, "jm.common.radar_vertical_distance", 8, 256, 16);
         this.tileRenderType = new IntegerField(ClientCategory.Advanced, "jm.advanced.tile_render_type", 1, 4, 1);
         this.mappingEnabled = new BooleanField(Category.Hidden, "", true);
-        this.renderOverlayEventTypeName = new EnumField<>(Category.Hidden, "", RenderGameOverlayEvent.ElementType.ALL);
+        this.renderOverlayEventTypeName = new EnumField<RenderGameOverlayEvent.ElementType>(Category.Hidden, "", RenderGameOverlayEvent.ElementType.ALL);
         this.renderOverlayPreEvent = new BooleanField(Category.Hidden, "", true);
         this.optionsManagerViewed = new StringField(Category.Hidden, "", null);
         this.splashViewed = new StringField(Category.Hidden, "", null);
@@ -127,40 +125,42 @@ public class CoreProperties extends ClientPropertiesBase implements Comparable<C
         this.colorVillager = new StringField(Category.Hidden, "jm.common.radar_color_villager", null, "#88e188").pattern("^#[a-f0-9]{6}$");
         this.colorPlayer = new StringField(Category.Hidden, "jm.common.radar_color_player", null, "#ffffff").pattern("^#[a-f0-9]{6}$");
         this.colorSelf = new StringField(Category.Hidden, "jm.common.radar_color_self", null, "#0000ff").pattern("^#[a-f0-9]{6}$");
+        this.colorVehicle = new StringField(Category.Hidden, "jm.common.radar_color_vehicle", null, "#00ff00").pattern("^#[a-f0-9]{6}$");
         this.verboseColorPalette = new BooleanField(Category.Hidden, "", false);
-        this.mobColors = new HashMap<>(6);
+        this.mobColors = new HashMap<StringField, Integer>(6);
     }
-
+    
     @Override
     public String getName() {
         return "core";
     }
-
+    
     @Override
     public int compareTo(final CoreProperties other) {
-        return Integer.compare(this.hashCode(), other.hashCode());
+        return Integer.valueOf(this.hashCode()).compareTo(Integer.valueOf(other.hashCode()));
     }
-
+    
     @Override
     public <T extends PropertiesBase> void updateFrom(final T otherInstance) {
         super.updateFrom(otherInstance);
         if (otherInstance instanceof CoreProperties) {
-            this.gridSpecs.updateFrom(((CoreProperties) otherInstance).gridSpecs);
+            this.gridSpecs.updateFrom(((CoreProperties)otherInstance).gridSpecs);
         }
         this.mobColors.clear();
     }
-
+    
     @Override
     public boolean isValid(final boolean fix) {
         boolean valid = super.isValid(fix);
         if (FMLClientHandler.instance().getClient() != null) {
-            final int gameRenderDistance = FMLClientHandler.instance().getClient().gameSettings.renderDistanceChunks;
+            final int gameRenderDistance = FMLClientHandler.instance().getClient().field_71474_y.field_151451_c;
             for (final IntegerField prop : Arrays.asList(this.renderDistanceCaveMax, this.renderDistanceSurfaceMax)) {
                 if (prop.get() > gameRenderDistance) {
                     this.warn(String.format("Render distance %s is less than %s", gameRenderDistance, prop.getDeclaredField()));
                     if (fix) {
                         prop.set(gameRenderDistance);
-                    } else {
+                    }
+                    else {
                         valid = false;
                     }
                 }
@@ -168,7 +168,7 @@ public class CoreProperties extends ClientPropertiesBase implements Comparable<C
         }
         return valid;
     }
-
+    
     public int getColor(final StringField colorField) {
         Integer color = this.mobColors.get(colorField);
         if (color == null) {

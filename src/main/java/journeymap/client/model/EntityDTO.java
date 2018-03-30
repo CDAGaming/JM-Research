@@ -1,31 +1,27 @@
 package journeymap.client.model;
 
-import com.google.common.base.Strings;
-import com.google.common.cache.CacheLoader;
-import journeymap.client.properties.CoreProperties;
-import journeymap.common.Journeymap;
-import journeymap.common.log.LogFormatter;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.network.NetHandlerPlayClient;
-import net.minecraft.client.network.NetworkPlayerInfo;
-import net.minecraft.client.resources.DefaultPlayerSkin;
+import java.io.*;
+import java.lang.ref.*;
+import journeymap.common.*;
+import net.minecraft.entity.player.*;
+import net.minecraft.client.entity.*;
+import net.minecraft.util.*;
+import net.minecraft.client.resources.*;
+import net.minecraft.client.*;
+import journeymap.common.log.*;
+import net.minecraft.entity.passive.*;
 import net.minecraft.entity.*;
-import net.minecraft.entity.passive.EntityHorse;
-import net.minecraft.entity.passive.EntityTameable;
-import net.minecraft.entity.passive.EntityVillager;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.scoreboard.ScorePlayerTeam;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.StringUtils;
-import net.minecraftforge.fml.client.FMLClientHandler;
+import com.google.common.base.*;
+import journeymap.client.properties.*;
+import net.minecraft.scoreboard.*;
+import net.minecraft.client.network.*;
+import java.util.*;
+import com.google.common.cache.*;
 
-import java.io.Serializable;
-import java.lang.ref.WeakReference;
-import java.util.UUID;
-
-public class EntityDTO implements Serializable {
+public class EntityDTO implements Serializable
+{
     public final String entityId;
-    public transient WeakReference<EntityLivingBase> entityLivingRef;
+    public transient WeakReference<Entity> entityRef;
     public transient ResourceLocation entityIconLocation;
     public String iconLocation;
     public Boolean hostile;
@@ -48,60 +44,70 @@ public class EntityDTO implements Serializable {
     public boolean passiveAnimal;
     public boolean npc;
     public int color;
-
-    private EntityDTO(final EntityLivingBase entity) {
-        this.entityLivingRef = new WeakReference<>(entity);
-        this.entityId = entity.getUniqueID().toString();
+    
+    private EntityDTO(final Entity entity) {
+        this.entityRef = new WeakReference<Entity>(entity);
+        this.entityId = entity.func_110124_au().toString();
     }
-
-    public void update(final EntityLivingBase entity, boolean hostile) {
-        final Minecraft mc = Minecraft.getMinecraft();
-        final EntityPlayer currentPlayer = FMLClientHandler.instance().getClient().player;
-        this.dimension = entity.dimension;
-        this.posX = entity.posX;
-        this.posY = entity.posY;
-        this.posZ = entity.posZ;
-        this.chunkCoordX = entity.chunkCoordX;
-        this.chunkCoordY = entity.chunkCoordY;
-        this.chunkCoordZ = entity.chunkCoordZ;
-        this.heading = Math.round(entity.rotationYawHead % 360.0f);
+    
+    public void update(final Entity entity, boolean hostile) {
+        this.dimension = entity.field_71093_bK;
+        this.posX = entity.field_70165_t;
+        this.posY = entity.field_70163_u;
+        this.posZ = entity.field_70161_v;
+        this.chunkCoordX = entity.field_70176_ah;
+        this.chunkCoordY = entity.field_70162_ai;
+        this.chunkCoordZ = entity.field_70164_aj;
+        if (entity instanceof EntityLivingBase) {
+            this.heading = Math.round(entity.func_70079_am() % 360.0f);
+        }
+        else {
+            this.heading = Math.round(entity.field_70177_z % 360.0f);
+        }
+        final EntityPlayerSP currentPlayer = Journeymap.clientPlayer();
         if (currentPlayer != null) {
-            this.invisible = entity.isInvisibleToPlayer(currentPlayer);
-        } else {
+            this.invisible = entity.func_98034_c((EntityPlayer)currentPlayer);
+        }
+        else {
             this.invisible = false;
         }
-        this.sneaking = entity.isSneaking();
+        this.sneaking = entity.func_70093_af();
         final CoreProperties coreProperties = Journeymap.getClient().getCoreProperties();
-        ResourceLocation entityIcon;
+        ResourceLocation entityIcon = null;
         int playerColor = coreProperties.getColor(coreProperties.colorPlayer);
         ScorePlayerTeam team = null;
         try {
-            team = mc.world.getScoreboard().getPlayersTeam(entity.getCachedUniqueIdString());
-        } catch (Throwable t3) {
+            team = Journeymap.clientWorld().func_96441_U().func_96509_i(entity.func_189512_bd());
         }
-        if (entity instanceof EntityPlayer) {
-            this.username = StringUtils.stripControlCodes(entity.getName());
+        catch (Throwable t3) {}
+        if (entity instanceof EntityPlayerSP) {
+            final String name = StringUtils.func_76338_a(entity.func_70005_c_());
+            this.username = name;
             try {
                 if (team != null) {
-                    playerColor = team.getColor().getColorIndex();
-                } else if (currentPlayer.equals(entity)) {
+                    playerColor = team.func_178775_l().func_175746_b();
+                }
+                else if (currentPlayer.equals((Object)entity)) {
                     playerColor = coreProperties.getColor(coreProperties.colorSelf);
-                } else {
+                }
+                else {
                     playerColor = coreProperties.getColor(coreProperties.colorPlayer);
                 }
-            } catch (Throwable t4) {
             }
-            entityIcon = DefaultPlayerSkin.getDefaultSkinLegacy();
+            catch (Throwable t4) {}
+            entityIcon = DefaultPlayerSkin.func_177335_a();
             try {
-                final NetHandlerPlayClient client = Minecraft.getMinecraft().getConnection();
-                final NetworkPlayerInfo info = client.getPlayerInfo(entity.getUniqueID());
+                final NetHandlerPlayClient client = Minecraft.func_71410_x().func_147114_u();
+                final NetworkPlayerInfo info = client.func_175102_a(entity.func_110124_au());
                 if (info != null) {
-                    entityIcon = info.getLocationSkin();
+                    entityIcon = info.func_178837_g();
                 }
-            } catch (Throwable t) {
+            }
+            catch (Throwable t) {
                 Journeymap.getLogger().error("Error looking up player skin: " + LogFormatter.toPartialString(t));
             }
-        } else {
+        }
+        else {
             this.username = null;
             entityIcon = EntityHelper.getIconTextureLocation(entity);
         }
@@ -111,24 +117,27 @@ public class EntityDTO implements Serializable {
         }
         String owner = null;
         if (entity instanceof EntityTameable) {
-            final Entity ownerEntity = ((EntityTameable) entity).getOwner();
+            final Entity ownerEntity = (Entity)((EntityTameable)entity).func_70902_q();
             if (ownerEntity != null) {
-                owner = ownerEntity.getName();
+                owner = ownerEntity.func_70005_c_();
             }
-        } else if (entity instanceof IEntityOwnable) {
-            final Entity ownerEntity = ((IEntityOwnable) entity).getOwner();
+        }
+        else if (entity instanceof IEntityOwnable) {
+            final Entity ownerEntity = ((IEntityOwnable)entity).func_70902_q();
             if (ownerEntity != null) {
-                owner = ownerEntity.getName();
+                owner = ownerEntity.func_70005_c_();
             }
-        } else if (entity instanceof EntityHorse) {
-            final UUID ownerUuid = ((EntityHorse) entity).getOwnerUniqueId();
+        }
+        else if (entity instanceof EntityHorse) {
+            final UUID ownerUuid = ((EntityHorse)entity).func_184780_dh();
             if (currentPlayer != null && ownerUuid != null) {
                 try {
-                    final String playerUuid = currentPlayer.getUniqueID().toString();
-                    if (playerUuid.equals(ownerUuid.toString())) {
-                        owner = currentPlayer.getName();
+                    final String playerUuid = currentPlayer.func_110124_au().toString();
+                    if (playerUuid.equals(ownerUuid)) {
+                        owner = currentPlayer.func_70005_c_();
                     }
-                } catch (Throwable t2) {
+                }
+                catch (Throwable t2) {
                     t2.printStackTrace();
                 }
             }
@@ -137,51 +146,62 @@ public class EntityDTO implements Serializable {
         String customName = null;
         boolean passive = false;
         if (entity instanceof EntityLiving) {
-            final EntityLiving entityLiving = (EntityLiving) entity;
-            if (entity.hasCustomName() && entityLiving.getAlwaysRenderNameTag()) {
-                customName = StringUtils.stripControlCodes(entity.getCustomNameTag());
+            final EntityLiving entityLiving = (EntityLiving)entity;
+            if (entity.func_145818_k_() && entityLiving.func_174833_aM()) {
+                customName = StringUtils.func_76338_a(((EntityLiving)entity).func_95999_t());
             }
             if (!hostile && currentPlayer != null) {
-                final EntityLivingBase attackTarget = ((EntityLiving) entity).getAttackTarget();
-                if (attackTarget != null && attackTarget.getUniqueID().equals(currentPlayer.getUniqueID())) {
+                final EntityLivingBase attackTarget = ((EntityLiving)entity).func_70638_az();
+                if (attackTarget != null && attackTarget.func_110124_au().equals(currentPlayer.func_110124_au())) {
                     hostile = true;
                 }
             }
-            if (EntityHelper.isPassive((EntityLiving) entity)) {
+            if (EntityHelper.isPassive((EntityLiving)entity)) {
                 passive = true;
             }
         }
         if (entity instanceof EntityVillager) {
-            final EntityVillager villager = (EntityVillager) entity;
-            this.profession = villager.getProfessionForge().getCareer(villager.careerId).getName();
-        } else if (entity instanceof INpc) {
+            final EntityVillager villager = (EntityVillager)entity;
+            this.profession = villager.getProfessionForge().getCareer(villager.field_175563_bv).getName();
+        }
+        else if (entity instanceof INpc) {
             this.npc = true;
             this.profession = null;
             this.passiveAnimal = false;
-        } else {
+        }
+        else {
             this.profession = null;
             this.passiveAnimal = passive;
         }
         this.customName = customName;
         this.hostile = hostile;
-        if (entity instanceof EntityPlayer) {
+        if (!(entity instanceof EntityLivingBase)) {
+            this.color = coreProperties.getColor(coreProperties.colorVehicle);
+        }
+        else if (entity instanceof EntityPlayerSP) {
             this.color = playerColor;
-        } else if (team != null) {
-            this.color = team.getColor().getColorIndex();
-        } else if (!Strings.isNullOrEmpty(owner)) {
+        }
+        else if (team != null) {
+            this.color = team.func_178775_l().func_175746_b();
+        }
+        else if (!Strings.isNullOrEmpty(owner)) {
             this.color = coreProperties.getColor(coreProperties.colorPet);
-        } else if (this.profession != null || this.npc) {
+        }
+        else if (this.profession != null || this.npc) {
             this.color = coreProperties.getColor(coreProperties.colorVillager);
-        } else if (hostile) {
+        }
+        else if (hostile) {
             this.color = coreProperties.getColor(coreProperties.colorHostile);
-        } else {
+        }
+        else {
             this.color = coreProperties.getColor(coreProperties.colorPassive);
         }
     }
-
-    public static class SimpleCacheLoader extends CacheLoader<EntityLivingBase, EntityDTO> {
-        public EntityDTO load(final EntityLivingBase entity) throws Exception {
-            return new EntityDTO(entity);
+    
+    public static class SimpleCacheLoader extends CacheLoader<Entity, EntityDTO>
+    {
+        public EntityDTO load(final Entity entity) throws Exception {
+            return new EntityDTO(entity, null);
         }
     }
 }

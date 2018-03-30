@@ -1,47 +1,46 @@
 package journeymap.client.api.model;
 
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.gson.annotations.Since;
-import journeymap.client.api.display.Displayable;
-import journeymap.client.api.display.IWaypointDisplay;
-import org.apache.commons.lang3.ArrayUtils;
+import journeymap.client.api.display.*;
+import com.google.gson.annotations.*;
+import com.google.common.base.*;
+import java.util.*;
+import java.util.function.*;
+import javax.annotation.*;
 
-import javax.annotation.Nullable;
-import java.util.Arrays;
-
-public abstract class WaypointBase<T extends WaypointBase> extends Displayable implements IWaypointDisplay {
+public abstract class WaypointBase<T extends WaypointBase> extends Displayable implements IWaypointDisplay
+{
     @Since(1.4)
     protected String name;
     @Since(1.4)
-    protected Integer color;
-    @Since(1.4)
-    protected Integer bgColor;
-    @Since(1.4)
     protected MapImage icon;
+    @Since(1.6)
+    protected MapText label;
     @Since(1.4)
-    protected int[] displayDims;
+    protected HashSet<Integer> displayDims;
     @Since(1.4)
     protected transient boolean dirty;
-
+    
+    protected WaypointBase() {
+    }
+    
     protected WaypointBase(final String modId, final String name) {
         super(modId);
         this.setName(name);
     }
-
+    
     protected WaypointBase(final String modId, final String id, final String name) {
         super(modId, id);
         this.setName(name);
     }
-
+    
     protected abstract IWaypointDisplay getDelegate();
-
+    
     protected abstract boolean hasDelegate();
-
+    
     public final String getName() {
         return this.name;
     }
-
+    
     public final T setName(final String name) {
         if (Strings.isNullOrEmpty(name)) {
             throw new IllegalArgumentException("name may not be blank");
@@ -49,73 +48,106 @@ public abstract class WaypointBase<T extends WaypointBase> extends Displayable i
         this.name = name;
         return this.setDirty();
     }
-
+    
     @Override
-    public final Integer getColor() {
-        if (this.color == null && this.hasDelegate()) {
-            return this.getDelegate().getColor();
+    public final MapText getLabel() {
+        if (this.label == null && this.hasDelegate()) {
+            return this.getDelegate().getLabel();
         }
-        return this.color;
+        return this.label;
     }
-
-    public final T setColor(final int color) {
-        this.color = Displayable.clampRGB(color);
-        return this.setDirty();
+    
+    public final int getOrDefaultIconColor(final int defaultRgb) {
+        final MapImage icon = this.getIcon();
+        return (icon == null) ? defaultRgb : icon.getColor();
     }
-
-    public final T clearColor() {
-        this.color = null;
-        return this.setDirty();
-    }
-
-    @Override
-    public final Integer getBackgroundColor() {
-        if (this.bgColor == null && this.hasDelegate()) {
-            return this.getDelegate().getBackgroundColor();
+    
+    public final T setIconColor(final int rgb) {
+        MapImage mapImage = this.getIcon();
+        if (mapImage == null) {
+            mapImage = new MapImage();
+            this.setIcon(mapImage);
         }
-        return this.bgColor;
-    }
-
-    public final T setBackgroundColor(final int bgColor) {
-        this.bgColor = Displayable.clampRGB(bgColor);
+        mapImage.setColor(rgb);
         return this.setDirty();
     }
-
-    public final T clearBackgroundColor() {
-        this.bgColor = null;
+    
+    public final int getOrDefaultLabelColor(final int defaultRgb) {
+        final MapText label = this.getLabel();
+        return (label == null) ? defaultRgb : label.getColor();
+    }
+    
+    public final T setLabelColor(final int rgb) {
+        MapText mapText = this.getLabel();
+        if (mapText == null) {
+            mapText = new MapText();
+            this.setLabel(mapText);
+        }
+        mapText.setColor(rgb);
         return this.setDirty();
     }
-
+    
+    public final T setLabel(final int color, final float opacity) {
+        return this.setLabel(new MapText<MapText>().setColor(color).setOpacity(opacity));
+    }
+    
+    public final T setLabel(final MapText label) {
+        this.label = label;
+        return this.setDirty();
+    }
+    
+    public final T clearLabel() {
+        this.label = null;
+        return this.setDirty();
+    }
+    
     @Override
-    public int[] getDisplayDimensions() {
-        if (this.displayDims == null && this.hasDelegate()) {
+    public Set<Integer> getDisplayDimensions() {
+        if (this.displayDims != null) {
+            return new HashSet<Integer>(this.displayDims);
+        }
+        if (this.hasDelegate()) {
             return this.getDelegate().getDisplayDimensions();
         }
-        return this.displayDims;
+        return Collections.emptySet();
     }
-
-    public final T setDisplayDimensions(final int... dimensions) {
-        this.displayDims = dimensions;
+    
+    public final T setDisplayDimensions(final Integer... dimensions) {
+        return this.setDisplayDimensions(Arrays.asList(dimensions));
+    }
+    
+    public final T setDisplayDimensions(final Collection<Integer> dimensions) {
+        HashSet<Integer> temp = null;
+        if (dimensions != null && dimensions.size() > 0) {
+            temp = new HashSet<Integer>(dimensions.size());
+            dimensions.stream().filter(Objects::nonNull).forEach(temp::add);
+            if (temp.size() == 0) {
+                temp = null;
+            }
+        }
+        this.displayDims = temp;
         return this.setDirty();
     }
-
+    
     public final T clearDisplayDimensions() {
         this.displayDims = null;
         return this.setDirty();
     }
-
+    
     public void setDisplayed(final int dimension, final boolean displayed) {
-        if (displayed && !this.isDisplayed(dimension)) {
-            this.setDisplayDimensions(ArrayUtils.add(this.getDisplayDimensions(), dimension));
-        } else if (!displayed && this.isDisplayed(dimension)) {
-            this.setDisplayDimensions(ArrayUtils.removeElement(this.getDisplayDimensions(), dimension));
+        final Set<Integer> dimSet = this.getDisplayDimensions();
+        if (displayed && dimSet.add(dimension)) {
+            this.setDisplayDimensions(dimSet);
+        }
+        else if (!displayed && dimSet.remove(dimension)) {
+            this.setDisplayDimensions(dimSet);
         }
     }
-
+    
     public final boolean isDisplayed(final int dimension) {
-        return Arrays.binarySearch(this.getDisplayDimensions(), dimension) > -1;
+        return this.getDisplayDimensions().contains(dimension);
     }
-
+    
     @Override
     public MapImage getIcon() {
         if (this.icon == null && this.hasDelegate()) {
@@ -123,46 +155,46 @@ public abstract class WaypointBase<T extends WaypointBase> extends Displayable i
         }
         return this.icon;
     }
-
+    
     public final T setIcon(@Nullable final MapImage icon) {
         this.icon = icon;
         return this.setDirty();
     }
-
+    
     public final T clearIcon() {
         this.icon = null;
         return this.setDirty();
     }
-
+    
     public boolean isDirty() {
         return this.dirty;
     }
-
+    
     public T setDirty(final boolean dirty) {
         this.dirty = dirty;
-        return (T) this;
+        return (T)this;
     }
-
+    
     public T setDirty() {
         return this.setDirty(true);
     }
-
+    
     public boolean hasIcon() {
         return this.icon != null;
     }
-
+    
     public boolean hasColor() {
-        return this.color != null;
+        return this.getLabel() != null;
     }
-
+    
     public boolean hasBackgroundColor() {
-        return this.bgColor != null;
+        return this.getLabel() != null;
     }
-
+    
     public boolean hasDisplayDimensions() {
         return this.displayDims != null;
     }
-
+    
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -174,7 +206,7 @@ public abstract class WaypointBase<T extends WaypointBase> extends Displayable i
         if (!super.equals(o)) {
             return false;
         }
-        final WaypointBase<?> that = (WaypointBase<?>) o;
-        return Objects.equal(this.getName(), that.getName()) && Objects.equal(this.getIcon(), that.getIcon()) && Objects.equal(this.getColor(), that.getColor()) && Objects.equal(this.getBackgroundColor(), that.getBackgroundColor()) && Arrays.equals(this.getDisplayDimensions(), that.getDisplayDimensions());
+        final WaypointBase<?> that = (WaypointBase<?>)o;
+        return com.google.common.base.Objects.equal((Object)this.getGuid(), (Object)that.getGuid()) && com.google.common.base.Objects.equal((Object)this.getIcon(), (Object)that.getIcon()) && com.google.common.base.Objects.equal((Object)this.getLabel(), (Object)that.getLabel()) && Arrays.equals(this.getDisplayDimensions().toArray(), that.getDisplayDimensions().toArray());
     }
 }

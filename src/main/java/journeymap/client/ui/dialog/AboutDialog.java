@@ -1,29 +1,23 @@
 package journeymap.client.ui.dialog;
 
-import journeymap.client.Constants;
-import journeymap.client.io.FileHandler;
-import journeymap.client.model.SplashInfo;
-import journeymap.client.model.SplashPerson;
-import journeymap.client.render.draw.DrawUtil;
-import journeymap.client.render.texture.TextureCache;
-import journeymap.client.render.texture.TextureImpl;
-import journeymap.client.ui.UIManager;
-import journeymap.client.ui.component.Button;
-import journeymap.client.ui.component.ButtonList;
-import journeymap.client.ui.component.JmUI;
-import journeymap.common.Journeymap;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.renderer.GlStateManager;
-import org.lwjgl.input.Mouse;
+import journeymap.client.ui.component.*;
+import journeymap.client.model.*;
+import journeymap.common.*;
+import journeymap.client.*;
+import journeymap.client.render.texture.*;
+import journeymap.client.io.*;
+import journeymap.client.ui.*;
+import journeymap.common.properties.*;
+import java.util.*;
+import org.lwjgl.input.*;
+import java.awt.geom.*;
+import journeymap.client.render.draw.*;
+import net.minecraft.client.renderer.*;
+import net.minecraft.client.gui.*;
+import net.minecraft.client.*;
 
-import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-public class AboutDialog extends JmUI {
+public class AboutDialog extends JmUI
+{
     protected TextureImpl patreonLogo;
     protected TextureImpl discordLogo;
     Button buttonClose;
@@ -42,17 +36,17 @@ public class AboutDialog extends JmUI {
     private List<SplashPerson> people;
     private List<SplashPerson> devs;
     private SplashInfo info;
-
+    
     public AboutDialog(final JmUI returnDisplay) {
         super(Constants.getString("jm.common.splash_title", Journeymap.JM_VERSION), returnDisplay);
         this.patreonLogo = TextureCache.getTexture(TextureCache.Patreon);
         this.discordLogo = TextureCache.getTexture(TextureCache.Discord);
-        this.people = Arrays.asList(new SplashPerson("AlexDurrani", "Sikandar Durrani", "jm.common.splash_patreon"), new SplashPerson("Davkas", "Davkas", "jm.common.splash_patreon"), new SplashPerson("TECH_GEEK10", "TECH_GEEK10", "jm.common.splash_patreon"), new SplashPerson("_TheEndless_", "The Endless", "jm.common.splash_patreon"), new SplashPerson("eladjenkins", "eladjenkins", "jm.common.splash_patreon"));
+        this.people = Arrays.asList(new SplashPerson("AlexDurrani", "Sikandar Durrani", "jm.common.splash_patreon"), new SplashPerson("_TheEndless_", "The Endless", "jm.common.splash_patreon"), new SplashPerson("eladjenkins", "eladjenkins", "jm.common.splash_patreon"), new SplashPerson("duomaz", "Duomaz", "jm.common.splash_patreon"));
         this.devs = Arrays.asList(new SplashPerson("mysticdrew", "mysticdrew", "jm.common.splash_developer"), new SplashPerson("techbrew", "techbrew", "jm.common.splash_developer"));
     }
-
+    
     @Override
-    public void initGui() {
+    public void func_73866_w_() {
         Journeymap.getClient().getCoreProperties().splashViewed.set(Journeymap.JM_VERSION.toString());
         if (this.info == null) {
             this.info = FileHandler.getMessageModel(SplashInfo.class, "splash");
@@ -62,11 +56,11 @@ public class AboutDialog extends JmUI {
             final String bday = Constants.birthdayMessage();
             if (bday != null) {
                 this.info.lines.add(0, new SplashInfo.Line(bday, "dialog.FullscreenActions#tweet#" + bday));
-                (this.devs = new ArrayList<>(this.devs)).add(new SplashPerson.Fake("", "", TextureCache.getTexture(TextureCache.ColorPicker2)));
+                (this.devs = new ArrayList<SplashPerson>(this.devs)).add(new SplashPerson.Fake("", "", TextureCache.getTexture(TextureCache.ColorPicker2)));
             }
             return;
         }
-        this.buttonList.clear();
+        this.field_146292_n.clear();
         final FontRenderer fr = this.getFontRenderer();
         this.devButtons = new ButtonList();
         for (final SplashPerson dev : this.devs) {
@@ -76,7 +70,7 @@ public class AboutDialog extends JmUI {
         }
         this.devButtons.setWidths(20);
         this.devButtons.setHeights(20);
-        this.devButtons.layoutDistributedHorizontal(0, 35, this.width, true);
+        this.devButtons.layoutDistributedHorizontal(0, 35, this.field_146294_l, true);
         this.peopleButtons = new ButtonList();
         for (final SplashPerson peep : this.people) {
             final Button button = new Button(peep.name);
@@ -85,21 +79,21 @@ public class AboutDialog extends JmUI {
         }
         this.peopleButtons.setWidths(20);
         this.peopleButtons.setHeights(20);
-        this.peopleButtons.layoutDistributedHorizontal(0, this.height - 65, this.width, true);
+        this.peopleButtons.layoutDistributedHorizontal(0, this.field_146295_m - 65, this.field_146294_l, true);
         this.infoButtons = new ButtonList();
         for (final SplashInfo.Line line : this.info.lines) {
             final SplashInfoButton button2 = new SplashInfoButton(line);
             button2.setDrawBackground(false);
             button2.setDefaultStyle(false);
             button2.setDrawFrame(false);
-            button2.setHeight(fr.FONT_HEIGHT + 5);
+            button2.setHeight(fr.field_78288_b + 5);
             if (line.hasAction()) {
                 button2.setTooltip(Constants.getString("jm.common.splash_action"));
             }
-            (this.infoButtons).add(button2);
+            ((ArrayList<SplashInfoButton>)this.infoButtons).add(button2);
         }
         this.infoButtons.equalizeWidths(fr);
-        this.buttonList.addAll(this.infoButtons);
+        this.field_146292_n.addAll(this.infoButtons);
         (this.buttonClose = new Button(Constants.getString("jm.common.close"))).addClickListener(button -> {
             this.closeAndReturn();
             return true;
@@ -107,18 +101,19 @@ public class AboutDialog extends JmUI {
         (this.buttonOptions = new Button(Constants.getString("jm.common.options_button"))).addClickListener(button -> {
             if (this.returnDisplay != null && this.returnDisplay instanceof OptionsManager) {
                 this.closeAndReturn();
-            } else {
-                UIManager.INSTANCE.openOptionsManager(this);
+            }
+            else {
+                UIManager.INSTANCE.openOptionsManager(this, new Category[0]);
             }
             return true;
         });
-        this.bottomButtons = new ButtonList(this.buttonOptions);
-        if (this.mc.world != null) {
+        this.bottomButtons = new ButtonList(new Button[] { this.buttonOptions });
+        if (Journeymap.clientWorld() != null) {
             this.bottomButtons.add(this.buttonClose);
         }
         this.bottomButtons.equalizeWidths(fr);
         this.bottomButtons.setWidths(Math.max(100, this.buttonOptions.getWidth()));
-        this.buttonList.addAll(this.bottomButtons);
+        this.field_146292_n.addAll(this.bottomButtons);
         (this.buttonWebsite = new Button("http://journeymap.info")).setTooltip(Constants.getString("jm.common.website"));
         this.buttonWebsite.addClickListener(button -> {
             FullscreenActions.launchWebsite("");
@@ -129,8 +124,8 @@ public class AboutDialog extends JmUI {
             FullscreenActions.launchDownloadWebsite();
             return true;
         });
-        (this.linkButtons = new ButtonList(this.buttonWebsite, this.buttonDownload)).equalizeWidths(fr);
-        this.buttonList.addAll(this.linkButtons);
+        (this.linkButtons = new ButtonList(new Button[] { this.buttonWebsite, this.buttonDownload })).equalizeWidths(fr);
+        this.field_146292_n.addAll(this.linkButtons);
         final int commonWidth = Math.max(this.bottomButtons.getWidth(0) / this.bottomButtons.size(), this.linkButtons.getWidth(0) / this.linkButtons.size());
         this.bottomButtons.setWidths(commonWidth);
         this.linkButtons.setWidths(commonWidth);
@@ -138,7 +133,7 @@ public class AboutDialog extends JmUI {
         this.buttonPatreon.setDrawBackground(false);
         this.buttonPatreon.setDrawFrame(false);
         this.buttonPatreon.setTooltip(Constants.getString("jm.common.patreon"), Constants.getString("jm.common.patreon.tooltip"));
-        this.buttonPatreon.setWidth(this.patreonLogo.getWidth() / this.scaleFactor);
+        this.buttonPatreon.func_175211_a(this.patreonLogo.getWidth() / this.scaleFactor);
         this.buttonPatreon.setHeight(this.patreonLogo.getHeight() / this.scaleFactor);
         this.buttonPatreon.addClickListener(button -> {
             FullscreenActions.launchPatreon();
@@ -148,41 +143,41 @@ public class AboutDialog extends JmUI {
         this.buttonDiscord.setDrawBackground(false);
         this.buttonDiscord.setDrawFrame(false);
         this.buttonDiscord.setTooltip(Constants.getString("jm.common.discord"), Constants.getString("jm.common.discord.tooltip"));
-        this.buttonDiscord.setWidth(this.discordLogo.getWidth() / this.scaleFactor);
+        this.buttonDiscord.func_175211_a(this.discordLogo.getWidth() / this.scaleFactor);
         this.buttonDiscord.setHeight(this.discordLogo.getHeight() / this.scaleFactor);
         this.buttonDiscord.addClickListener(button -> {
             FullscreenActions.discord();
             return true;
         });
-        (this.logoButtons = new ButtonList(this.buttonDiscord, this.buttonPatreon)).setLayout(ButtonList.Layout.Horizontal, ButtonList.Direction.LeftToRight);
+        (this.logoButtons = new ButtonList(new Button[] { this.buttonDiscord, this.buttonPatreon })).setLayout(ButtonList.Layout.Horizontal, ButtonList.Direction.LeftToRight);
         this.logoButtons.setHeights(Math.max(this.discordLogo.getHeight(), this.patreonLogo.getHeight()) / this.scaleFactor);
         this.logoButtons.setWidths(Math.max(this.discordLogo.getWidth(), this.patreonLogo.getWidth()) / this.scaleFactor);
-        this.buttonList.addAll(this.logoButtons);
+        this.field_146292_n.addAll(this.logoButtons);
     }
-
+    
     @Override
     protected void layoutButtons() {
-        if (this.buttonList.isEmpty()) {
-            this.initGui();
+        if (this.field_146292_n.isEmpty()) {
+            this.func_73866_w_();
         }
-        final int mx = Mouse.getEventX() * this.width / this.mc.displayWidth;
-        final int my = this.height - Mouse.getEventY() * this.height / this.mc.displayHeight - 1;
+        final int mx = Mouse.getEventX() * this.field_146294_l / this.field_146297_k.field_71443_c;
+        final int my = this.field_146295_m - Mouse.getEventY() * this.field_146295_m / this.field_146297_k.field_71440_d - 1;
         final int hgap = 4;
         final int vgap = 4;
         final FontRenderer fr = this.getFontRenderer();
         final int estimatedInfoHeight = this.infoButtons.getHeight(4);
         final int estimatedButtonsHeight = (this.buttonClose.getHeight() + 4) * 3 + 4;
-        final int height = this.height;
+        final int field_146295_m = this.field_146295_m;
         this.getClass();
-        final int centerHeight = height - 35 - estimatedButtonsHeight;
-        final int lineHeight = (int) (fr.FONT_HEIGHT * 1.4);
-        final int bx = this.width / 2;
+        final int centerHeight = field_146295_m - 35 - estimatedButtonsHeight;
+        final int lineHeight = (int)(fr.field_78288_b * 1.4);
+        final int bx = this.field_146294_l / 2;
         int by = 0;
         final boolean movePeople = System.currentTimeMillis() - this.lastPeopleMove > 20L;
         if (movePeople) {
             this.lastPeopleMove = System.currentTimeMillis();
         }
-        final Rectangle2D.Double screenBounds = new Rectangle2D.Double(0.0, 0.0, this.width, this.height);
+        final Rectangle2D.Double screenBounds = new Rectangle2D.Double(0.0, 0.0, this.field_146294_l, this.field_146295_m);
         if (!this.devButtons.isEmpty()) {
             for (final SplashPerson dev : this.devs) {
                 if (dev.getButton().mouseOver(mx, my)) {
@@ -211,7 +206,7 @@ public class AboutDialog extends JmUI {
             this.getClass();
             final int topY;
             by = (topY = 35 + (centerHeight - estimatedInfoHeight) / 2);
-            by += (int) (lineHeight * 1.5);
+            by += (int)(lineHeight * 1.5);
             this.infoButtons.layoutCenteredVertical(bx - this.infoButtons.get(0).getWidth() / 2, by + this.infoButtons.getHeight(0) / 2, true, 0);
             final int listX = this.infoButtons.getLeftX() - 10;
             final int listY = topY - 5;
@@ -221,8 +216,8 @@ public class AboutDialog extends JmUI {
             DrawUtil.drawGradientRect(listX, listY, listWidth, listHeight, 4210752, 1.0f, 0, 1.0f);
             DrawUtil.drawLabel(Constants.getString("jm.common.splash_whatisnew"), bx, topY, DrawUtil.HAlign.Center, DrawUtil.VAlign.Below, 0, 0.0f, 65535, 1.0f, 1.0, true);
         }
-        final int rowHeight = this.buttonOptions.height + 4;
-        by = this.height - rowHeight - 4;
+        final int rowHeight = this.buttonOptions.field_146121_g + 4;
+        by = this.field_146295_m - rowHeight - 4;
         this.bottomButtons.layoutCenteredHorizontal(bx, by, true, 4);
         by -= rowHeight;
         this.linkButtons.layoutCenteredHorizontal(bx, by, true, 4);
@@ -231,18 +226,19 @@ public class AboutDialog extends JmUI {
         DrawUtil.drawImage(this.patreonLogo, this.buttonPatreon.getX(), this.buttonPatreon.getY(), false, 1.0f / this.scaleFactor, 0.0);
         DrawUtil.drawImage(this.discordLogo, this.buttonDiscord.getX(), this.buttonDiscord.getY(), false, 1.0f / this.scaleFactor, 0.0);
     }
-
+    
     protected int drawPerson(int by, final int lineHeight, final SplashPerson person) {
         final float scale = 1.0f;
         final Button button = person.getButton();
-        final int imgSize = (int) (person.getSkin().getWidth() * scale);
+        final int imgSize = (int)(person.getSkin().getWidth() * scale);
         final int imgY = button.getY() - 2;
         final int imgX = button.getCenterX() - imgSize / 2;
-        GlStateManager.enableAlpha();
+        GlStateManager.func_179141_d();
         if (!(person instanceof SplashPerson.Fake)) {
             DrawUtil.drawGradientRect(imgX - 1, imgY - 1, imgSize + 2, imgSize + 2, 0, 0.4f, 0, 0.8f);
             DrawUtil.drawImage(person.getSkin(), 1.0f, imgX, imgY, false, scale, 0.0);
-        } else {
+        }
+        else {
             final float size = Math.min(person.getSkin().getWidth() * scale, 24.0f * scale);
             DrawUtil.drawQuad(person.getSkin(), 16777215, 1.0f, imgX, imgY, size, size, false, 0.0);
         }
@@ -265,12 +261,12 @@ public class AboutDialog extends JmUI {
         by += lineHeight;
         return by;
     }
-
-    protected void actionPerformed(final GuiButton guibutton) {
+    
+    protected void func_146284_a(final GuiButton guibutton) {
     }
-
+    
     @Override
-    protected void keyTyped(final char c, final int i) {
+    protected void func_73869_a(final char c, final int i) {
         switch (i) {
             case 1: {
                 this.closeAndReturn();
@@ -278,17 +274,18 @@ public class AboutDialog extends JmUI {
             }
         }
     }
-
-    class SplashInfoButton extends Button {
+    
+    class SplashInfoButton extends Button
+    {
         final SplashInfo.Line infoLine;
-
+        
         public SplashInfoButton(final SplashInfo.Line infoLine) {
             super(infoLine.label);
             this.infoLine = infoLine;
         }
-
+        
         @Override
-        public boolean mousePressed(final Minecraft minecraft, final int mouseX, final int mouseY) {
+        public boolean func_146116_c(final Minecraft minecraft, final int mouseX, final int mouseY) {
             final boolean pressed = super.mousePressed(minecraft, mouseX, mouseY, false);
             if (pressed) {
                 this.infoLine.invokeAction(AboutDialog.this);

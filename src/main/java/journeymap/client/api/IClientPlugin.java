@@ -1,14 +1,15 @@
 package journeymap.client.api;
 
-import journeymap.client.api.event.ClientEvent;
-
-import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.*;
+import journeymap.client.api.event.*;
+import journeymap.common.api.*;
 
 @ParametersAreNonnullByDefault
-public interface IClientPlugin {
+public interface IClientPlugin extends IJmPlugin<IClientAPI>
+{
     void initialize(final IClientAPI p0);
-
+    
     String getModId();
-
+    
     void onEvent(final ClientEvent p0);
 }

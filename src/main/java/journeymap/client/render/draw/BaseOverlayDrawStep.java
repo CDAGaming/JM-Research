@@ -1,18 +1,17 @@
 package journeymap.client.render.draw;
 
-import com.google.common.base.Strings;
-import journeymap.client.api.display.Context;
-import journeymap.client.api.display.Overlay;
-import journeymap.client.api.model.TextProperties;
-import journeymap.client.api.util.UIState;
-import journeymap.client.render.map.GridRenderer;
+import journeymap.client.api.display.*;
+import java.awt.geom.*;
+import journeymap.client.api.util.*;
+import journeymap.client.render.map.*;
+import journeymap.client.api.model.*;
+import journeymap.common.api.feature.*;
+import java.util.*;
+import com.google.common.base.*;
+import javax.annotation.*;
 
-import javax.annotation.Nullable;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.util.Objects;
-
-public abstract class BaseOverlayDrawStep<T extends Overlay> implements OverlayDrawStep {
+public abstract class BaseOverlayDrawStep<T extends Overlay> implements OverlayDrawStep
+{
     public final T overlay;
     protected Rectangle2D.Double screenBounds;
     protected Point2D.Double titlePosition;
@@ -22,7 +21,7 @@ public abstract class BaseOverlayDrawStep<T extends Overlay> implements OverlayD
     protected boolean enabled;
     protected String[] labelLines;
     protected String[] titleLines;
-
+    
     protected BaseOverlayDrawStep(final T overlay) {
         this.screenBounds = new Rectangle2D.Double();
         this.titlePosition = new Point2D.Double();
@@ -32,9 +31,9 @@ public abstract class BaseOverlayDrawStep<T extends Overlay> implements OverlayD
         this.enabled = true;
         this.overlay = overlay;
     }
-
+    
     protected abstract void updatePositions(final GridRenderer p0, final double p1);
-
+    
     protected void drawText(final DrawStep.Pass pass, final double xOffset, final double yOffset, final GridRenderer gridRenderer, final double fontScale, final double rotation) {
         final TextProperties textProperties = this.overlay.getTextProperties();
         if (textProperties.isActiveIn(gridRenderer.getUIState())) {
@@ -49,7 +48,8 @@ public abstract class BaseOverlayDrawStep<T extends Overlay> implements OverlayD
                         DrawUtil.drawLabels(this.labelLines, x, y, DrawUtil.HAlign.Center, DrawUtil.VAlign.Middle, textProperties.getBackgroundColor(), textProperties.getBackgroundOpacity(), textProperties.getColor(), textProperties.getOpacity(), textProperties.getScale() * fontScale, textProperties.hasFontShadow(), rotation);
                     }
                 }
-            } else if (pass == DrawStep.Pass.Tooltip && this.titlePosition != null) {
+            }
+            else if (pass == DrawStep.Pass.Tooltip && this.titlePosition != null) {
                 if (this.titleLines == null) {
                     this.updateTextFields();
                 }
@@ -61,7 +61,7 @@ public abstract class BaseOverlayDrawStep<T extends Overlay> implements OverlayD
             }
         }
     }
-
+    
     @Override
     public boolean isOnScreen(final double xOffset, final double yOffset, final GridRenderer gridRenderer, final double rotation) {
         if (!this.enabled) {
@@ -74,24 +74,26 @@ public abstract class BaseOverlayDrawStep<T extends Overlay> implements OverlayD
         boolean draggingDone = false;
         if (xOffset != 0.0 || yOffset != 0.0) {
             this.dragging = true;
-        } else {
+        }
+        else {
             draggingDone = this.dragging;
             this.dragging = false;
         }
-        if (draggingDone || uiState.ui == Context.UI.Minimap || this.overlay.getNeedsRerender() || !Objects.equals(uiState, this.lastUiState)) {
+        if (draggingDone || uiState.ui == Feature.Display.Minimap || this.overlay.getNeedsRerender() || !Objects.equals(uiState, this.lastUiState)) {
             this.lastUiState = uiState;
             this.updatePositions(gridRenderer, rotation);
             this.overlay.clearFlagForRerender();
         }
         return this.screenBounds != null && gridRenderer.isOnScreen(this.screenBounds);
     }
-
+    
     protected void updateTextFields() {
         if (this.labelPosition != null) {
             final String labelText = this.overlay.getLabel();
             if (!Strings.isNullOrEmpty(labelText)) {
                 this.labelLines = labelText.split("\n");
-            } else {
+            }
+            else {
                 this.labelLines = null;
             }
         }
@@ -99,37 +101,38 @@ public abstract class BaseOverlayDrawStep<T extends Overlay> implements OverlayD
             final String titleText = this.overlay.getTitle();
             if (!Strings.isNullOrEmpty(titleText)) {
                 this.titleLines = titleText.split("\n");
-            } else {
+            }
+            else {
                 this.titleLines = null;
             }
         }
     }
-
+    
     @Override
     public void setTitlePosition(@Nullable final Point2D.Double titlePosition) {
         this.titlePosition = titlePosition;
     }
-
+    
     @Override
     public int getDisplayOrder() {
         return this.overlay.getDisplayOrder();
     }
-
+    
     @Override
     public String getModId() {
         return this.overlay.getModId();
     }
-
+    
     @Override
     public Rectangle2D.Double getBounds() {
         return this.screenBounds;
     }
-
+    
     @Override
     public Overlay getOverlay() {
         return this.overlay;
     }
-
+    
     @Override
     public void setEnabled(final boolean enabled) {
         this.enabled = enabled;

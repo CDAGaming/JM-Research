@@ -1,49 +1,40 @@
 package journeymap.client.model;
 
+import java.util.concurrent.*;
+import journeymap.common.*;
+import javax.annotation.*;
 import com.google.common.cache.*;
-import journeymap.client.data.DataCache;
-import journeymap.client.io.FileHandler;
-import journeymap.client.io.RegionImageHandler;
-import journeymap.common.Journeymap;
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.fml.client.FMLClientHandler;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
+import net.minecraftforge.fml.client.*;
+import net.minecraft.client.*;
+import net.minecraft.world.chunk.*;
+import journeymap.client.data.*;
+import org.apache.logging.log4j.*;
+import java.util.*;
+import journeymap.client.io.*;
+import java.io.*;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-public enum RegionImageCache {
+public enum RegionImageCache
+{
     INSTANCE;
-
-    static final Logger logger;
-
-    static {
-        logger = Journeymap.getLogger();
-    }
-
+    
     public long firstFileFlushIntervalSecs;
     public long flushFileIntervalSecs;
     public long textureCacheAgeSecs;
+    static final Logger logger;
     private volatile long lastFlush;
-
+    
     private RegionImageCache() {
         this.firstFileFlushIntervalSecs = 5L;
         this.flushFileIntervalSecs = 60L;
         this.textureCacheAgeSecs = 30L;
         this.lastFlush = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(this.firstFileFlushIntervalSecs);
     }
-
+    
     public LoadingCache<RegionImageSet.Key, RegionImageSet> initRegionImageSetsCache(final CacheBuilder<Object, Object> builder) {
-        return builder.expireAfterAccess(this.textureCacheAgeSecs, TimeUnit.SECONDS).removalListener(new RemovalListener<RegionImageSet.Key, RegionImageSet>() {
+        return (LoadingCache<RegionImageSet.Key, RegionImageSet>)builder.expireAfterAccess(this.textureCacheAgeSecs, TimeUnit.SECONDS).removalListener((RemovalListener)new RemovalListener<RegionImageSet.Key, RegionImageSet>() {
             @ParametersAreNonnullByDefault
             public void onRemoval(final RemovalNotification<RegionImageSet.Key, RegionImageSet> notification) {
-                final RegionImageSet regionImageSet = notification.getValue();
+                final RegionImageSet regionImageSet = (RegionImageSet)notification.getValue();
                 if (regionImageSet != null) {
                     final int count = regionImageSet.writeToDisk(false);
                     if (count > 0 && Journeymap.getLogger().isDebugEnabled()) {
@@ -52,36 +43,36 @@ public enum RegionImageCache {
                     regionImageSet.clear();
                 }
             }
-        }).build(new CacheLoader<RegionImageSet.Key, RegionImageSet>() {
+        }).build((CacheLoader)new CacheLoader<RegionImageSet.Key, RegionImageSet>() {
             @ParametersAreNonnullByDefault
             public RegionImageSet load(final RegionImageSet.Key key) throws Exception {
                 return new RegionImageSet(key);
             }
         });
     }
-
-    public RegionImageSet getRegionImageSet(final ChunkMD chunkMd, final MapType mapType) {
+    
+    public RegionImageSet getRegionImageSet(final ChunkMD chunkMd, final MapView mapView) {
         if (chunkMd.hasChunk()) {
             final Minecraft mc = FMLClientHandler.instance().getClient();
             final Chunk chunk = chunkMd.getChunk();
-            final RegionCoord rCoord = RegionCoord.fromChunkPos(FileHandler.getJMWorldDir(mc), mapType, chunk.x, chunk.z);
+            final RegionCoord rCoord = RegionCoord.fromChunkPos(FileHandler.getJMWorldDir(mc), mapView, chunk.field_76635_g, chunk.field_76647_h);
             return this.getRegionImageSet(rCoord);
         }
         return null;
     }
-
+    
     public RegionImageSet getRegionImageSet(final RegionCoord rCoord) {
-        return DataCache.INSTANCE.getRegionImageSets().getUnchecked((RegionImageSet.Key.from(rCoord)));
+        return (RegionImageSet)DataCache.INSTANCE.getRegionImageSets().getUnchecked((Object)RegionImageSet.Key.from(rCoord));
     }
-
+    
     public RegionImageSet getRegionImageSet(final RegionImageSet.Key rCoordKey) {
-        return DataCache.INSTANCE.getRegionImageSets().getUnchecked(rCoordKey);
+        return (RegionImageSet)DataCache.INSTANCE.getRegionImageSets().getUnchecked((Object)rCoordKey);
     }
-
+    
     private Collection<RegionImageSet> getRegionImageSets() {
-        return DataCache.INSTANCE.getRegionImageSets().asMap().values();
+        return (Collection<RegionImageSet>)DataCache.INSTANCE.getRegionImageSets().asMap().values();
     }
-
+    
     public void updateTextures(final boolean forceFlush, final boolean async) {
         for (final RegionImageSet regionImageSet : this.getRegionImageSets()) {
             regionImageSet.finishChunkUpdates();
@@ -92,12 +83,13 @@ public enum RegionImageCache {
             }
             if (async) {
                 this.flushToDiskAsync(false);
-            } else {
+            }
+            else {
                 this.flushToDisk(false);
             }
         }
     }
-
+    
     public void flushToDiskAsync(final boolean force) {
         int count = 0;
         for (final RegionImageSet regionImageSet : this.getRegionImageSets()) {
@@ -105,22 +97,22 @@ public enum RegionImageCache {
         }
         this.lastFlush = System.currentTimeMillis();
     }
-
+    
     public void flushToDisk(final boolean force) {
         for (final RegionImageSet regionImageSet : this.getRegionImageSets()) {
             regionImageSet.writeToDisk(force);
         }
         this.lastFlush = System.currentTimeMillis();
     }
-
+    
     public long getLastFlush() {
         return this.lastFlush;
     }
-
-    public List<RegionCoord> getChangedSince(final MapType mapType, final long time) {
-        final ArrayList<RegionCoord> list = new ArrayList<>();
+    
+    public List<RegionCoord> getChangedSince(final MapView mapView, final long time) {
+        final ArrayList<RegionCoord> list = new ArrayList<RegionCoord>();
         for (final RegionImageSet regionImageSet : this.getRegionImageSets()) {
-            if (regionImageSet.updatedSince(mapType, time)) {
+            if (regionImageSet.updatedSince(mapView, time)) {
                 list.add(regionImageSet.getRegionCoord());
             }
         }
@@ -129,12 +121,12 @@ public enum RegionImageCache {
         }
         return list;
     }
-
-    public boolean isDirtySince(final RegionCoord rc, final MapType mapType, final long time) {
+    
+    public boolean isDirtySince(final RegionCoord rc, final MapView mapView, final long time) {
         final RegionImageSet ris = this.getRegionImageSet(rc);
-        return ris != null && ris.updatedSince(mapType, time);
+        return ris != null && ris.updatedSince(mapView, time);
     }
-
+    
     public void clear() {
         for (final RegionImageSet regionImageSet : this.getRegionImageSets()) {
             regionImageSet.clear();
@@ -142,19 +134,25 @@ public enum RegionImageCache {
         DataCache.INSTANCE.getRegionImageSets().invalidateAll();
         DataCache.INSTANCE.getRegionImageSets().cleanUp();
     }
-
+    
     public boolean deleteMap(final MapState state, final boolean allDims) {
         final RegionCoord fakeRc = new RegionCoord(state.getWorldDir(), 0, 0, state.getDimension());
-        final File imageDir = RegionImageHandler.getImageDir(fakeRc, MapType.day(state.getDimension())).getParentFile();
+        final File imageDir = RegionImageHandler.getImageDir(fakeRc, MapView.day(state.getDimension())).getParentFile();
         if (!imageDir.getName().startsWith("DIM")) {
             RegionImageCache.logger.error("Expected DIM directory, got " + imageDir);
             return false;
         }
         File[] dirs;
         if (allDims) {
-            dirs = imageDir.getParentFile().listFiles((dir, name) -> dir.isDirectory() && name.startsWith("DIM"));
-        } else {
-            dirs = new File[]{imageDir};
+            dirs = imageDir.getParentFile().listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(final File dir, final String name) {
+                    return dir.isDirectory() && name.startsWith("DIM");
+                }
+            });
+        }
+        else {
+            dirs = new File[] { imageDir };
         }
         if (dirs != null && dirs.length > 0) {
             this.clear();
@@ -173,5 +171,9 @@ public enum RegionImageCache {
         }
         RegionImageCache.logger.info("Found no DIM directories in " + imageDir);
         return true;
+    }
+    
+    static {
+        logger = Journeymap.getLogger();
     }
 }

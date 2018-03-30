@@ -1,55 +1,48 @@
 package journeymap.client.ui.component;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiButton;
-
+import net.minecraft.client.gui.*;
+import net.minecraft.client.*;
 import java.util.*;
 
-public class ButtonList extends ArrayList<Button> {
+public class ButtonList extends ArrayList<Button>
+{
     static EnumSet<Layout> VerticalLayouts;
     static EnumSet<Layout> HorizontalLayouts;
-
-    static {
-        ButtonList.VerticalLayouts = EnumSet.of(Layout.Vertical, Layout.CenteredVertical);
-        ButtonList.HorizontalLayouts = EnumSet.of(Layout.Horizontal, Layout.CenteredHorizontal, Layout.DistributedHorizontal, Layout.FilledHorizontal);
-    }
-
     private Layout layout;
     private Direction direction;
     private String label;
-
+    
     public ButtonList() {
         this.layout = Layout.Horizontal;
         this.direction = Direction.LeftToRight;
     }
-
+    
     public ButtonList(final String label) {
         this.layout = Layout.Horizontal;
         this.direction = Direction.LeftToRight;
         this.label = label;
     }
-
+    
     public ButtonList(final List<GuiButton> buttons) {
         this.layout = Layout.Horizontal;
         this.direction = Direction.LeftToRight;
         for (final GuiButton button : buttons) {
             if (button instanceof Button) {
-                this.add((Button) button);
+                this.add((Button)button);
             }
         }
     }
-
+    
     public ButtonList(final Button... buttons) {
         super(Arrays.asList(buttons));
         this.layout = Layout.Horizontal;
         this.direction = Direction.LeftToRight;
     }
-
+    
     public int getWidth(final int hgap) {
         return this.getWidth(-1, hgap);
     }
-
+    
     private int getWidth(final int buttonWidth, final int hgap) {
         if (this.isEmpty()) {
             return 0;
@@ -61,7 +54,8 @@ public class ButtonList extends ArrayList<Button> {
                 if (button.isVisible()) {
                     if (buttonWidth > 0) {
                         total += buttonWidth;
-                    } else {
+                    }
+                    else {
                         total += button.getWidth();
                     }
                     ++visible;
@@ -70,7 +64,8 @@ public class ButtonList extends ArrayList<Button> {
             if (visible > 1) {
                 total += hgap * (visible - 1);
             }
-        } else {
+        }
+        else {
             if (buttonWidth > 0) {
                 total = buttonWidth;
             }
@@ -82,11 +77,11 @@ public class ButtonList extends ArrayList<Button> {
         }
         return total;
     }
-
+    
     public int getHeight() {
         return this.getHeight(0);
     }
-
+    
     public int getHeight(final int vgap) {
         if (this.isEmpty()) {
             return 0;
@@ -103,7 +98,8 @@ public class ButtonList extends ArrayList<Button> {
             if (visible > 1) {
                 total += vgap * (visible - 1);
             }
-        } else {
+        }
+        else {
             for (final Button button2 : this) {
                 if (button2.isVisible()) {
                     total = Math.max(total, button2.getHeight() + vgap);
@@ -112,7 +108,7 @@ public class ButtonList extends ArrayList<Button> {
         }
         return total;
     }
-
+    
     public int getLeftX() {
         int left = Integer.MAX_VALUE;
         for (final Button button : this) {
@@ -125,7 +121,7 @@ public class ButtonList extends ArrayList<Button> {
         }
         return left;
     }
-
+    
     public int getTopY() {
         int top = Integer.MAX_VALUE;
         for (final Button button : this) {
@@ -138,7 +134,7 @@ public class ButtonList extends ArrayList<Button> {
         }
         return top;
     }
-
+    
     public int getBottomY() {
         int bottom = Integer.MIN_VALUE;
         for (final Button button : this) {
@@ -151,7 +147,7 @@ public class ButtonList extends ArrayList<Button> {
         }
         return bottom;
     }
-
+    
     public int getRightX() {
         int right = 0;
         for (final Button button : this) {
@@ -161,38 +157,41 @@ public class ButtonList extends ArrayList<Button> {
         }
         return right;
     }
-
+    
     public Button findButton(final int id) {
         for (final Button button : this) {
-            if (button.id == id) {
+            if (button.field_146127_k == id) {
                 return button;
             }
         }
         return null;
     }
-
+    
     public void setLayout(final Layout layout, final Direction direction) {
         this.layout = layout;
         this.direction = direction;
     }
-
+    
     public ButtonList layoutHorizontal(final int startX, final int y, final boolean leftToRight, final int hgap) {
         this.layout = Layout.Horizontal;
         this.direction = (leftToRight ? Direction.LeftToRight : Direction.RightToLeft);
         Button last = null;
         for (final Button button : this) {
-            if (!button.visible) {
+            if (!button.field_146125_m) {
                 continue;
             }
             if (last == null) {
                 if (leftToRight) {
                     button.rightOf(startX).setY(y);
-                } else {
+                }
+                else {
                     button.leftOf(startX).setY(y);
                 }
-            } else if (leftToRight) {
+            }
+            else if (leftToRight) {
                 button.rightOf(last, hgap).setY(y);
-            } else {
+            }
+            else {
                 button.leftOf(last, hgap).setY(y);
             }
             last = button;
@@ -200,7 +199,7 @@ public class ButtonList extends ArrayList<Button> {
         this.layout = Layout.Horizontal;
         return this;
     }
-
+    
     public ButtonList layoutVertical(final int x, final int startY, final boolean leftToRight, final int vgap) {
         this.layout = Layout.Vertical;
         this.direction = (leftToRight ? Direction.LeftToRight : Direction.RightToLeft);
@@ -209,12 +208,15 @@ public class ButtonList extends ArrayList<Button> {
             if (last == null) {
                 if (leftToRight) {
                     button.rightOf(x).setY(startY);
-                } else {
+                }
+                else {
                     button.leftOf(x).setY(startY);
                 }
-            } else if (leftToRight) {
+            }
+            else if (leftToRight) {
                 button.rightOf(x).below(last, vgap);
-            } else {
+            }
+            else {
                 button.leftOf(x).below(last, vgap);
             }
             last = button;
@@ -222,21 +224,21 @@ public class ButtonList extends ArrayList<Button> {
         this.layout = Layout.Vertical;
         return this;
     }
-
+    
     public ButtonList layoutCenteredVertical(final int x, final int centerY, final boolean leftToRight, final int vgap) {
         this.layout = Layout.CenteredVertical;
         final int height = this.getHeight(vgap);
         this.layoutVertical(x, centerY - height / 2, leftToRight, vgap);
         return this;
     }
-
+    
     public ButtonList layoutCenteredHorizontal(final int centerX, final int y, final boolean leftToRight, final int hgap) {
         this.layout = Layout.CenteredHorizontal;
         final int width = this.getWidth(hgap);
         this.layoutHorizontal(centerX - width / 2, y, leftToRight, hgap);
         return this;
     }
-
+    
     public ButtonList layoutDistributedHorizontal(final int leftX, final int y, final int rightX, final boolean leftToRight) {
         this.layout = Layout.DistributedHorizontal;
         if (this.size() == 0) {
@@ -248,13 +250,14 @@ public class ButtonList extends ArrayList<Button> {
         final int hgap = (gaps == 0) ? 0 : ((filler >= gaps) ? (filler / gaps) : 0);
         if (leftToRight) {
             this.layoutHorizontal(leftX, y, true, hgap);
-        } else {
+        }
+        else {
             this.layoutHorizontal(rightX, y, false, hgap);
         }
         this.layout = Layout.DistributedHorizontal;
         return this;
     }
-
+    
     public ButtonList layoutFilledHorizontal(final FontRenderer fr, final int leftX, final int y, final int rightX, final int hgap, final boolean leftToRight) {
         this.layout = Layout.FilledHorizontal;
         if (this.size() == 0) {
@@ -269,28 +272,29 @@ public class ButtonList extends ArrayList<Button> {
             final int wider = area / this.size();
             this.setWidths(wider);
             this.layoutDistributedHorizontal(leftX, y, rightX, leftToRight);
-        } else {
+        }
+        else {
             this.layoutCenteredHorizontal((rightX - leftX) / 2, y, leftToRight, hgap);
         }
         this.layout = Layout.FilledHorizontal;
         return this;
     }
-
+    
     public void setFitWidths(final FontRenderer fr) {
         this.fitWidths(fr);
     }
-
+    
     public boolean isHorizontal() {
         return this.layout != Layout.Vertical && this.layout != Layout.CenteredVertical;
     }
-
+    
     public ButtonList setEnabled(final boolean enabled) {
         for (final Button button : this) {
             button.setEnabled(enabled);
         }
         return this;
     }
-
+    
     public ButtonList setOptions(final boolean enabled, final boolean drawBackground, final boolean drawFrame) {
         for (final Button button : this) {
             button.setEnabled(enabled);
@@ -299,45 +303,45 @@ public class ButtonList extends ArrayList<Button> {
         }
         return this;
     }
-
+    
     public ButtonList setDefaultStyle(final boolean defaultStyle) {
         for (final Button button : this) {
             button.setDefaultStyle(defaultStyle);
         }
         return this;
     }
-
+    
     public ButtonList draw(final Minecraft minecraft, final int mouseX, final int mouseY) {
         for (final Button button : this) {
-            button.drawButton(minecraft, mouseX, mouseY, 0.0f);
+            button.func_191745_a(minecraft, mouseX, mouseY, 0.0f);
         }
         return this;
     }
-
+    
     public void setHeights(final int height) {
         for (final Button button : this) {
             button.setHeight(height);
         }
     }
-
+    
     public void setWidths(final int width) {
         for (final Button button : this) {
-            button.setWidth(width);
+            button.func_175211_a(width);
         }
     }
-
+    
     public void fitWidths(final FontRenderer fr) {
         for (final Button button : this) {
             button.fitWidth(fr);
         }
     }
-
+    
     public void setDrawButtons(final boolean draw) {
         for (final Button button : this) {
             button.setDrawButton(draw);
         }
     }
-
+    
     public void equalizeWidths(final FontRenderer fr) {
         int maxWidth = 0;
         for (final Button button : this) {
@@ -348,7 +352,7 @@ public class ButtonList extends ArrayList<Button> {
         }
         this.setWidths(maxWidth);
     }
-
+    
     public void equalizeWidths(final FontRenderer fr, final int hgap, final int maxTotalWidth) {
         int maxWidth = 0;
         for (final Button button : this) {
@@ -358,53 +362,61 @@ public class ButtonList extends ArrayList<Button> {
         int totalWidth = this.getWidth(maxWidth, hgap);
         if (totalWidth <= maxTotalWidth) {
             this.setWidths(maxWidth);
-        } else {
+        }
+        else {
             totalWidth = this.getWidth(hgap);
         }
         if (totalWidth < maxTotalWidth) {
             final int pad = (maxTotalWidth - totalWidth) / this.size();
             if (pad > 0) {
                 for (final Button button2 : this) {
-                    button2.setWidth(button2.getWidth() + pad);
+                    button2.func_175211_a(button2.getWidth() + pad);
                 }
             }
         }
     }
-
+    
     public int getVisibleButtonCount() {
         int count = 0;
         for (final Button button : this) {
-            if (button.visible) {
+            if (button.field_146125_m) {
                 ++count;
             }
         }
         return count;
     }
-
+    
     public String getLabel() {
         return this.label;
     }
-
+    
     public void setLabel(final String label) {
         this.label = label;
     }
-
+    
     public ButtonList reverse() {
         Collections.reverse(this);
         return this;
     }
-
-    public enum Layout {
-        Horizontal,
-        Vertical,
-        CenteredHorizontal,
-        CenteredVertical,
-        DistributedHorizontal,
-        FilledHorizontal
+    
+    static {
+        ButtonList.VerticalLayouts = EnumSet.of(Layout.Vertical, Layout.CenteredVertical);
+        ButtonList.HorizontalLayouts = EnumSet.of(Layout.Horizontal, Layout.CenteredHorizontal, Layout.DistributedHorizontal, Layout.FilledHorizontal);
     }
-
-    public enum Direction {
-        LeftToRight,
-        RightToLeft
+    
+    public enum Layout
+    {
+        Horizontal, 
+        Vertical, 
+        CenteredHorizontal, 
+        CenteredVertical, 
+        DistributedHorizontal, 
+        FilledHorizontal;
+    }
+    
+    public enum Direction
+    {
+        LeftToRight, 
+        RightToLeft;
     }
 }

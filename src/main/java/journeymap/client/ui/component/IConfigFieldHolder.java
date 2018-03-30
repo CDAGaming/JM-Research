@@ -1,7 +1,8 @@
 package journeymap.client.ui.component;
 
-import journeymap.common.properties.config.ConfigField;
+import journeymap.common.properties.config.*;
 
-public interface IConfigFieldHolder<T extends ConfigField> {
+public interface IConfigFieldHolder<T extends ConfigField>
+{
     T getConfigField();
 }

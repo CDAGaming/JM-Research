@@ -1,10 +1,11 @@
 package journeymap.client.task.main;
 
-import journeymap.client.JourneymapClient;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.*;
+import journeymap.client.*;
 
-public interface IMainThreadTask {
+public interface IMainThreadTask
+{
     IMainThreadTask perform(final Minecraft p0, final JourneymapClient p1);
-
+    
     String getName();
 }

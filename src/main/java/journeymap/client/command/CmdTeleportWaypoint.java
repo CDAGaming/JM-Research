@@ -1,65 +1,68 @@
 package journeymap.client.command;
 
-import com.mojang.authlib.GameProfile;
-import journeymap.client.model.Waypoint;
-import journeymap.common.Journeymap;
-import journeymap.common.log.LogFormatter;
-import net.minecraft.client.Minecraft;
-import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.server.management.PlayerList;
-import net.minecraftforge.fml.client.FMLClientHandler;
+import journeymap.client.api.display.*;
+import journeymap.common.*;
+import journeymap.client.feature.*;
+import journeymap.common.api.feature.*;
+import net.minecraftforge.fml.client.*;
+import net.minecraft.client.entity.*;
+import journeymap.client.*;
+import journeymap.client.log.*;
+import journeymap.common.log.*;
+import net.minecraft.util.math.*;
 
-import java.util.TreeSet;
-
-public class CmdTeleportWaypoint {
-    final Minecraft mc;
-    final Waypoint waypoint;
-
-    public CmdTeleportWaypoint(final Waypoint waypoint) {
-        this.mc = FMLClientHandler.instance().getClient();
+public class CmdTeleportWaypoint implements Runnable
+{
+    private final Waypoint waypoint;
+    private final int targetDimension;
+    
+    public CmdTeleportWaypoint(final Waypoint waypoint, final int targetDimension) {
         this.waypoint = waypoint;
+        this.targetDimension = targetDimension;
     }
-
-    public static boolean isPermitted(final Minecraft mc) {
-        if (mc.getIntegratedServer() != null) {
-            final IntegratedServer mcServer = mc.getIntegratedServer();
-            PlayerList configurationManager = null;
-            GameProfile profile = null;
-            try {
-                profile = new GameProfile(mc.player.getUniqueID(), mc.player.getName());
-                configurationManager = mcServer.getPlayerList();
-                return configurationManager.canSendCommands(profile);
-            } catch (Exception e) {
-                e.printStackTrace();
-                try {
-                    if (profile != null && configurationManager != null) {
-                        return mcServer.isSinglePlayer() && mcServer.worlds[0].getWorldInfo().areCommandsAllowed() && mcServer.getServerOwner().equalsIgnoreCase(profile.getName());
-                    }
-                    Journeymap.getLogger().warn("Failed to check teleport permission both ways: " + LogFormatter.toString(e) + ", and profile or configManager were null.");
-                    return true;
-                } catch (Exception e2) {
-                    Journeymap.getLogger().warn("Failed to check teleport permission. Both ways failed: " + LogFormatter.toString(e) + ", and " + LogFormatter.toString(e2));
-                }
+    
+    public static boolean isPermitted() {
+        final EntityPlayerSP player = Journeymap.clientPlayer();
+        if (player != null && Journeymap.getClient().isServerEnabled()) {
+            return ClientFeatures.instance().isAllowed(Feature.Action.Teleport, player.field_71093_bK);
+        }
+        return ClientCommandInvoker.commandsAllowed(FMLClientHandler.instance().getClient());
+    }
+    
+    public static boolean isPermitted(final int fromDim, final int toDim) {
+        if (Journeymap.getClient().isServerEnabled()) {
+            final ClientFeatures features = ClientFeatures.instance();
+            boolean allowed = features.isAllowed(Feature.Action.Teleport, fromDim);
+            if (allowed && fromDim != toDim) {
+                allowed = features.isAllowed(Feature.Action.Teleport, toDim);
+            }
+            return allowed;
+        }
+        return fromDim == toDim && ClientCommandInvoker.commandsAllowed(FMLClientHandler.instance().getClient());
+    }
+    
+    @Override
+    public void run() {
+        try {
+            final EntityPlayerSP player = Journeymap.clientPlayer();
+            if (player == null) {
+                return;
+            }
+            final int dim = this.targetDimension;
+            if (Journeymap.getClient().isServerEnabled()) {
+                final Vec3d pos = this.waypoint.getCenteredVec(dim);
+                player.func_71165_d(String.format("/jtp %s %s %s %s", pos.field_72450_a, pos.field_72448_b, pos.field_72449_c, dim));
+            }
+            else if (player.field_71093_bK == dim) {
+                final BlockPos pos2 = this.waypoint.getPosition(dim);
+                player.func_71165_d(String.format("/tp %s %s %s %s", player.func_70005_c_(), pos2.func_177958_n(), pos2.func_177956_o(), pos2.func_177952_p()));
+            }
+            else {
+                ChatLog.announceError(Constants.getString("jm.waypoint.teleport.dim_error"));
             }
         }
-        return true;
-    }
-
-    public void run() {
-        double x = this.waypoint.getBlockCenteredX();
-        double z = this.waypoint.getBlockCenteredZ();
-        final TreeSet<Integer> dim = (TreeSet<Integer>) this.waypoint.getDimensions();
-        if (dim.first() == -1 && this.mc.player.dimension != -1) {
-            x /= 8.0;
-            z /= 8.0;
-        } else if (dim.first() != -1 && this.mc.player.dimension == -1) {
-            x *= 8.0;
-            z *= 8.0;
-        }
-        if (Journeymap.getClient().isServerEnabled() || FMLClientHandler.instance().getClient().isSingleplayer()) {
-            this.mc.player.sendChatMessage(String.format("/jtp %s %s %s %s", x, this.waypoint.getY(), z, dim.first()));
-        } else {
-            this.mc.player.sendChatMessage(String.format("/tp %s %s %s %s", this.mc.player.getName(), this.waypoint.getX(), this.waypoint.getY(), this.waypoint.getZ()));
+        catch (Exception e) {
+            Journeymap.getLogger().error("Error teleporting: " + LogFormatter.toPartialString(e));
         }
     }
 }

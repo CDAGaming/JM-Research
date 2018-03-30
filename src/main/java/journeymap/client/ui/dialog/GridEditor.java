@@ -1,33 +1,27 @@
 package journeymap.client.ui.dialog;
 
-import journeymap.client.Constants;
-import journeymap.client.io.ThemeLoader;
-import journeymap.client.model.GridSpec;
-import journeymap.client.model.GridSpecs;
-import journeymap.client.model.MapType;
-import journeymap.client.render.draw.DrawUtil;
-import journeymap.client.render.texture.TextureCache;
-import journeymap.client.render.texture.TextureImpl;
-import journeymap.client.ui.UIManager;
-import journeymap.client.ui.component.Button;
+import journeymap.client.model.*;
+import java.awt.geom.*;
 import journeymap.client.ui.component.*;
-import journeymap.client.ui.theme.Theme;
-import journeymap.client.ui.theme.ThemeToggle;
-import journeymap.common.Journeymap;
-import journeymap.common.log.LogFormatter;
-import journeymap.common.properties.Category;
-import journeymap.common.properties.config.EnumField;
-import journeymap.common.properties.config.IntegerField;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.util.ResourceLocation;
-import org.lwjgl.input.Keyboard;
-
+import net.minecraft.util.*;
+import journeymap.client.*;
+import journeymap.client.render.texture.*;
+import journeymap.common.*;
+import org.lwjgl.input.*;
+import journeymap.common.properties.*;
+import java.util.*;
+import journeymap.common.properties.config.*;
+import journeymap.client.io.*;
+import journeymap.common.log.*;
+import journeymap.client.ui.*;
+import journeymap.client.ui.theme.*;
+import net.minecraft.client.gui.*;
+import java.awt.image.*;
+import journeymap.client.render.draw.*;
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.util.EnumSet;
 
-public class GridEditor extends JmUI {
+public class GridEditor extends JmUI
+{
     private final TextureImpl colorPickTexture;
     private final int tileSize = 128;
     private final int sampleTextureSize = 128;
@@ -41,7 +35,7 @@ public class GridEditor extends JmUI {
     private ThemeToggle buttonNight;
     private ThemeToggle buttonUnderground;
     private Integer activeColor;
-    private MapType activeMapType;
+    private MapView activeMapType;
     private Button buttonReset;
     private Button buttonCancel;
     private Button buttonClose;
@@ -52,7 +46,7 @@ public class GridEditor extends JmUI {
     private ButtonList leftChecks;
     private ButtonList bottomButtons;
     private ResourceLocation colorPicResource;
-
+    
     public GridEditor(final JmUI returnDisplay) {
         super(Constants.getString("jm.common.grid_editor"), returnDisplay);
         this.colorPicResource = ((Constants.birthdayMessage() == null) ? TextureCache.ColorPicker : TextureCache.ColorPicker2);
@@ -60,52 +54,53 @@ public class GridEditor extends JmUI {
         this.colorPickTexture = TextureCache.getTexture(this.colorPicResource);
         this.colorPickRect = new Rectangle2D.Double(0.0, 0.0, this.colorPickTexture.getWidth(), this.colorPickTexture.getHeight());
         this.gridSpecs = Journeymap.getClient().getCoreProperties().gridSpecs.clone();
-        this.activeMapType = MapType.day(0);
+        this.activeMapType = MapView.day(0);
         this.activeColor = this.gridSpecs.getSpec(this.activeMapType).getColor();
         Keyboard.enableRepeatEvents(true);
     }
-
+    
     @Override
-    public void initGui() {
+    public void func_73866_w_() {
         try {
-            if (this.buttonList.isEmpty()) {
+            if (this.field_146292_n.isEmpty()) {
                 final GridSpec spec = this.gridSpecs.getSpec(this.activeMapType);
-                this.buttonStyle = new ListPropertyButton<>(EnumSet.allOf(GridSpec.Style.class), Constants.getString("jm.common.grid_style"), new EnumField<>(Category.Hidden, "", spec.style));
-                this.buttonOpacity = new IntSliderButton(new IntegerField(Category.Hidden, "", 0, 100, (int) Math.ceil(spec.alpha * 100.0f)), Constants.getString("jm.common.grid_opacity") + " : ", "", 0, 100, true);
-                (this.topButtons = new ButtonList(this.buttonStyle, this.buttonOpacity)).equalizeWidths(this.getFontRenderer());
-                this.checkDay = new CheckBox("", this.activeMapType == MapType.day(0));
-                this.checkNight = new CheckBox("", this.activeMapType == MapType.night(0));
+                this.buttonStyle = new ListPropertyButton<GridSpec.Style>(EnumSet.allOf(GridSpec.Style.class), Constants.getString("jm.common.grid_style"), new EnumField<GridSpec.Style>(Category.Hidden, "", spec.style));
+                this.buttonOpacity = new IntSliderButton(new IntegerField(Category.Hidden, "", 0, 100, (int)Math.ceil(spec.alpha * 100.0f)), Constants.getString("jm.common.grid_opacity") + " : ", "", 0, 100, true);
+                (this.topButtons = new ButtonList(new Button[] { this.buttonStyle, this.buttonOpacity })).equalizeWidths(this.getFontRenderer());
+                this.checkDay = new CheckBox("", this.activeMapType == MapView.day(0));
+                this.checkNight = new CheckBox("", this.activeMapType == MapView.night(0));
                 this.checkUnderground = new CheckBox("", this.activeMapType.isUnderground());
-                this.leftChecks = new ButtonList(this.checkDay, this.checkNight, this.checkUnderground);
+                this.leftChecks = new ButtonList(new Button[] { this.checkDay, this.checkNight, this.checkUnderground });
                 final Theme theme = ThemeLoader.getCurrentTheme();
-                (this.buttonDay = new ThemeToggle(theme, "jm.fullscreen.map_day", "day")).setToggled(this.activeMapType == MapType.day(0), false);
-                (this.buttonNight = new ThemeToggle(theme, "jm.fullscreen.map_night", "night")).setToggled(this.activeMapType == MapType.night(0), false);
+                (this.buttonDay = new ThemeToggle(theme, "jm.fullscreen.map_day", "day")).setToggled(this.activeMapType == MapView.day(0), false);
+                (this.buttonNight = new ThemeToggle(theme, "jm.fullscreen.map_night", "night")).setToggled(this.activeMapType == MapView.night(0), false);
                 (this.buttonUnderground = new ThemeToggle(theme, "jm.fullscreen.map_caves", "caves")).setToggled(this.activeMapType.isUnderground(), false);
-                this.leftButtons = new ButtonList(this.buttonDay, this.buttonNight, this.buttonUnderground);
+                this.leftButtons = new ButtonList(new Button[] { this.buttonDay, this.buttonNight, this.buttonUnderground });
                 this.buttonReset = new Button(Constants.getString("jm.waypoint.reset"));
                 this.buttonCancel = new Button(Constants.getString("jm.waypoint.cancel"));
                 this.buttonClose = new Button(Constants.getString("jm.waypoint.save"));
-                (this.bottomButtons = new ButtonList(this.buttonReset, this.buttonCancel, this.buttonClose)).equalizeWidths(this.getFontRenderer());
-                this.buttonList.addAll(this.topButtons);
-                this.buttonList.addAll(this.leftChecks);
-                this.buttonList.addAll(this.leftButtons);
-                this.buttonList.addAll(this.bottomButtons);
+                (this.bottomButtons = new ButtonList(new Button[] { this.buttonReset, this.buttonCancel, this.buttonClose })).equalizeWidths(this.getFontRenderer());
+                this.field_146292_n.addAll(this.topButtons);
+                this.field_146292_n.addAll(this.leftChecks);
+                this.field_146292_n.addAll(this.leftButtons);
+                this.field_146292_n.addAll(this.bottomButtons);
                 this.updatePreview(this.activeMapType);
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             Journeymap.getLogger().error(LogFormatter.toString(t));
             UIManager.INSTANCE.closeAll();
         }
     }
-
+    
     @Override
     protected void layoutButtons() {
         try {
-            this.initGui();
+            this.func_73866_w_();
             final int hgap = 6;
             final int vgap = 6;
-            final int startY = Math.max(40, (this.height - 230) / 2);
-            final int centerX = this.width / 2;
+            final int startY = Math.max(40, (this.field_146295_m - 230) / 2);
+            final int centerX = this.field_146294_l / 2;
             final int cpSize = this.topButtons.getHeight(6);
             final int topRowWidth = 6 + cpSize + this.topButtons.get(0).getWidth();
             final int topRowLeft = centerX - topRowWidth / 2;
@@ -118,32 +113,35 @@ public class GridEditor extends JmUI {
             this.leftChecks.setHeights(this.leftButtons.get(0).getHeight());
             this.leftChecks.setWidths(15);
             this.leftChecks.layoutVertical(this.leftButtons.getLeftX() - this.checkDay.getWidth(), this.leftButtons.getTopY(), true, 6);
-            final int bottomY = Math.min(tileY + 128 + 12, this.height - 10 - this.buttonClose.getHeight());
+            final int bottomY = Math.min(tileY + 128 + 12, this.field_146295_m - 10 - this.buttonClose.getHeight());
             this.bottomButtons.equalizeWidths(this.getFontRenderer(), 6, this.topButtons.get(0).getRightX() - topRowLeft);
             this.bottomButtons.layoutCenteredHorizontal(centerX, bottomY, true, 6);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             this.logger.error("Error in GridEditor.layoutButtons: " + LogFormatter.toString(t));
         }
     }
-
+    
     @Override
-    public void drawScreen(final int x, final int y, final float par3) {
+    public void func_73863_a(final int mouseX, final int mouseY, final float par3) {
         try {
-            this.drawBackground(0);
+            this.func_146278_c(0);
             this.layoutButtons();
-            for (final GuiButton guibutton : this.buttonList) {
-                guibutton.drawButton(this.mc, x, y, 0.0f);
+            for (int k = 0; k < this.field_146292_n.size(); ++k) {
+                final GuiButton guibutton = this.field_146292_n.get(k);
+                guibutton.func_191745_a(this.field_146297_k, mouseX, mouseY, par3);
             }
             this.drawTitle();
             this.drawLogo();
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             this.logger.error("Error in GridEditor.drawScreen: " + LogFormatter.toString(t));
         }
     }
-
+    
     protected void drawColorPicker(final int x, final int y, final float size) {
-        final int sizeI = (int) size;
-        drawRect(x - 1, y - 1, x + sizeI + 1, y + sizeI + 1, -6250336);
+        final int sizeI = (int)size;
+        func_73734_a(x - 1, y - 1, x + sizeI + 1, y + sizeI + 1, -6250336);
         if (this.colorPickRect.width != size) {
             final Image image = this.colorPickTexture.getImage().getScaledInstance(sizeI, sizeI, 2);
             this.colorPickImg = new BufferedImage(sizeI, sizeI, 1);
@@ -165,10 +163,10 @@ public class GridEditor extends JmUI {
             DrawUtil.drawRectangle(colorX, colorY - 1, 1.0, 3.0, this.activeColor, 1.0f);
         }
     }
-
+    
     protected void drawMapTile(final int x, final int y) {
         final float scale = 1.0f;
-        drawRect(x - 1, y - 1, x + 128 + 1, y + 128 + 1, -6250336);
+        func_73734_a(x - 1, y - 1, x + 128 + 1, y + 128 + 1, -6250336);
         final TextureImpl tileTex = this.getTileSample(this.activeMapType);
         DrawUtil.drawImage(tileTex, x, y, false, 1.0f, 0.0);
         if (scale == 2.0f) {
@@ -181,13 +179,13 @@ public class GridEditor extends JmUI {
         DrawUtil.drawBoundTexture(0.0, 0.0, x, y, 0.0, 0.25, 0.25, x + 128, y + 128);
         gridSpec.finishTexture();
     }
-
+    
     protected void drawLabel(final String label, final int x, final int y) {
-        this.drawString(this.getFontRenderer(), label, x, y, Color.cyan.getRGB());
+        this.func_73731_b(this.getFontRenderer(), label, x, y, Color.cyan.getRGB());
     }
-
+    
     @Override
-    protected void keyTyped(final char par1, final int par2) {
+    protected void func_73869_a(final char par1, final int par2) {
         try {
             switch (par2) {
                 case 1: {
@@ -197,53 +195,59 @@ public class GridEditor extends JmUI {
                     this.saveAndClose();
                 }
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             this.logger.error("Error in GridEditor.keyTyped: " + LogFormatter.toString(t));
         }
     }
-
-    protected void mouseClickMove(final int par1, final int par2, final int par3, final long par4) {
+    
+    protected void func_146273_a(final int par1, final int par2, final int par3, final long par4) {
         try {
             if (this.buttonOpacity.dragging) {
                 this.updateGridSpecs();
-            } else {
+            }
+            else {
                 this.checkColorPicker(par1, par2);
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             this.logger.error("Error in GridEditor.mouseClickMove: " + LogFormatter.toString(t));
         }
     }
-
-    protected void mouseClicked(final int mouseX, final int mouseY, final int mouseButton) {
+    
+    protected void func_73864_a(final int mouseX, final int mouseY, final int mouseButton) {
         try {
-            super.mouseClicked(mouseX, mouseY, mouseButton);
+            super.func_73864_a(mouseX, mouseY, mouseButton);
             if (mouseButton == 0) {
                 this.checkColorPicker(mouseX, mouseY);
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             this.logger.error("Error in GridEditor.mouseClicked: " + LogFormatter.toString(t));
         }
     }
-
+    
     protected void checkColorPicker(final int mouseX, final int mouseY) {
         if (this.colorPickRect.contains(mouseX, mouseY)) {
-            final int x = mouseX - (int) this.colorPickRect.x;
-            final int y = mouseY - (int) this.colorPickRect.y;
+            final int x = mouseX - (int)this.colorPickRect.x;
+            final int y = mouseY - (int)this.colorPickRect.y;
             this.activeColor = this.colorPickImg.getRGB(x, y);
             final GridSpec activeSpec = this.gridSpecs.getSpec(this.activeMapType);
             activeSpec.setColorCoords(x, y);
             this.updateGridSpecs();
         }
     }
-
-    protected void actionPerformed(final GuiButton guibutton) {
+    
+    protected void func_146284_a(final GuiButton guibutton) {
         try {
             if (guibutton == this.buttonDay) {
-                this.updatePreview(MapType.day(0));
-            } else if (guibutton == this.buttonNight) {
-                this.updatePreview(MapType.night(0));
-            } else if (guibutton == this.buttonUnderground) {
-                this.updatePreview(MapType.underground(0, 0));
+                this.updatePreview(MapView.day(0));
+            }
+            else if (guibutton == this.buttonNight) {
+                this.updatePreview(MapView.night(0));
+            }
+            else if (guibutton == this.buttonUnderground) {
+                this.updatePreview(MapView.underground(0, 0));
             }
             this.updateGridSpecs();
             if (guibutton == this.buttonReset) {
@@ -258,76 +262,78 @@ public class GridEditor extends JmUI {
             if (guibutton == this.buttonClose) {
                 this.saveAndClose();
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             this.logger.error("Error in GridEditor.actionPerformed: " + LogFormatter.toString(t));
         }
     }
-
-    protected void updatePreview(final MapType mapType) {
-        this.activeMapType = mapType;
+    
+    protected void updatePreview(final MapView mapView) {
+        this.activeMapType = mapView;
         final GridSpec activeSpec = this.gridSpecs.getSpec(this.activeMapType);
         this.activeColor = activeSpec.getColor();
-        this.buttonOpacity.setValue((int) (activeSpec.alpha * 100.0f));
+        this.buttonOpacity.setValue((int)(activeSpec.alpha * 100.0f));
         this.buttonStyle.setValue(activeSpec.style);
-        this.checkDay.setToggled(mapType.isDay());
-        this.checkNight.setToggled(mapType.isNight());
-        this.checkUnderground.setToggled(mapType.isUnderground());
-        this.buttonDay.setToggled(mapType.isDay());
-        this.buttonNight.setToggled(mapType.isNight());
-        this.buttonUnderground.setToggled(mapType.isUnderground());
+        this.checkDay.setToggled(mapView.isDay());
+        this.checkNight.setToggled(mapView.isNight());
+        this.checkUnderground.setToggled(mapView.isUnderground());
+        this.buttonDay.setToggled(mapView.isDay());
+        this.buttonNight.setToggled(mapView.isNight());
+        this.buttonUnderground.setToggled(mapView.isUnderground());
     }
-
+    
     protected void updateGridSpecs() {
         final GridSpec activeSpec = this.gridSpecs.getSpec(this.activeMapType);
         final int colorX = activeSpec.getColorX();
         final int colorY = activeSpec.getColorY();
         final GridSpec newSpec = new GridSpec(this.buttonStyle.getField().get(), new Color(this.activeColor), this.buttonOpacity.getValue() / 100.0f).setColorCoords(colorX, colorY);
         if (this.checkDay.getToggled()) {
-            this.gridSpecs.setSpec(MapType.day(0), newSpec);
+            this.gridSpecs.setSpec(MapView.day(0), newSpec);
         }
         if (this.checkNight.getToggled()) {
-            this.gridSpecs.setSpec(MapType.night(0), newSpec);
+            this.gridSpecs.setSpec(MapView.night(0), newSpec);
         }
         if (this.checkUnderground.getToggled()) {
-            this.gridSpecs.setSpec(MapType.underground(0, 0), newSpec);
+            this.gridSpecs.setSpec(MapView.underground(0, 0), newSpec);
         }
     }
-
+    
     protected void saveAndClose() {
         this.updateGridSpecs();
         Journeymap.getClient().getCoreProperties().gridSpecs.updateFrom(this.gridSpecs);
         Journeymap.getClient().getCoreProperties().save();
         this.closeAndReturn();
     }
-
+    
     protected void resetGridSpecs() {
         if (this.checkDay.getToggled()) {
-            this.gridSpecs.setSpec(MapType.day(0), GridSpecs.DEFAULT_DAY.clone());
+            this.gridSpecs.setSpec(MapView.day(0), GridSpecs.DEFAULT_DAY.clone());
         }
         if (this.checkNight.getToggled()) {
-            this.gridSpecs.setSpec(MapType.night(0), GridSpecs.DEFAULT_NIGHT.clone());
+            this.gridSpecs.setSpec(MapView.night(0), GridSpecs.DEFAULT_NIGHT.clone());
         }
         if (this.checkUnderground.getToggled()) {
-            this.gridSpecs.setSpec(MapType.underground(0, 0), GridSpecs.DEFAULT_UNDERGROUND.clone());
+            this.gridSpecs.setSpec(MapView.underground(0, 0), GridSpecs.DEFAULT_UNDERGROUND.clone());
         }
-        this.buttonList.clear();
-        this.initGui();
+        this.field_146292_n.clear();
+        this.func_73866_w_();
     }
-
+    
     @Override
     protected void closeAndReturn() {
         if (this.returnDisplay == null) {
             UIManager.INSTANCE.closeAll();
-        } else {
+        }
+        else {
             UIManager.INSTANCE.open(this.returnDisplay);
         }
     }
-
-    public TextureImpl getTileSample(final MapType mapType) {
-        if (mapType.isNight()) {
+    
+    public TextureImpl getTileSample(final MapView mapView) {
+        if (mapView.isNight()) {
             return TextureCache.getTexture(TextureCache.TileSampleNight);
         }
-        if (mapType.isUnderground()) {
+        if (mapView.isUnderground()) {
             return TextureCache.getTexture(TextureCache.TileSampleUnderground);
         }
         return TextureCache.getTexture(TextureCache.TileSampleDay);

@@ -1,17 +1,17 @@
 package journeymap.client.log;
 
-import com.google.common.util.concurrent.AtomicDouble;
-import journeymap.common.Journeymap;
-import journeymap.common.log.LogFormatter;
-import net.minecraft.util.text.TextFormatting;
-import org.apache.logging.log4j.Logger;
-
-import java.text.DecimalFormat;
+import org.apache.logging.log4j.*;
+import java.util.concurrent.atomic.*;
+import com.google.common.util.concurrent.*;
+import journeymap.common.log.*;
+import java.text.*;
+import java.util.concurrent.*;
+import net.minecraft.util.text.*;
+import journeymap.common.*;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
-public class StatTimer {
+public class StatTimer
+{
     public static final double NS = 1000000.0;
     private static final int WARMUP_COUNT_DEFAULT = 10;
     private static final int MAX_COUNT = 1000000;
@@ -19,12 +19,6 @@ public class StatTimer {
     private static final int ELAPSED_LIMIT_DEFAULT = 1000;
     private static final Logger logger;
     private static Map<String, StatTimer> timers;
-
-    static {
-        logger = Journeymap.getLogger();
-        StatTimer.timers = Collections.synchronizedMap(new HashMap<>());
-    }
-
     private final int warmupCount;
     private final int elapsedLimit;
     private final AtomicLong counter;
@@ -41,7 +35,7 @@ public class StatTimer {
     private Long started;
     private double max;
     private double min;
-
+    
     private StatTimer(final String name, final int warmupCount, final int elapsedLimit, final boolean disposable) {
         this.counter = new AtomicLong();
         this.cancelCounter = new AtomicLong();
@@ -59,11 +53,11 @@ public class StatTimer {
         this.doWarmup = (warmupCount > 0);
         this.warmup = (warmupCount > 0);
     }
-
+    
     public static synchronized StatTimer get(final String name) {
         return get(name, 10);
     }
-
+    
     public static synchronized StatTimer get(final String name, final int warmupCount) {
         if (name == null) {
             throw new IllegalArgumentException("StatTimer name required");
@@ -75,7 +69,7 @@ public class StatTimer {
         }
         return timer;
     }
-
+    
     public static synchronized StatTimer get(final String name, final int warmupCount, final int elapsedLimit) {
         if (name == null) {
             throw new IllegalArgumentException("StatTimer name required");
@@ -87,25 +81,30 @@ public class StatTimer {
         }
         return timer;
     }
-
+    
     public static StatTimer getDisposable(final String name) {
         return new StatTimer(name, 0, 1000, true);
     }
-
+    
     public static StatTimer getDisposable(final String name, final int elapsedLimit) {
         return new StatTimer(name, 0, elapsedLimit, true);
     }
-
+    
     public static synchronized void resetAll() {
         for (final StatTimer timer : StatTimer.timers.values()) {
             timer.reset();
         }
     }
-
+    
     public static synchronized String getReport() {
-        final List<StatTimer> list = new ArrayList<>(StatTimer.timers.values());
-        list.sort(Comparator.comparing(o -> o.name));
-        final StringBuilder sb = new StringBuilder();
+        final List<StatTimer> list = new ArrayList<StatTimer>(StatTimer.timers.values());
+        Collections.sort(list, new Comparator<StatTimer>() {
+            @Override
+            public int compare(final StatTimer o1, final StatTimer o2) {
+                return o1.name.compareTo(o2.name);
+            }
+        });
+        final StringBuffer sb = new StringBuffer();
         for (final StatTimer timer : list) {
             if (timer.counter.get() > 0L) {
                 sb.append(LogFormatter.LINEBREAK).append(timer.getReportString());
@@ -113,11 +112,16 @@ public class StatTimer {
         }
         return sb.toString();
     }
-
+    
     public static synchronized List<String> getReportByTotalTime(final String prefix, final String suffix) {
-        final List<StatTimer> list = new ArrayList<>(StatTimer.timers.values());
-        list.sort((o1, o2) -> Double.compare(o2.totalTime.get(), o1.totalTime.get()));
-        final ArrayList<String> strings = new ArrayList<>();
+        final List<StatTimer> list = new ArrayList<StatTimer>(StatTimer.timers.values());
+        Collections.sort(list, new Comparator<StatTimer>() {
+            @Override
+            public int compare(final StatTimer o1, final StatTimer o2) {
+                return Double.compare(o2.totalTime.get(), o1.totalTime.get());
+            }
+        });
+        final ArrayList<String> strings = new ArrayList<String>();
         for (final StatTimer timer : list) {
             if (timer.counter.get() > 0L) {
                 strings.add(prefix + timer.getSimpleReportString() + suffix);
@@ -128,11 +132,11 @@ public class StatTimer {
         }
         return strings;
     }
-
+    
     private static String pad(final Object s, final int n) {
         return String.format("%1$-" + n + "s", s);
     }
-
+    
     public StatTimer start() {
         synchronized (this.counter) {
             if (this.maxed) {
@@ -163,7 +167,7 @@ public class StatTimer {
             return this;
         }
     }
-
+    
     public double stop() {
         synchronized (this.counter) {
             if (this.maxed) {
@@ -195,20 +199,22 @@ public class StatTimer {
                             msg += " (Warning limit reached)";
                             StatTimer.logger.warn(msg);
                             StatTimer.logger.warn(this.getReportString().replaceAll("<b>", "").replaceAll("</b>", "").trim());
-                        } else {
+                        }
+                        else {
                             StatTimer.logger.debug(msg);
                         }
                     }
                 }
                 return elapsedMs;
-            } catch (Throwable t) {
+            }
+            catch (Throwable t) {
                 StatTimer.logger.error("Timer error: " + LogFormatter.toString(t));
                 this.reset();
                 return 0.0;
             }
         }
     }
-
+    
     public double elapsed() {
         synchronized (this.counter) {
             if (this.maxed || this.started == null) {
@@ -217,31 +223,31 @@ public class StatTimer {
             return (System.nanoTime() - this.started) / 1000000.0;
         }
     }
-
+    
     public boolean hasReachedElapsedLimit() {
         return this.ranTooLong;
     }
-
+    
     public int getElapsedLimitReachedCount() {
         return this.ranTooLongCount;
     }
-
+    
     public int getElapsedLimitWarningsRemaining() {
         return this.elapsedLimitWarnings;
     }
-
+    
     public String stopAndReport() {
         this.stop();
         return this.getSimpleReportString();
     }
-
+    
     public void cancel() {
         synchronized (this.counter) {
             this.started = null;
             this.cancelCounter.incrementAndGet();
         }
     }
-
+    
     public void reset() {
         synchronized (this.counter) {
             this.warmup = this.doWarmup;
@@ -255,11 +261,11 @@ public class StatTimer {
             this.ranTooLongCount = 0;
         }
     }
-
+    
     public void report() {
         StatTimer.logger.info(this.getReportString());
     }
-
+    
     public String getReportString() {
         final DecimalFormat df = new DecimalFormat("###.##");
         synchronized (this.counter) {
@@ -267,7 +273,7 @@ public class StatTimer {
             final double total = this.totalTime.get();
             final double avg = total / count;
             final long cancels = this.cancelCounter.get();
-            String report = String.format("<b>%40s:</b> Avg: %8sms, Min: %8sms, Max: %10sms, Total: %10s sec, Count: %8s, Canceled: %8s, Slow: %8s", this.name, df.format(avg), df.format(this.min), df.format(this.max), TimeUnit.MILLISECONDS.toSeconds((long) total), count, cancels, this.ranTooLongCount);
+            String report = String.format("<b>%40s:</b> Avg: %8sms, Min: %8sms, Max: %10sms, Total: %10s sec, Count: %8s, Canceled: %8s, Slow: %8s", this.name, df.format(avg), df.format(this.min), df.format(this.max), TimeUnit.MILLISECONDS.toSeconds((long)total), count, cancels, this.ranTooLongCount);
             if (this.warmup) {
                 report += String.format("* Warmup of %s not met", this.warmupCount);
             }
@@ -277,11 +283,11 @@ public class StatTimer {
             return report;
         }
     }
-
+    
     public String getLogReportString() {
-        return TextFormatting.getTextWithoutFormattingCodes(this.getSimpleReportString());
+        return TextFormatting.func_110646_a(this.getSimpleReportString());
     }
-
+    
     public String getSimpleReportString() {
         try {
             final DecimalFormat df = new DecimalFormat("###.##");
@@ -307,12 +313,18 @@ public class StatTimer {
                 }
                 return sb.toString();
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             return String.format("StatTimer '%s' encountered an error getting its simple report: %s", this.name, t);
         }
     }
-
+    
     public String getName() {
         return this.name;
+    }
+    
+    static {
+        logger = Journeymap.getLogger();
+        StatTimer.timers = Collections.synchronizedMap(new HashMap<String, StatTimer>());
     }
 }

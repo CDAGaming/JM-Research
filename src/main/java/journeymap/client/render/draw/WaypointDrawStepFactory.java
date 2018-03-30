@@ -1,39 +1,39 @@
 package journeymap.client.render.draw;
 
-import journeymap.client.data.DataCache;
-import journeymap.client.model.Waypoint;
-import journeymap.client.render.map.GridRenderer;
-import journeymap.common.Journeymap;
-import journeymap.common.log.LogFormatter;
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.fml.client.FMLClientHandler;
+import journeymap.client.api.display.*;
+import journeymap.client.render.map.*;
+import journeymap.client.feature.*;
+import journeymap.common.api.feature.*;
+import journeymap.common.*;
+import journeymap.client.data.*;
+import journeymap.common.log.*;
+import net.minecraft.entity.player.*;
+import net.minecraft.util.math.*;
+import java.util.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-public class WaypointDrawStepFactory {
+public class WaypointDrawStepFactory
+{
     final List<DrawWayPointStep> drawStepList;
-
+    
     public WaypointDrawStepFactory() {
-        this.drawStepList = new ArrayList<>();
+        this.drawStepList = new ArrayList<DrawWayPointStep>();
     }
-
+    
     public List<DrawWayPointStep> prepareSteps(final Collection<Waypoint> waypoints, final GridRenderer grid, boolean checkDistance, final boolean showLabel) {
-        final Minecraft mc = FMLClientHandler.instance().getClient();
-        final EntityPlayer player = mc.player;
-        final int dimension = player.dimension;
+        this.drawStepList.clear();
+        final int dimension = grid.getMapView().dimension;
+        if (!ClientFeatures.instance().isAllowed(Feature.Radar.Waypoint, dimension)) {
+            return this.drawStepList;
+        }
+        final EntityPlayer player = (EntityPlayer)Journeymap.clientPlayer();
         final int maxDistance = Journeymap.getClient().getWaypointProperties().maxDistance.get();
         checkDistance = (checkDistance && maxDistance > 0);
-        final Vec3d playerVec = checkDistance ? player.getPositionVector() : null;
-        this.drawStepList.clear();
+        final Vec3d playerVec = checkDistance ? player.func_174791_d() : null;
         try {
             for (final Waypoint waypoint : waypoints) {
-                if (waypoint.isEnable() && waypoint.isInPlayerDimension()) {
+                if (waypoint.isDisplayed(dimension)) {
                     if (checkDistance) {
-                        final double actualDistance = playerVec.distanceTo(waypoint.getPosition());
+                        final double actualDistance = playerVec.func_72438_d(waypoint.getVec(dimension));
                         if (actualDistance > maxDistance) {
                             continue;
                         }
@@ -46,7 +46,8 @@ public class WaypointDrawStepFactory {
                     wayPointStep.setShowLabel(showLabel);
                 }
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             Journeymap.getLogger().error("Error during prepareSteps: " + LogFormatter.toString(t));
         }
         return this.drawStepList;

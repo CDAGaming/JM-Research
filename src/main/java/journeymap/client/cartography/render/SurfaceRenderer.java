@@ -1,28 +1,24 @@
 package journeymap.client.cartography.render;
 
-import journeymap.client.cartography.IChunkRenderer;
-import journeymap.client.cartography.Strata;
-import journeymap.client.cartography.Stratum;
-import journeymap.client.cartography.color.RGB;
-import journeymap.client.log.StatTimer;
-import journeymap.client.model.BlockCoordIntPair;
-import journeymap.client.model.BlockMD;
-import journeymap.client.model.ChunkMD;
-import journeymap.client.model.MapType;
-import journeymap.client.render.ComparableBufferedImage;
-import journeymap.common.Journeymap;
-import journeymap.common.log.LogFormatter;
-import net.minecraft.util.math.BlockPos;
-import org.apache.logging.log4j.Level;
+import journeymap.client.log.*;
+import journeymap.client.cartography.color.*;
+import net.minecraft.util.math.*;
+import journeymap.client.render.*;
+import java.awt.image.*;
+import journeymap.client.feature.*;
+import journeymap.common.api.feature.*;
+import journeymap.common.*;
+import journeymap.common.log.*;
+import journeymap.client.model.*;
+import journeymap.client.cartography.*;
 
-import java.awt.image.BufferedImage;
-
-public class SurfaceRenderer extends BaseRenderer implements IChunkRenderer {
+public class SurfaceRenderer extends BaseRenderer implements IChunkRenderer
+{
     protected StatTimer renderSurfaceTimer;
     protected StatTimer renderSurfacePrepassTimer;
     protected Strata strata;
     protected float maxDepth;
-
+    
     public SurfaceRenderer() {
         this.renderSurfaceTimer = StatTimer.get("SurfaceRenderer.renderSurface");
         this.renderSurfacePrepassTimer = StatTimer.get("SurfaceRenderer.renderSurface.CavePrepass");
@@ -30,49 +26,70 @@ public class SurfaceRenderer extends BaseRenderer implements IChunkRenderer {
         this.maxDepth = 8.0f;
         this.updateOptions(null, null);
     }
-
+    
     @Override
-    protected boolean updateOptions(final ChunkMD chunkMd, final MapType mapType) {
-        if (super.updateOptions(chunkMd, mapType)) {
+    protected boolean updateOptions(final ChunkMD chunkMd, final MapView mapView) {
+        if (super.updateOptions(chunkMd, mapView)) {
             this.ambientColor = RGB.floats(this.tweakSurfaceAmbientColor);
             return true;
         }
         return false;
     }
-
+    
     @Override
     public int getBlockHeight(final ChunkMD chunkMd, final BlockPos blockPos) {
-        final Integer y = this.getBlockHeight(chunkMd, blockPos.getX() & 0xF, null, blockPos.getZ() & 0xF, null, null);
-        return (y == null) ? blockPos.getY() : y;
+        final Integer y = this.getBlockHeight(chunkMd, blockPos.func_177958_n() & 0xF, null, blockPos.func_177952_p() & 0xF, null, null);
+        return (y == null) ? blockPos.func_177956_o() : y;
     }
-
+    
     @Override
     public boolean render(final ComparableBufferedImage dayChunkImage, final ChunkMD chunkMd, final Integer ignored) {
         return this.render(dayChunkImage, null, chunkMd, null, false);
     }
-
+    
     public boolean render(final ComparableBufferedImage dayChunkImage, final BufferedImage nightChunkImage, final ChunkMD chunkMd) {
         return this.render(dayChunkImage, nightChunkImage, chunkMd, null, false);
     }
-
-    public synchronized boolean render(final ComparableBufferedImage dayChunkImage, final BufferedImage nightChunkImage, final ChunkMD chunkMd, final Integer vSlice, final boolean cavePrePass) {
+    
+    public synchronized boolean render(ComparableBufferedImage dayChunkImage, BufferedImage nightChunkImage, final ChunkMD chunkMd, final Integer vSlice, final boolean cavePrePass) {
         final StatTimer timer = cavePrePass ? this.renderSurfacePrepassTimer : this.renderSurfaceTimer;
         try {
             timer.start();
-            this.updateOptions(chunkMd, MapType.from(MapType.Name.surface, null, chunkMd.getDimension()));
+            Feature.MapType mapType = null;
+            final int dimension = chunkMd.getDimension();
+            final boolean renderDay = ClientFeatures.instance().isAllowed(Feature.MapType.Day, dimension);
+            final boolean renderNight = ClientFeatures.instance().isAllowed(Feature.MapType.Night, dimension);
+            if (renderDay) {
+                mapType = Feature.MapType.Day;
+            }
+            else {
+                if (!renderNight) {
+                    return false;
+                }
+                mapType = Feature.MapType.Night;
+            }
+            this.updateOptions(chunkMd, MapView.from(mapType, null, dimension));
             if (!this.hasSlopes(chunkMd, vSlice)) {
                 this.populateSlopes(chunkMd, vSlice, this.getSlopes(chunkMd, vSlice));
             }
+            if (!renderDay) {
+                dayChunkImage = null;
+            }
+            if (!renderNight) {
+                nightChunkImage = null;
+            }
             return this.renderSurface(dayChunkImage, nightChunkImage, chunkMd, vSlice, cavePrePass);
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             e.printStackTrace();
             return false;
-        } finally {
+        }
+        finally {
             this.strata.reset();
             timer.stop();
         }
     }
-
+    
     protected boolean renderSurface(final BufferedImage dayChunkImage, final BufferedImage nightChunkImage, final ChunkMD chunkMd, final Integer vSlice, final boolean cavePrePass) {
         boolean chunkOk = false;
         try {
@@ -86,16 +103,18 @@ public class SurfaceRenderer extends BaseRenderer implements IChunkRenderer {
                     this.strata.reset();
                     int upperY = Math.max(0, chunkMd.getPrecipitationHeight(x, z));
                     final int lowerY = Math.max(0, this.getBlockHeight(chunkMd, x, null, z, null, null));
-                    if (upperY == 0 || lowerY == 0) {
+                    if (lowerY == 0 && chunkMd.getBlockMD(x, lowerY, z).isIgnore()) {
                         this.paintVoidBlock(dayChunkImage, x, z);
                         if (!cavePrePass && nightChunkImage != null) {
                             this.paintVoidBlock(nightChunkImage, x, z);
                         }
                         chunkOk = true;
-                    } else if (cavePrePass && upperY > sliceMaxY && upperY - sliceMaxY > this.maxDepth) {
+                    }
+                    else if (cavePrePass && upperY > sliceMaxY && upperY - sliceMaxY > this.maxDepth) {
                         chunkOk = true;
                         this.paintBlackBlock(dayChunkImage, x, z);
-                    } else {
+                    }
+                    else {
                         final boolean showSlope = !chunkMd.getBlockMD(x, lowerY, z).hasNoShadow();
                         if (this.mapBathymetry) {
                             final Integer[][] waterHeights = this.getFluidHeights(chunkMd, null);
@@ -109,18 +128,20 @@ public class SurfaceRenderer extends BaseRenderer implements IChunkRenderer {
                     }
                 }
             }
-        } catch (Throwable t) {
-            Journeymap.getLogger().log(Level.WARN, LogFormatter.toString(t));
-        } finally {
+        }
+        catch (Throwable t) {
+            Journeymap.getLogger().warn(LogFormatter.toString(t));
+        }
+        finally {
             this.strata.reset();
         }
         return chunkOk;
     }
-
+    
     public int getSurfaceBlockHeight(final ChunkMD chunkMd, final int x, final int z, final BlockCoordIntPair offset, final int defaultVal) {
         final ChunkMD targetChunkMd = this.getOffsetChunk(chunkMd, x, z, offset);
-        final int newX = (chunkMd.getCoord().x << 4) + (x + offset.x) & 0xF;
-        final int newZ = (chunkMd.getCoord().z << 4) + (z + offset.z) & 0xF;
+        final int newX = (chunkMd.getCoord().field_77276_a << 4) + (x + offset.x) & 0xF;
+        final int newZ = (chunkMd.getCoord().field_77275_b << 4) + (z + offset.z) & 0xF;
         if (targetChunkMd == null) {
             return defaultVal;
         }
@@ -130,7 +151,7 @@ public class SurfaceRenderer extends BaseRenderer implements IChunkRenderer {
         }
         return height;
     }
-
+    
     public Integer getBlockHeight(final ChunkMD chunkMd, final int localX, final Integer vSlice, final int localZ, final Integer sliceMinY, final Integer sliceMaxY) {
         final Integer[][] heights = this.getHeights(chunkMd, null);
         if (heights == null) {
@@ -150,7 +171,8 @@ public class SurfaceRenderer extends BaseRenderer implements IChunkRenderer {
                 final BlockMD blockMD = BlockMD.getBlockMDFromChunkLocal(chunkMd, localX, y, localZ);
                 if (blockMD.isIgnore()) {
                     --y;
-                } else if (blockMD.isWater() || blockMD.isFluid()) {
+                }
+                else if (blockMD.isWater() || blockMD.isFluid()) {
                     if (!this.mapBathymetry) {
                         break;
                     }
@@ -159,9 +181,11 @@ public class SurfaceRenderer extends BaseRenderer implements IChunkRenderer {
                         setFluidHeight = false;
                     }
                     --y;
-                } else if (blockMD.hasTransparency() && this.mapTransparency) {
+                }
+                else if (blockMD.hasTransparency() && this.mapTransparency) {
                     --y;
-                } else {
+                }
+                else {
                     if (blockMD.isLava()) {
                         break;
                     }
@@ -172,13 +196,14 @@ public class SurfaceRenderer extends BaseRenderer implements IChunkRenderer {
                     break;
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             Journeymap.getLogger().warn(String.format("Couldn't get safe surface block height for %s coords %s,%s: %s", chunkMd, localX, localZ, LogFormatter.toString(e)));
         }
         y = Math.max(0, y);
         return heights[localX][localZ] = y;
     }
-
+    
     protected void buildStrata(final Strata strata, int upperY, final ChunkMD chunkMd, final int x, int lowerY, final int z) {
         while (upperY > lowerY) {
             final BlockMD blockMD = BlockMD.getBlockMDFromChunkLocal(chunkMd, x, upperY, z);
@@ -215,7 +240,7 @@ public class SurfaceRenderer extends BaseRenderer implements IChunkRenderer {
             }
         }
     }
-
+    
     protected boolean paintStrata(final Strata strata, final BufferedImage dayChunkImage, final BufferedImage nightChunkImage, final ChunkMD chunkMd, final int x, final int z, final boolean showSlope, final boolean cavePrePass) {
         final int y = strata.getTopY();
         if (strata.isEmpty()) {
@@ -235,7 +260,8 @@ public class SurfaceRenderer extends BaseRenderer implements IChunkRenderer {
                     if (!cavePrePass) {
                         strata.setRenderNightColor(stratum.getNightColor());
                     }
-                } else {
+                }
+                else {
                     strata.setRenderDayColor(RGB.blendWith(strata.getRenderDayColor(), stratum.getDayColor(), stratum.getBlockMD().getAlpha()));
                     if (!cavePrePass) {
                         strata.setRenderNightColor(RGB.blendWith(strata.getRenderNightColor(), stratum.getNightColor(), stratum.getBlockMD().getAlpha()));
@@ -265,7 +291,8 @@ public class SurfaceRenderer extends BaseRenderer implements IChunkRenderer {
             if (nightChunkImage != null) {
                 this.paintBlock(nightChunkImage, x, z, strata.getRenderNightColor());
             }
-        } catch (RuntimeException e) {
+        }
+        catch (RuntimeException e) {
             throw e;
         }
         return true;

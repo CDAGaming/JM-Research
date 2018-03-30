@@ -1,35 +1,27 @@
 package journeymap.client.model;
 
-import com.google.common.base.MoreObjects;
-import journeymap.client.io.RegionImageHandler;
-import journeymap.client.log.StatTimer;
-import journeymap.client.render.texture.RegionTextureImpl;
-import journeymap.client.task.main.ExpireTextureTask;
-import journeymap.common.Journeymap;
-import journeymap.common.log.LogFormatter;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.storage.IThreadedFileIO;
-import net.minecraft.world.storage.ThreadedFileIOBase;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
+import java.nio.file.*;
+import java.util.concurrent.locks.*;
+import java.util.*;
+import net.minecraft.util.math.*;
+import org.apache.logging.log4j.*;
+import journeymap.client.log.*;
+import journeymap.common.*;
+import journeymap.client.io.*;
+import net.minecraft.world.storage.*;
+import java.util.concurrent.*;
+import javax.imageio.*;
+import java.awt.image.*;
+import journeymap.common.log.*;
+import java.io.*;
+import com.google.common.base.*;
+import journeymap.client.task.main.*;
+import journeymap.client.render.texture.*;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
-
-public class ImageHolder implements IThreadedFileIO {
+public class ImageHolder implements IThreadedFileIO
+{
     static final Logger logger;
-
-    static {
-        logger = Journeymap.getLogger();
-    }
-
-    final MapType mapType;
+    final MapView mapView;
     final Path imagePath;
     final int imageSize;
     boolean blank;
@@ -39,36 +31,36 @@ public class ImageHolder implements IThreadedFileIO {
     private volatile RegionTextureImpl texture;
     private boolean debug;
     private HashSet<ChunkPos> updatedChunks;
-
-    ImageHolder(final MapType mapType, final File imageFile, final int imageSize) {
+    
+    ImageHolder(final MapView mapView, final File imageFile, final int imageSize) {
         this.blank = true;
         this.dirty = true;
         this.writeLock = new ReentrantLock();
-        this.updatedChunks = new HashSet<>();
-        this.mapType = mapType;
+        this.updatedChunks = new HashSet<ChunkPos>();
+        this.mapView = mapView;
         this.imagePath = imageFile.toPath();
         this.imageSize = imageSize;
         this.debug = ImageHolder.logger.isEnabled(Level.DEBUG);
         this.getTexture();
     }
-
+    
     File getFile() {
         return this.imagePath.toFile();
     }
-
-    MapType getMapType() {
-        return this.mapType;
+    
+    MapView getMapType() {
+        return this.mapView;
     }
-
+    
     BufferedImage getImage() {
         return this.texture.getImage();
     }
-
+    
     void setImage(final BufferedImage image) {
         this.texture.setImage(image, true);
         this.setDirty();
     }
-
+    
     void partialImageUpdate(final BufferedImage imagePart, final int x, final int y) {
         this.writeLock.lock();
         final StatTimer timer = StatTimer.get("ImageHolder.partialImageUpdate", 5, 500);
@@ -83,15 +75,17 @@ public class ImageHolder implements IThreadedFileIO {
                 this.texture.getImage().setRGB(x, y, width, height, updatedPixels, 0, width);
                 this.partialUpdate = true;
                 this.updatedChunks.add(new ChunkPos(x, y));
-            } else {
+            }
+            else {
                 ImageHolder.logger.warn(this + " can't partialImageUpdate without a texture.");
             }
-        } finally {
+        }
+        finally {
             timer.stop();
             this.writeLock.unlock();
         }
     }
-
+    
     void finishPartialImageUpdates() {
         this.writeLock.lock();
         try {
@@ -102,15 +96,16 @@ public class ImageHolder implements IThreadedFileIO {
                 this.partialUpdate = false;
                 this.updatedChunks.clear();
             }
-        } finally {
+        }
+        finally {
             this.writeLock.unlock();
         }
     }
-
+    
     public boolean hasTexture() {
         return this.texture != null && !this.texture.isDefunct();
     }
-
+    
     public RegionTextureImpl getTexture() {
         if (!this.hasTexture()) {
             if (!this.imagePath.toFile().exists()) {
@@ -125,34 +120,35 @@ public class ImageHolder implements IThreadedFileIO {
                 image = new BufferedImage(this.imageSize, this.imageSize, 2);
                 this.blank = true;
                 this.dirty = false;
-            } else {
+            }
+            else {
                 this.blank = false;
             }
             (this.texture = new RegionTextureImpl(image)).setDescription(this.imagePath.toString());
         }
         return this.texture;
     }
-
+    
     private void setDirty() {
         this.dirty = true;
     }
-
+    
     boolean isDirty() {
         return this.dirty;
     }
-
+    
     protected boolean writeToDisk(final boolean async) {
         if (this.blank || this.texture == null || !this.texture.hasImage()) {
             return false;
         }
         if (async) {
-            ThreadedFileIOBase.getThreadedIOInstance().queueIO(this);
+            ThreadedFileIOBase.func_178779_a().func_75735_a((IThreadedFileIO)this);
             return true;
         }
         int tries = 0;
         boolean success = false;
         while (tries < 5) {
-            if (!this.writeNextIO()) {
+            if (!this.func_75814_c()) {
                 success = true;
                 break;
             }
@@ -163,8 +159,8 @@ public class ImageHolder implements IThreadedFileIO {
         }
         return success;
     }
-
-    public boolean writeNextIO() {
+    
+    public boolean func_75814_c() {
         if (this.texture == null || !this.texture.hasImage()) {
             return false;
         }
@@ -176,12 +172,13 @@ public class ImageHolder implements IThreadedFileIO {
             }
             ImageHolder.logger.warn("Couldn't get write lock for file: " + this.writeLock + " for " + this);
             return false;
-        } catch (InterruptedException e) {
+        }
+        catch (InterruptedException e) {
             ImageHolder.logger.warn("Timeout waiting for write lock  " + this.writeLock + " for " + this);
             return false;
         }
     }
-
+    
     private void writeImageToFile() {
         final File imageFile = this.imagePath.toFile();
         try {
@@ -197,52 +194,61 @@ public class ImageHolder implements IThreadedFileIO {
                 }
                 if (temp.renameTo(imageFile)) {
                     this.dirty = false;
-                } else {
+                }
+                else {
                     ImageHolder.logger.warn("Couldn't rename temp file to " + imageFile.getName());
                 }
                 if (this.debug) {
                     ImageHolder.logger.debug("Wrote to disk: " + imageFile);
                 }
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             if (imageFile.exists()) {
                 try {
                     ImageHolder.logger.error("IOException updating file, will delete and retry: " + this + ": " + LogFormatter.toPartialString(e));
                     imageFile.delete();
                     this.writeImageToFile();
-                } catch (Throwable e3) {
+                }
+                catch (Throwable e3) {
                     ImageHolder.logger.error("Exception after delete/retry: " + this + ": " + LogFormatter.toPartialString(e));
                 }
-            } else {
+            }
+            else {
                 ImageHolder.logger.error("IOException creating file: " + this + ": " + LogFormatter.toPartialString(e));
             }
-        } catch (Throwable e2) {
+        }
+        catch (Throwable e2) {
             ImageHolder.logger.error("Exception writing to disk: " + this + ": " + LogFormatter.toPartialString(e2));
         }
     }
-
+    
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this).add("mapType", this.mapType).add("textureId", (this.texture == null) ? null : (this.texture.isBound() ? this.texture.getGlTextureId(false) : -1)).add("dirty", this.dirty).add("imagePath", this.imagePath).toString();
+        return MoreObjects.toStringHelper((Object)this).add("mapView", (Object)this.mapView).add("textureId", (Object)((this.texture == null) ? null : (this.texture.isBound() ? this.texture.getGlTextureId(false) : -1))).add("dirty", this.dirty).add("imagePath", (Object)this.imagePath).toString();
     }
-
+    
     public void clear() {
         this.writeLock.lock();
         ExpireTextureTask.queue(this.texture);
         this.texture = null;
         this.writeLock.unlock();
     }
-
+    
     public void finalize() {
         if (this.texture != null) {
             this.clear();
         }
     }
-
+    
     public long getImageTimestamp() {
         if (this.texture != null) {
             return this.texture.getLastImageUpdate();
         }
         return 0L;
+    }
+    
+    static {
+        logger = Journeymap.getLogger();
     }
 }

@@ -1,29 +1,24 @@
 package journeymap.server.properties;
 
-import journeymap.common.properties.config.BooleanField;
+import journeymap.common.properties.config.*;
 
-public class GlobalProperties extends PermissionProperties {
-    public final BooleanField teleportEnabled;
+public class GlobalProperties extends PermissionProperties
+{
     public final BooleanField useWorldId;
-
-    public GlobalProperties() {
-        super("Global Server Configuration", "Applies to all dimensions unless overridden. 'WorldID is Read Only'");
-        this.teleportEnabled = new BooleanField(ServerCategory.General, "Enable Players to teleport", false);
-        this.useWorldId = new BooleanField(ServerCategory.General, "Use world id", false);
+    
+    public GlobalProperties(final boolean isOp) {
+        super(String.format("Global Server %s Configuration", isOp ? "Op" : "Player"), "Applies to all dimensions unless overridden.", isOp);
+        this.useWorldId = new BooleanField(ServerCategory.General, "Use WorldID", false);
     }
-
+    
     @Override
     public String getName() {
-        return "global";
+        final String target = this.isOp ? "op" : "player";
+        return String.format("%s.global", target);
     }
-
+    
     @Override
-    protected void postLoad(final boolean isNew) {
-        super.postLoad(isNew);
-    }
-
-    @Override
-    protected void preSave() {
-        super.preSave();
+    public String getOriginKey() {
+        return this.isOp ? "jm.common.server_config_global" : "jm.common.server_config_op_global";
     }
 }

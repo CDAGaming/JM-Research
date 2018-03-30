@@ -1,106 +1,108 @@
 package journeymap.client.ui.fullscreen;
 
-import net.minecraft.client.gui.GuiChat;
-import net.minecraft.client.gui.GuiNewChat;
-import net.minecraft.client.renderer.GlStateManager;
-import org.lwjgl.opengl.GL11;
+import java.io.*;
+import net.minecraft.client.renderer.*;
+import org.lwjgl.opengl.*;
+import net.minecraft.client.gui.*;
 
-import java.io.IOException;
-
-public class MapChat extends GuiChat {
+public class MapChat extends GuiChat
+{
     protected boolean hidden;
     protected int cursorCounter;
-
+    
     public MapChat(final String defaultText, final boolean hidden) {
         super(defaultText);
         this.hidden = false;
         this.hidden = hidden;
     }
-
-    public void onGuiClosed() {
-        super.onGuiClosed();
+    
+    public void func_146281_b() {
+        super.func_146281_b();
         this.hidden = true;
     }
-
+    
     public void close() {
-        this.onGuiClosed();
+        this.func_146281_b();
     }
-
-    public void updateScreen() {
+    
+    public void func_73876_c() {
         if (this.hidden) {
             return;
         }
-        super.updateScreen();
+        super.func_73876_c();
     }
-
-    public void keyTyped(final char typedChar, final int keyCode) throws IOException {
+    
+    public void func_73869_a(final char typedChar, final int keyCode) throws IOException {
         if (this.hidden) {
             return;
         }
         if (keyCode == 1) {
             this.close();
-        } else if (keyCode != 28 && keyCode != 156) {
-            super.keyTyped(typedChar, keyCode);
-        } else {
-            final String s = this.inputField.getText().trim();
+        }
+        else if (keyCode != 28 && keyCode != 156) {
+            super.func_73869_a(typedChar, keyCode);
+        }
+        else {
+            final String s = this.field_146415_a.func_146179_b().trim();
             if (!s.isEmpty()) {
-                this.sendChatMessage(s);
+                this.func_175275_f(s);
             }
-            this.inputField.setText("");
-            this.mc.ingameGUI.getChatGUI().resetScroll();
+            this.field_146415_a.func_146180_a("");
+            this.field_146297_k.field_71456_v.func_146158_b().func_146240_d();
         }
     }
-
-    public void handleMouseInput() throws IOException {
+    
+    public void func_146274_d() throws IOException {
         if (this.hidden) {
             return;
         }
-        super.handleMouseInput();
+        super.func_146274_d();
     }
-
-    public void mouseClicked(final int par1, final int par2, final int par3) throws IOException {
+    
+    public void func_73864_a(final int par1, final int par2, final int par3) throws IOException {
         if (this.hidden) {
             return;
         }
-        super.mouseClicked(par1, par2, par3);
+        super.func_73864_a(par1, par2, par3);
     }
-
-    public void confirmClicked(final boolean par1, final int par2) {
+    
+    public void func_73878_a(final boolean par1, final int par2) {
         if (this.hidden) {
             return;
         }
-        super.confirmClicked(par1, par2);
+        super.func_73878_a(par1, par2);
     }
-
-    public void drawScreen(final int mouseX, final int mouseY, final float partialTicks) {
-        GlStateManager.pushMatrix();
-        GL11.glTranslatef(0.0f, this.height - 47.5f, 0.0f);
-        if (this.mc != null && this.mc.ingameGUI != null && this.mc.ingameGUI.getChatGUI() != null) {
-            final GuiNewChat getChatGUI = this.mc.ingameGUI.getChatGUI();
+    
+    public void func_73863_a(final int mouseX, final int mouseY, final float partialTicks) {
+        GlStateManager.func_179094_E();
+        GL11.glTranslatef(0.0f, this.field_146295_m - 47.5f, 0.0f);
+        if (this.field_146297_k != null && this.field_146297_k.field_71456_v != null && this.field_146297_k.field_71456_v.func_146158_b() != null) {
+            final GuiNewChat func_146158_b = this.field_146297_k.field_71456_v.func_146158_b();
             int n;
             if (this.hidden) {
-                n = this.mc.ingameGUI.getUpdateCounter();
-            } else {
+                n = this.field_146297_k.field_71456_v.func_73834_c();
+            }
+            else {
                 this.cursorCounter = (n = this.cursorCounter) + 1;
             }
-            getChatGUI.drawChat(n);
+            func_146158_b.func_146230_a(n);
         }
-        GlStateManager.popMatrix();
+        GlStateManager.func_179121_F();
         if (this.hidden) {
             return;
         }
-        super.drawScreen(mouseX, mouseY, partialTicks);
+        super.func_73863_a(mouseX, mouseY, partialTicks);
     }
-
+    
     public boolean isHidden() {
         return this.hidden;
     }
-
+    
     public void setHidden(final boolean hidden) {
         this.hidden = hidden;
     }
-
+    
     public void setText(final String defaultText) {
-        this.inputField.setText(defaultText);
+        this.field_146415_a.func_146180_a(defaultText);
     }
 }

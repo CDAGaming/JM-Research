@@ -1,8 +1,7 @@
 package journeymap.client.api;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
-@Target({ElementType.TYPE})
+@Target({ ElementType.TYPE })
 public @interface ClientPlugin {
 }

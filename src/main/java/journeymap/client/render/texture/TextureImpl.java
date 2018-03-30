@@ -1,24 +1,22 @@
 package journeymap.client.render.texture;
 
-import com.google.common.base.MoreObjects;
-import journeymap.client.task.main.ExpireTextureTask;
-import journeymap.client.task.multi.MapPlayerTask;
-import journeymap.common.Journeymap;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.client.renderer.texture.*;
+import java.util.concurrent.locks.*;
+import java.awt.image.*;
+import net.minecraft.util.*;
+import java.lang.ref.*;
+import java.nio.*;
+import journeymap.client.task.multi.*;
+import net.minecraft.client.renderer.*;
+import org.lwjgl.opengl.*;
+import journeymap.common.*;
+import journeymap.client.task.main.*;
+import net.minecraft.client.resources.*;
+import com.google.common.base.*;
+import java.util.*;
 
-import java.awt.image.BufferedImage;
-import java.lang.ref.WeakReference;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
-
-public class TextureImpl extends AbstractTexture {
+public class TextureImpl extends AbstractTexture
+{
     protected final ReentrantLock bufferLock;
     protected BufferedImage image;
     protected boolean retainImage;
@@ -32,30 +30,30 @@ public class TextureImpl extends AbstractTexture {
     protected List<WeakReference<Listener>> listeners;
     protected ByteBuffer buffer;
     protected boolean bindNeeded;
-
+    
     public TextureImpl(final ResourceLocation resourceLocation) {
         this(null, TextureCache.resolveImage(resourceLocation), false, false);
         this.resourceLocation = resourceLocation;
-        this.setDescription(resourceLocation.getResourcePath());
+        this.setDescription(resourceLocation.func_110623_a());
     }
-
+    
     public TextureImpl(final BufferedImage image) {
         this(null, image, false, true);
     }
-
+    
     public TextureImpl(final BufferedImage image, final boolean retainImage) {
         this(null, image, retainImage, true);
     }
-
+    
     public TextureImpl(final Integer glId, final BufferedImage image, final boolean retainImage) {
         this(glId, image, retainImage, true);
     }
-
+    
     public TextureImpl(final Integer glId, final BufferedImage image, final boolean retainImage, final boolean bindImmediately) {
         this.bufferLock = new ReentrantLock();
-        this.listeners = new ArrayList<>(0);
+        this.listeners = new ArrayList<WeakReference<Listener>>(0);
         if (glId != null) {
-            this.glTextureId = glId;
+            this.field_110553_a = glId;
         }
         this.retainImage = retainImage;
         if (image != null) {
@@ -66,26 +64,7 @@ public class TextureImpl extends AbstractTexture {
             this.buffer = null;
         }
     }
-
-    public static void loadByteBuffer(final BufferedImage bufferedImage, final ByteBuffer buffer) {
-        final int width = bufferedImage.getWidth();
-        final int height = bufferedImage.getHeight();
-        buffer.clear();
-        final int[] pixels = new int[width * height];
-        bufferedImage.getRGB(0, 0, width, height, pixels, 0, width);
-        for (int y = 0; y < height; ++y) {
-            for (int x = 0; x < width; ++x) {
-                final int pixel = pixels[y * width + x];
-                buffer.put((byte) (pixel >> 16 & 0xFF));
-                buffer.put((byte) (pixel >> 8 & 0xFF));
-                buffer.put((byte) (pixel & 0xFF));
-                buffer.put((byte) (pixel >> 24 & 0xFF));
-            }
-        }
-        buffer.flip();
-        buffer.rewind();
-    }
-
+    
     public void setImage(final BufferedImage bufferedImage, final boolean retainImage) {
         if (bufferedImage == null) {
             return;
@@ -103,23 +82,43 @@ public class TextureImpl extends AbstractTexture {
             }
             loadByteBuffer(bufferedImage, this.buffer);
             this.bindNeeded = true;
-        } finally {
+        }
+        finally {
             this.bufferLock.unlock();
         }
         this.lastImageUpdate = System.currentTimeMillis();
         this.notifyListeners();
     }
-
+    
+    public static void loadByteBuffer(final BufferedImage bufferedImage, final ByteBuffer buffer) {
+        final int width = bufferedImage.getWidth();
+        final int height = bufferedImage.getHeight();
+        buffer.clear();
+        final int[] pixels = new int[width * height];
+        bufferedImage.getRGB(0, 0, width, height, pixels, 0, width);
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                final int pixel = pixels[y * width + x];
+                buffer.put((byte)(pixel >> 16 & 0xFF));
+                buffer.put((byte)(pixel >> 8 & 0xFF));
+                buffer.put((byte)(pixel & 0xFF));
+                buffer.put((byte)(pixel >> 24 & 0xFF));
+            }
+        }
+        buffer.flip();
+        buffer.rewind();
+    }
+    
     public void bindTexture() {
         if (!this.bindNeeded) {
             return;
         }
         if (this.bufferLock.tryLock()) {
-            if (this.glTextureId > -1) {
-                MapPlayerTask.addTempDebugMessage("tex" + this.glTextureId, "Updating: " + this.getDescription());
+            if (this.field_110553_a > -1) {
+                MapPlayerTask.addTempDebugMessage("tex" + this.field_110553_a, "Updating: " + this.getDescription());
             }
             try {
-                GlStateManager.bindTexture(super.getGlTextureId());
+                GlStateManager.func_179144_i(super.func_110552_b());
                 GL11.glTexParameteri(3553, 10242, 10497);
                 GL11.glTexParameteri(3553, 10243, 10497);
                 GL11.glTexParameteri(3553, 10241, 9729);
@@ -134,44 +133,46 @@ public class TextureImpl extends AbstractTexture {
                 if (!this.bindNeeded) {
                     this.lastBound = System.currentTimeMillis();
                 }
-            } catch (Throwable t) {
+            }
+            catch (Throwable t) {
                 Journeymap.getLogger().warn("Can't bind texture: " + t);
                 this.buffer = null;
-            } finally {
+            }
+            finally {
                 this.bufferLock.unlock();
             }
         }
     }
-
+    
     public boolean isBindNeeded() {
         return this.bindNeeded;
     }
-
+    
     public boolean isBound() {
-        return this.glTextureId != -1;
+        return this.field_110553_a != -1;
     }
-
+    
     public String getDescription() {
         return this.description;
     }
-
+    
     public void setDescription(final String description) {
         this.description = description;
     }
-
+    
     public void updateAndBind(final BufferedImage image) {
         this.updateAndBind(image, this.retainImage);
     }
-
+    
     public void updateAndBind(final BufferedImage image, final boolean retainImage) {
         this.setImage(image, retainImage);
         this.bindTexture();
     }
-
+    
     public boolean hasImage() {
         return this.image != null;
     }
-
+    
     public BufferedImage getImage() {
         if (this.image != null) {
             return this.image;
@@ -181,25 +182,25 @@ public class TextureImpl extends AbstractTexture {
         }
         return null;
     }
-
+    
     public boolean isDefunct() {
-        return this.glTextureId == -1 && this.image == null && this.buffer == null;
+        return this.field_110553_a == -1 && this.image == null && this.buffer == null;
     }
-
-    public int getGlTextureId() {
+    
+    public int func_110552_b() {
         if (this.bindNeeded) {
             this.bindTexture();
         }
-        return super.getGlTextureId();
+        return super.func_110552_b();
     }
-
+    
     public int getGlTextureId(final boolean forceBind) {
-        if (forceBind || this.glTextureId == -1) {
-            return this.getGlTextureId();
+        if (forceBind || this.field_110553_a == -1) {
+            return this.func_110552_b();
         }
-        return this.glTextureId;
+        return this.field_110553_a;
     }
-
+    
     public void clear() {
         this.bufferLock.lock();
         this.buffer = null;
@@ -208,61 +209,60 @@ public class TextureImpl extends AbstractTexture {
         this.bindNeeded = false;
         this.lastImageUpdate = 0L;
         this.lastBound = 0L;
-        this.glTextureId = -1;
+        this.field_110553_a = -1;
     }
-
+    
     public void queueForDeletion() {
         ExpireTextureTask.queue(this);
     }
-
+    
     public long getLastImageUpdate() {
         return this.lastImageUpdate;
     }
-
+    
     public long getLastBound() {
         return this.lastBound;
     }
-
-    public void loadTexture(final IResourceManager par1ResourceManager) {
-        if (this.resourceLocation != null) {
-        }
+    
+    public void func_110551_a(final IResourceManager par1ResourceManager) {
+        if (this.resourceLocation != null) {}
     }
-
+    
     public String toString() {
-        return MoreObjects.toStringHelper(this).add("glid", this.glTextureId).add("description", this.description).add("lastImageUpdate", this.lastImageUpdate).add("lastBound", this.lastBound).toString();
+        return MoreObjects.toStringHelper((Object)this).add("glid", this.field_110553_a).add("description", (Object)this.description).add("lastImageUpdate", this.lastImageUpdate).add("lastBound", this.lastBound).toString();
     }
-
+    
     public void finalize() {
         if (this.isBound()) {
             Journeymap.getLogger().warn("TextureImpl disposed without deleting texture glID: " + this);
-            ExpireTextureTask.queue(this.glTextureId);
+            ExpireTextureTask.queue(this.field_110553_a);
         }
     }
-
+    
     public int getWidth() {
         return this.width;
     }
-
+    
     public void setWidth(final int width) {
         this.width = width;
     }
-
+    
     public int getHeight() {
         return this.height;
     }
-
+    
     public void setHeight(final int height) {
         this.height = height;
     }
-
+    
     public float getAlpha() {
         return this.alpha;
     }
-
+    
     public void setAlpha(final float alpha) {
         this.alpha = alpha;
     }
-
+    
     public void addListener(final Listener addedListener) {
         final Iterator<WeakReference<Listener>> iter = this.listeners.iterator();
         while (iter.hasNext()) {
@@ -270,15 +270,17 @@ public class TextureImpl extends AbstractTexture {
             final Listener listener = ref.get();
             if (listener == null) {
                 iter.remove();
-            } else {
+            }
+            else {
                 if (addedListener == listener) {
                     return;
                 }
+                continue;
             }
         }
-        this.listeners.add(new WeakReference<>(addedListener));
+        this.listeners.add(new WeakReference<Listener>(addedListener));
     }
-
+    
     protected void notifyListeners() {
         final Iterator<WeakReference<Listener>> iter = this.listeners.iterator();
         while (iter.hasNext()) {
@@ -286,13 +288,15 @@ public class TextureImpl extends AbstractTexture {
             final Listener listener = ref.get();
             if (listener == null) {
                 iter.remove();
-            } else {
+            }
+            else {
                 listener.textureImageUpdated(this);
             }
         }
     }
-
-    public interface Listener<T extends TextureImpl> {
+    
+    public interface Listener<T extends TextureImpl>
+    {
         void textureImageUpdated(final T p0);
     }
 }

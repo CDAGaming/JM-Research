@@ -1,7 +1,10 @@
-@API(owner = "journeymap", apiVersion = "1.4", provides = "journeymap|client-api")
-@ParametersAreNonnullByDefault
 package journeymap.client.api;
 
-import net.minecraftforge.fml.common.API;
+import net.minecraftforge.fml.common.*;
+import javax.annotation.*;
 
-import javax.annotation.ParametersAreNonnullByDefault;
+@API(owner = "journeymap", apiVersion = "2.0-SNAPSHOT", provides = "journeymap|client-api")
+@ParametersAreNonnullByDefault
+interface package-info
+{
+}

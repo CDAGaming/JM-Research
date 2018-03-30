@@ -1,36 +1,32 @@
 package journeymap.client.task.main;
 
-import journeymap.client.JourneymapClient;
-import journeymap.client.data.DataCache;
-import journeymap.client.forge.event.MiniMapOverlayHandler;
-import journeymap.client.io.ThemeLoader;
-import journeymap.client.log.JMLogger;
-import journeymap.client.render.map.TileDrawStepCache;
-import journeymap.client.ui.UIManager;
-import journeymap.client.ui.fullscreen.Fullscreen;
-import journeymap.client.ui.minimap.MiniMap;
-import journeymap.client.waypoint.WaypointStore;
-import journeymap.common.Journeymap;
-import net.minecraft.client.Minecraft;
-import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.*;
+import journeymap.common.*;
+import net.minecraft.client.*;
+import journeymap.client.*;
+import journeymap.client.log.*;
+import journeymap.client.data.*;
+import journeymap.client.render.map.*;
+import journeymap.client.ui.*;
+import journeymap.client.waypoint.*;
+import journeymap.client.forge.event.*;
+import journeymap.client.io.*;
+import journeymap.client.ui.minimap.*;
+import journeymap.client.ui.fullscreen.*;
 
-public class SoftResetTask implements IMainThreadTask {
+public class SoftResetTask implements IMainThreadTask
+{
     private static String NAME;
-
-    static {
-        SoftResetTask.NAME = "Tick." + SoftResetTask.class.getSimpleName();
-    }
-
     Logger logger;
-
+    
     private SoftResetTask() {
         this.logger = Journeymap.getLogger();
     }
-
+    
     public static void queue() {
         Journeymap.getClient().queueMainThreadTask(new SoftResetTask());
     }
-
+    
     @Override
     public IMainThreadTask perform(final Minecraft mc, final JourneymapClient jm) {
         jm.loadConfigProperties();
@@ -46,9 +42,13 @@ public class SoftResetTask implements IMainThreadTask {
         UIManager.INSTANCE.getMiniMap().updateDisplayVars(true);
         return null;
     }
-
+    
     @Override
     public String getName() {
         return SoftResetTask.NAME;
+    }
+    
+    static {
+        SoftResetTask.NAME = "Tick." + SoftResetTask.class.getSimpleName();
     }
 }

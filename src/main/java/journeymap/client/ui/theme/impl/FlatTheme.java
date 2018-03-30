@@ -1,27 +1,10 @@
 package journeymap.client.ui.theme.impl;
 
-import journeymap.client.ui.theme.Theme;
-import journeymap.client.ui.theme.ThemePresets;
+import java.util.*;
+import journeymap.client.ui.theme.*;
 
-import java.util.Arrays;
-
-public class FlatTheme extends Theme {
-    protected FlatTheme(final String name, final String author, final Style style) {
-        this.name = name;
-        this.author = author;
-        this.schema = 2;
-        this.directory = ThemePresets.DEFAULT_DIRECTORY;
-        this.control.button = button(style);
-        this.control.toggle = toggle(style);
-        this.fullscreen = fullscreen(style);
-        this.container.toolbar.horizontal = toolbar(style, "h", 0, style.iconSize);
-        this.container.toolbar.vertical = toolbar(style, "v", style.iconSize, 0);
-        this.icon.width = style.iconSize;
-        this.icon.height = style.iconSize;
-        this.minimap.square = minimapSquare(style);
-        this.minimap.circle = minimapCircle(style);
-    }
-
+public class FlatTheme extends Theme
+{
     public static Theme createPurist() {
         final Style style = new Style();
         style.button.on = "#ffffff";
@@ -64,7 +47,7 @@ public class FlatTheme extends Theme {
         }
         return theme;
     }
-
+    
     public static Theme createDesertTemple() {
         final String light = "#FFFFCD";
         final String medium = "#aea87e";
@@ -73,7 +56,7 @@ public class FlatTheme extends Theme {
         final String darkest = "#361809";
         return createFlatTheme("DesertTemple", light, medium, dark, darker, darkest);
     }
-
+    
     public static Theme createForestMansion() {
         final String light = "#d2e7d2";
         final String medium = "#7ab97a";
@@ -82,16 +65,17 @@ public class FlatTheme extends Theme {
         final String darkest = "#061b06";
         return createFlatTheme("ForestMansion", light, medium, dark, darker, darkest);
     }
-
+    
     public static Theme createNetherFortress() {
         final String light = "#FFFF00";
         final String medium = "#D2D200";
         final String dark = "#6f3634";
         final String darker = "#760000";
         final String darkest = "#3b0000";
-        return createFlatTheme("NetherFortress", light, medium, dark, darker, darkest);
+        final Theme theme = createFlatTheme("NetherFortress", light, medium, dark, darker, darkest);
+        return theme;
     }
-
+    
     public static Theme createStronghold() {
         final String light = "#000000";
         final String medium = "#cccccc";
@@ -126,7 +110,7 @@ public class FlatTheme extends Theme {
         }
         return theme;
     }
-
+    
     public static Theme createOceanMonument() {
         final String light = "#dfebec";
         final String medium = "#afcecf";
@@ -137,7 +121,7 @@ public class FlatTheme extends Theme {
         theme.control.toggle.iconDisabled.color = "#555555";
         return theme;
     }
-
+    
     public static Theme EndCity() {
         final String light = "#EAEE9A";
         final String dark = "#5A5470";
@@ -146,7 +130,7 @@ public class FlatTheme extends Theme {
         final String darkest = "#1F1D2D";
         return createFlatTheme("EndCity", light, medium, dark, darker, darkest);
     }
-
+    
     private static Theme createFlatTheme(final String themeName, final String light, final String medium, final String dark, final String darker, final String darkest) {
         final String white = "#ffffff";
         final Style style = new Style();
@@ -182,7 +166,23 @@ public class FlatTheme extends Theme {
         theme.minimap.square.reticleHeading.color = dark;
         return theme;
     }
-
+    
+    protected FlatTheme(final String name, final String author, final Style style) {
+        this.name = name;
+        this.author = author;
+        this.schema = 2;
+        this.directory = ThemePresets.DEFAULT_DIRECTORY;
+        this.control.button = button(style);
+        this.control.toggle = toggle(style);
+        this.fullscreen = fullscreen(style);
+        this.container.toolbar.horizontal = toolbar(style, "h", 0, style.iconSize);
+        this.container.toolbar.vertical = toolbar(style, "v", style.iconSize, 0);
+        this.icon.width = style.iconSize;
+        this.icon.height = style.iconSize;
+        this.minimap.square = minimapSquare(style);
+        this.minimap.circle = minimapCircle(style);
+    }
+    
     private static Control.ButtonSpec commonButton(final Style style) {
         final Control.ButtonSpec button = new Control.ButtonSpec();
         button.useThemeImages = style.useThemeImages;
@@ -194,7 +194,7 @@ public class FlatTheme extends Theme {
         button.tooltipDisabledStyle = style.tooltipDisabledStyle;
         return button;
     }
-
+    
     private static Control.ButtonSpec button(final Style style) {
         final Control.ButtonSpec button = commonButton(style);
         button.iconOn.color = style.button.off;
@@ -209,7 +209,7 @@ public class FlatTheme extends Theme {
         button.buttonDisabled.color = style.button.off;
         return button;
     }
-
+    
     private static Control.ButtonSpec toggle(final Style style) {
         final Control.ButtonSpec button = commonButton(style);
         button.iconOn.color = style.toggle.off;
@@ -224,14 +224,14 @@ public class FlatTheme extends Theme {
         button.buttonDisabled.color = style.toggle.disabled;
         return button;
     }
-
+    
     private static Fullscreen fullscreen(final Style style) {
         final Fullscreen fullscreen = new Fullscreen();
         fullscreen.background = style.fullscreenColorSpec.clone();
         fullscreen.statusLabel = style.label.clone();
         return fullscreen;
     }
-
+    
     private static Container.Toolbar.ToolbarSpec toolbar(final Style style, final String prefix, final int toolbarCapsWidth, final int toolbarCapsHeight) {
         final Container.Toolbar.ToolbarSpec toolbar = new Container.Toolbar.ToolbarSpec();
         toolbar.useThemeImages = true;
@@ -249,7 +249,7 @@ public class FlatTheme extends Theme {
         toolbar.end.color = style.toolbarColorSpec.color;
         return toolbar;
     }
-
+    
     private static Minimap.MinimapSquare minimapSquare(final Style style) {
         final Minimap.MinimapSquare minimap = new Minimap.MinimapSquare();
         applyCommonMinimap(style, minimap);
@@ -280,7 +280,7 @@ public class FlatTheme extends Theme {
         minimapSquare5.topLeft = imageSpec3;
         return minimap;
     }
-
+    
     private static Minimap.MinimapCircle minimapCircle(final Style style) {
         final Minimap.MinimapCircle minimap = new Minimap.MinimapCircle();
         applyCommonMinimap(style, minimap);
@@ -296,7 +296,7 @@ public class FlatTheme extends Theme {
         minimap.rim512 = new ImageSpec(512, 512);
         return minimap;
     }
-
+    
     private static void applyCommonMinimap(final Style style, final Minimap.MinimapSpec minimap) {
         minimap.compassLabel = style.label.clone();
         minimap.compassLabel.background.alpha = 0.0f;

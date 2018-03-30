@@ -1,47 +1,67 @@
 package journeymap.server.properties;
 
-import net.minecraftforge.common.DimensionManager;
+import java.util.*;
+import net.minecraftforge.common.*;
+import net.minecraftforge.fml.common.*;
+import net.minecraft.server.*;
+import com.google.common.base.*;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class PropertiesManager {
-    private static PropertiesManager INSTANCE;
-    private Map<Integer, DimensionProperties> dimensionProperties;
-    private GlobalProperties globalProperties;
-
+public class PropertiesManager
+{
+    private static final Supplier<PropertiesManager> LAZYINIT;
+    private final Map<Integer, DimensionProperties> dimensionProperties;
+    private final Map<Integer, DimensionProperties> dimensionOpProperties;
+    private final GlobalProperties globalProperties;
+    private final GlobalProperties globalOpProperties;
+    
     public static PropertiesManager getInstance() {
-        if (PropertiesManager.INSTANCE == null) {
-            (PropertiesManager.INSTANCE = new PropertiesManager()).loadConfigs();
-        }
-        return PropertiesManager.INSTANCE;
+        return (PropertiesManager)PropertiesManager.LAZYINIT.get();
     }
-
-    private void loadConfigs() {
-        this.dimensionProperties = new HashMap<>();
-        (this.globalProperties = new GlobalProperties()).load();
+    
+    private PropertiesManager() {
+        this.dimensionProperties = new HashMap<Integer, DimensionProperties>();
+        this.dimensionOpProperties = new HashMap<Integer, DimensionProperties>();
+        this.globalOpProperties = new GlobalProperties(true);
+        (this.globalProperties = new GlobalProperties(false)).load();
         for (final Integer dim : DimensionManager.getIDs()) {
-            this.genConfig(dim);
+            this.loadConfig(dim, false);
+        }
+        final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+        if (server.func_71262_S()) {
+            this.globalOpProperties.load();
+            for (final Integer dim2 : DimensionManager.getIDs()) {
+                this.loadConfig(dim2, true);
+            }
         }
     }
-
-    public DimensionProperties getDimProperties(final int dim) {
-        if (this.dimensionProperties.get(dim) == null) {
-            this.genConfig(dim);
+    
+    public DimensionProperties getDimProperties(final int dim, final boolean isOp) {
+        final DimensionProperties dimProps = this.getDimPropertiesMap(isOp).get(dim);
+        if (dimProps == null) {
+            return this.loadConfig(dim, isOp);
         }
-        return this.dimensionProperties.get(dim);
+        return dimProps;
     }
-
-    public GlobalProperties getGlobalProperties() {
-        return this.globalProperties;
+    
+    public GlobalProperties getGlobalProperties(final boolean isOp) {
+        return isOp ? this.globalOpProperties : this.globalProperties;
     }
-
-    private void genConfig(final int dim) {
-        final DimensionProperties prop = new DimensionProperties(dim);
-        this.dimensionProperties.put(dim, prop);
+    
+    private Map<Integer, DimensionProperties> getDimPropertiesMap(final boolean isOp) {
+        return isOp ? this.dimensionOpProperties : this.dimensionProperties;
+    }
+    
+    private DimensionProperties loadConfig(final int dim, final boolean isOp) {
+        final DimensionProperties prop = new DimensionProperties(dim, isOp);
+        this.getDimPropertiesMap(isOp).put(dim, prop);
         if (!prop.getFile().exists()) {
-            prop.build();
+            prop.build(this.getGlobalProperties(isOp));
         }
         prop.load();
+        return prop;
+    }
+    
+    static {
+        LAZYINIT = Suppliers.memoize(PropertiesManager::new);
     }
 }

@@ -1,38 +1,49 @@
 package journeymap.client.render.draw;
 
-import com.google.common.base.Strings;
-import journeymap.client.data.DataCache;
-import journeymap.client.model.EntityDTO;
-import journeymap.client.properties.InGameMapProperties;
-import journeymap.client.render.map.GridRenderer;
-import journeymap.client.render.texture.TextureImpl;
-import journeymap.client.ui.minimap.EntityDisplay;
-import journeymap.common.Journeymap;
-import journeymap.common.log.LogFormatter;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
+import journeymap.client.model.*;
+import journeymap.client.render.map.*;
+import journeymap.client.properties.*;
+import journeymap.client.feature.*;
+import journeymap.client.*;
+import journeymap.common.api.feature.*;
+import journeymap.client.ui.minimap.*;
+import net.minecraft.entity.*;
+import com.google.common.base.*;
+import net.minecraft.entity.player.*;
+import net.minecraft.entity.item.*;
+import journeymap.client.data.*;
+import journeymap.common.*;
+import journeymap.common.log.*;
+import journeymap.common.feature.*;
+import net.minecraft.world.*;
+import java.util.*;
+import journeymap.client.render.texture.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class RadarDrawStepFactory {
+public class RadarDrawStepFactory
+{
     public List<DrawStep> prepareSteps(final List<EntityDTO> entityDTOs, final GridRenderer grid, final InGameMapProperties mapProperties) {
-        final boolean showAnimals = mapProperties.showAnimals.get();
-        final boolean showPets = mapProperties.showPets.get();
-        final boolean showVillagers = mapProperties.showVillagers.get();
+        final int dimension = grid.getMapView().dimension;
+        final DimensionPolicies dimPolicies = ClientFeatures.instance().get(dimension);
+        final GameType gameType = JourneymapClient.getGameType();
+        final boolean showPassiveMobs = mapProperties.showAnimals.get() && dimPolicies.isAllowed(gameType, Feature.Radar.PassiveMob);
+        final boolean showPets = mapProperties.showPets.get() && dimPolicies.isAllowed(gameType, Feature.Radar.PassiveMob);
+        final boolean showVillagers = mapProperties.showVillagers.get() && dimPolicies.isAllowed(gameType, Feature.Radar.NPC);
+        final boolean showHostileMobs = mapProperties.showMobs.get() && dimPolicies.isAllowed(gameType, Feature.Radar.HostileMob);
+        final boolean showVehicles = mapProperties.showVehicles.get() && dimPolicies.isAllowed(gameType, Feature.Radar.Vehicle);
+        final boolean showPlayers = mapProperties.showPlayers.get() && dimPolicies.isAllowed(gameType, Feature.Radar.Player);
         final EntityDisplay mobDisplay = mapProperties.mobDisplay.get();
         final EntityDisplay playerDisplay = mapProperties.playerDisplay.get();
         final boolean showMobHeading = mapProperties.showMobHeading.get();
         final boolean showPlayerHeading = mapProperties.showPlayerHeading.get();
         final boolean showEntityNames = mapProperties.showEntityNames.get();
-        final List<DrawStep> drawStepList = new ArrayList<>();
+        final List<DrawStep> drawStepList = new ArrayList<DrawStep>();
         try {
             for (final EntityDTO dto : entityDTOs) {
                 try {
-                    TextureImpl entityIcon;
-                    TextureImpl locatorImg;
-                    final EntityLivingBase entityLiving = dto.entityLivingRef.get();
-                    if (entityLiving == null) {
+                    TextureImpl entityIcon = null;
+                    TextureImpl locatorImg = null;
+                    final Entity entity = dto.entityRef.get();
+                    if (entity == null) {
                         continue;
                     }
                     if (grid.getPixel(dto.posX, dto.posZ) == null) {
@@ -42,20 +53,33 @@ public class RadarDrawStepFactory {
                     if (!showPets && isPet) {
                         continue;
                     }
-                    if (!showAnimals && dto.passiveAnimal && (!isPet || !showPets)) {
+                    if (!showPassiveMobs && dto.passiveAnimal && (!isPet || !showPets)) {
+                        continue;
+                    }
+                    if (!showHostileMobs && Boolean.TRUE == dto.hostile) {
                         continue;
                     }
                     if (!showVillagers && (dto.profession != null || dto.npc)) {
                         continue;
                     }
-                    final DrawEntityStep drawStep = DataCache.INSTANCE.getDrawEntityStep(entityLiving);
-                    final boolean isPlayer = entityLiving instanceof EntityPlayer;
+                    final boolean isPlayer = entity instanceof EntityPlayer;
+                    if (!showPlayers && isPlayer) {
+                        continue;
+                    }
+                    if (entity instanceof EntityMinecart || entity instanceof EntityBoat) {
+                        entity.func_70005_c_();
+                    }
+                    if (!showVehicles && (entity instanceof EntityMinecart || entity instanceof EntityBoat)) {
+                        continue;
+                    }
+                    final DrawEntityStep drawStep = DataCache.INSTANCE.getDrawEntityStep(entity);
                     if (isPlayer) {
                         locatorImg = EntityDisplay.getLocatorTexture(playerDisplay, showPlayerHeading);
-                        entityIcon = EntityDisplay.getEntityTexture(playerDisplay, entityLiving.getName());
+                        entityIcon = EntityDisplay.getEntityTexture(playerDisplay, entity.func_70005_c_());
                         drawStep.update(playerDisplay, locatorImg, entityIcon, dto.color, showPlayerHeading, false);
                         drawStepList.add(drawStep);
-                    } else {
+                    }
+                    else {
                         locatorImg = EntityDisplay.getLocatorTexture(mobDisplay, showMobHeading);
                         entityIcon = EntityDisplay.getEntityTexture(mobDisplay, dto.entityIconLocation);
                         EntityDisplay actualDisplay = mobDisplay;
@@ -66,11 +90,13 @@ public class RadarDrawStepFactory {
                         drawStep.update(actualDisplay, locatorImg, entityIcon, dto.color, showMobHeading, showEntityNames);
                         drawStepList.add(drawStep);
                     }
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     Journeymap.getLogger().error("Exception during prepareSteps: " + LogFormatter.toString(e));
                 }
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             Journeymap.getLogger().error("Throwable during prepareSteps: " + LogFormatter.toString(t));
         }
         return drawStepList;

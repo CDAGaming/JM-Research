@@ -1,42 +1,43 @@
 package journeymap.common.migrate;
 
-import com.google.common.reflect.ClassPath;
-import journeymap.common.Journeymap;
-import journeymap.common.log.LogFormatter;
+import journeymap.common.*;
+import com.google.common.reflect.*;
+import java.lang.reflect.*;
+import journeymap.common.log.*;
+import java.util.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-public class Migration {
+public class Migration
+{
     private final String targetPackage;
-
+    
     public Migration(final String targetPackage) {
         this.targetPackage = targetPackage;
     }
-
+    
     public boolean performTasks() {
         boolean success = true;
-        final List<MigrationTask> tasks = new ArrayList<>();
+        final List<MigrationTask> tasks = new ArrayList<MigrationTask>();
         try {
-            final Set<ClassPath.ClassInfo> classInfoSet = ClassPath.from(Journeymap.class.getClassLoader()).getTopLevelClassesRecursive(this.targetPackage);
+            final Set<ClassPath.ClassInfo> classInfoSet = (Set<ClassPath.ClassInfo>)ClassPath.from(Journeymap.class.getClassLoader()).getTopLevelClassesRecursive(this.targetPackage);
             for (final ClassPath.ClassInfo classInfo : classInfoSet) {
-                final Class<?> clazz = classInfo.load();
-                if (MigrationTask.class.isAssignableFrom(clazz)) {
+                final Class<?> clazz = (Class<?>)classInfo.load();
+                if (MigrationTask.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers())) {
                     try {
-                        final MigrationTask task = (MigrationTask) clazz.newInstance();
+                        final MigrationTask task = (MigrationTask)clazz.newInstance();
                         if (!task.isActive(Journeymap.JM_VERSION)) {
                             continue;
                         }
                         tasks.add(task);
-                    } catch (Throwable t) {
-                        Journeymap.getLogger().error("Couldn't instantiate MigrationTask " + clazz, LogFormatter.toPartialString(t));
+                    }
+                    catch (Throwable t) {
+                        Journeymap.getLogger().error(String.format("Couldn't instantiate MigrationTask %s: %s", clazz, LogFormatter.toPartialString(t)));
                         success = false;
                     }
                 }
             }
-        } catch (Throwable t2) {
-            Journeymap.getLogger().error("Couldn't find MigrationTasks: " + t2, LogFormatter.toPartialString(t2));
+        }
+        catch (Throwable t2) {
+            Journeymap.getLogger().error(String.format("Couldn't find MigrationTasks: %s", LogFormatter.toPartialString(t2)));
             success = false;
         }
         for (final MigrationTask task2 : tasks) {
@@ -45,7 +46,8 @@ public class Migration {
                     continue;
                 }
                 success = false;
-            } catch (Throwable t3) {
+            }
+            catch (Throwable t3) {
                 Journeymap.getLogger().fatal(LogFormatter.toString(t3));
                 success = false;
             }

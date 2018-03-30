@@ -1,6 +1,7 @@
 package journeymap.common.properties;
 
-import java.util.TreeSet;
+import java.util.*;
 
-public class CategorySet extends TreeSet<Category> {
+public class CategorySet extends TreeSet<Category>
+{
 }

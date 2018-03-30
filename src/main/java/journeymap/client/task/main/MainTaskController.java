@@ -1,34 +1,35 @@
 package journeymap.client.task.main;
 
-import com.google.common.collect.Queues;
-import journeymap.client.JourneymapClient;
-import journeymap.client.log.StatTimer;
-import journeymap.common.Journeymap;
-import journeymap.common.log.LogFormatter;
-import net.minecraft.client.Minecraft;
-import net.minecraftforge.fml.client.FMLClientHandler;
+import java.util.concurrent.*;
+import com.google.common.collect.*;
+import net.minecraftforge.fml.client.*;
+import journeymap.common.*;
+import journeymap.client.log.*;
+import java.util.*;
+import journeymap.common.log.*;
+import net.minecraft.client.*;
+import journeymap.client.*;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-public class MainTaskController {
+public class MainTaskController
+{
     private final ConcurrentLinkedQueue<IMainThreadTask> currentQueue;
     private final ConcurrentLinkedQueue<IMainThreadTask> deferredQueue;
-
+    
     public MainTaskController() {
-        this.currentQueue = Queues.newConcurrentLinkedQueue();
-        this.deferredQueue = Queues.newConcurrentLinkedQueue();
+        this.currentQueue = (ConcurrentLinkedQueue<IMainThreadTask>)Queues.newConcurrentLinkedQueue();
+        this.deferredQueue = (ConcurrentLinkedQueue<IMainThreadTask>)Queues.newConcurrentLinkedQueue();
     }
-
+    
     public void addTask(final IMainThreadTask task) {
         synchronized (this.currentQueue) {
             this.currentQueue.add(task);
         }
     }
-
+    
     public boolean isActive() {
         return !this.currentQueue.isEmpty() && (this.currentQueue.size() != 1 || !(this.currentQueue.peek() instanceof MappingMonitorTask));
     }
-
+    
     public void performTasks() {
         try {
             synchronized (this.currentQueue) {
@@ -53,7 +54,8 @@ public class MainTaskController {
                 this.currentQueue.addAll(this.deferredQueue);
                 this.deferredQueue.clear();
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             final String error = "Error in TickTaskController.performMainThreadTasks(): " + t.getMessage();
             Journeymap.getLogger().error(error);
             Journeymap.getLogger().error(LogFormatter.toString(t));

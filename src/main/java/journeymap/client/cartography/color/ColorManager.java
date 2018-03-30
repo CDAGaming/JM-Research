@@ -1,54 +1,38 @@
 package journeymap.client.cartography.color;
 
-import com.google.common.base.Joiner;
-import journeymap.client.Constants;
-import journeymap.client.model.BlockMD;
-import journeymap.client.task.multi.MapPlayerTask;
-import journeymap.common.Journeymap;
-import journeymap.common.log.LogFormatter;
-import net.minecraft.client.resources.ResourcePackRepository;
-import org.apache.logging.log4j.Logger;
-import org.lwjgl.LWJGLException;
-import org.lwjgl.opengl.Display;
-
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-import java.awt.image.BufferedImage;
+import org.apache.logging.log4j.*;
+import journeymap.common.*;
+import journeymap.client.*;
+import net.minecraft.client.resources.*;
+import com.google.common.base.*;
+import org.lwjgl.opengl.*;
+import org.lwjgl.*;
+import journeymap.client.model.*;
+import journeymap.client.task.multi.*;
+import journeymap.common.log.*;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.*;
+import java.util.stream.*;
+import javax.annotation.*;
+import java.awt.image.*;
 
 @ParametersAreNonnullByDefault
-public enum ColorManager {
+public enum ColorManager
+{
     INSTANCE;
-
+    
     private Logger logger;
     private volatile ColorPalette currentPalette;
     private String lastResourcePackNames;
     private String lastModNames;
     private double lastPaletteVersion;
     private HashMap<String, float[]> iconColorCache;
-
+    
     private ColorManager() {
         this.logger = Journeymap.getLogger();
-        this.iconColorCache = new HashMap<>();
+        this.iconColorCache = new HashMap<String, float[]>();
     }
-
-    public static String getResourcePackNames() {
-        final List<ResourcePackRepository.Entry> entries = Constants.getResourcePacks();
-        String packs;
-        if (entries.isEmpty()) {
-            packs = Constants.RESOURCE_PACKS_DEFAULT;
-        } else {
-            final ArrayList<String> entryStrings = new ArrayList<>(entries.size());
-            for (final ResourcePackRepository.Entry entry : entries) {
-                entryStrings.add(entry.toString());
-            }
-            Collections.sort(entryStrings);
-            packs = Joiner.on(", ").join(entryStrings);
-        }
-        return packs;
-    }
-
+    
     public void reset() {
         this.lastResourcePackNames = null;
         this.lastModNames = null;
@@ -56,13 +40,31 @@ public enum ColorManager {
         this.currentPalette = null;
         this.iconColorCache.clear();
     }
-
+    
+    public static String getResourcePackNames() {
+        final List<ResourcePackRepository.Entry> entries = Constants.getResourcePacks();
+        String packs;
+        if (entries.isEmpty()) {
+            packs = Constants.RESOURCE_PACKS_DEFAULT;
+        }
+        else {
+            final ArrayList<String> entryStrings = new ArrayList<String>(entries.size());
+            for (final ResourcePackRepository.Entry entry : entries) {
+                entryStrings.add(entry.toString());
+            }
+            Collections.sort(entryStrings);
+            packs = Joiner.on(", ").join((Iterable)entryStrings);
+        }
+        return packs;
+    }
+    
     public void ensureCurrent(boolean forceReset) {
         try {
             if (!Display.isCurrent()) {
                 this.logger.error("ColorManager.ensureCurrent() must be called on main thread!");
             }
-        } catch (LWJGLException e) {
+        }
+        catch (LWJGLException e) {
             e.printStackTrace();
             return;
         }
@@ -91,11 +93,11 @@ public enum ColorManager {
         this.lastResourcePackNames = currentResourcePackNames;
         this.lastPaletteVersion = ((this.currentPalette == null) ? 0.0 : this.currentPalette.getVersion());
     }
-
+    
     public ColorPalette getCurrentPalette() {
         return this.currentPalette;
     }
-
+    
     private void initBlockColors(final boolean forceReset) {
         try {
             final long start = System.currentTimeMillis();
@@ -103,7 +105,8 @@ public enum ColorManager {
             Collection<BlockMD> blockMDs;
             if (Journeymap.getClient().isMapping()) {
                 blockMDs = BlockMD.getAllValid();
-            } else {
+            }
+            else {
                 blockMDs = BlockMD.getAllMinecraft();
             }
             if (forceReset || palette == null) {
@@ -113,8 +116,7 @@ public enum ColorManager {
             }
             boolean standard = true;
             boolean permanent = false;
-            Label_0211:
-            {
+            Label_0211: {
                 if (palette != null) {
                     standard = palette.isStandard();
                     permanent = palette.isPermanent();
@@ -129,7 +131,8 @@ public enum ColorManager {
                     try {
                         final int count = palette.applyColors(blockMDs, true);
                         this.logger.debug(String.format("Loaded %d block colors from %s", count, palette.getOrigin()));
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e) {
                         this.logger.warn(String.format("Could not load block colors from %s: %s", palette.getOrigin(), e));
                     }
                 }
@@ -150,28 +153,32 @@ public enum ColorManager {
             if (this.currentPalette.isDirty()) {
                 final long elapsed = System.currentTimeMillis() - start;
                 this.currentPalette.writeToFile();
-                this.logger.info(String.format("Updated color palette for %s blockstates in %sms: %s", this.currentPalette.size(), elapsed, this.currentPalette.getOrigin()));
-            } else {
+                this.logger.info(String.format("Update color palette for %s blockstates in %sms: %s", this.currentPalette.size(), elapsed, this.currentPalette.getOrigin()));
+            }
+            else {
                 final long elapsed = System.currentTimeMillis() - start;
                 this.logger.info(String.format("Loaded color palette for %s blockstates in %sms", this.currentPalette.size(), elapsed));
             }
             MapPlayerTask.forceNearbyRemap();
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             this.logger.error("ColorManager.initBlockColors() encountered an unexpected error: " + LogFormatter.toPartialString(t));
         }
     }
-
+    
     @Nullable
     public float[] getAverageColor(final Collection<ColoredSprite> sprites) {
         if (sprites == null || sprites.isEmpty()) {
             return null;
         }
-        final List<String> names = sprites.stream().map(ColoredSprite::getIconName).sorted().collect(Collectors.toList());
-        final String name = Joiner.on(",").join(names);
+        final List<String> names = sprites.stream().map((Function<? super ColoredSprite, ?>)ColoredSprite::getIconName).collect((Collector<? super Object, ?, List<String>>)Collectors.toList());
+        Collections.sort(names);
+        final String name = Joiner.on(",").join((Iterable)names);
         float[] rgba;
         if (this.iconColorCache.containsKey(name)) {
             rgba = this.iconColorCache.get(name);
-        } else {
+        }
+        else {
             rgba = this.calculateAverageColor(sprites);
             if (rgba != null) {
                 this.iconColorCache.put(name, rgba);
@@ -182,9 +189,9 @@ public enum ColorManager {
         }
         return rgba;
     }
-
+    
     private float[] calculateAverageColor(final Collection<ColoredSprite> sprites) {
-        final List<BufferedImage> images = new ArrayList<>(sprites.size());
+        final List<BufferedImage> images = new ArrayList<BufferedImage>(sprites.size());
         for (final ColoredSprite coloredSprite : sprites) {
             final BufferedImage img = coloredSprite.getColoredImage();
             if (img != null) {
@@ -213,8 +220,8 @@ public enum ColorManager {
                         b += (argb & 0xFF);
                     }
                 }
-            } catch (Exception e) {
             }
+            catch (Exception e) {}
         }
         if (count > 0) {
             final int rgb = RGB.toInteger(r / count, g / count, b / count);

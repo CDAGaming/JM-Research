@@ -1,41 +1,39 @@
 package journeymap.client.model;
 
-import com.google.common.base.MoreObjects;
-import journeymap.common.Journeymap;
+import java.awt.image.*;
+import journeymap.common.*;
+import java.util.*;
+import com.google.common.base.*;
+import java.io.*;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-public abstract class ImageSet {
-    protected final Map<MapType, ImageHolder> imageHolders;
-
+public abstract class ImageSet
+{
+    protected final Map<MapView, ImageHolder> imageHolders;
+    
     public ImageSet() {
-        this.imageHolders = Collections.synchronizedMap(new HashMap<>(8));
+        this.imageHolders = Collections.synchronizedMap(new HashMap<MapView, ImageHolder>(8));
     }
-
-    protected abstract ImageHolder getHolder(final MapType p0);
-
+    
+    protected abstract ImageHolder getHolder(final MapView p0);
+    
     @Override
     public abstract int hashCode();
-
+    
     @Override
     public abstract boolean equals(final Object p0);
-
-    public BufferedImage getImage(final MapType mapType) {
-        return this.getHolder(mapType).getImage();
+    
+    public BufferedImage getImage(final MapView mapView) {
+        return this.getHolder(mapView).getImage();
     }
-
+    
     public int writeToDiskAsync(final boolean force) {
         return this.writeToDisk(force, true);
     }
-
+    
     public int writeToDisk(final boolean force) {
         return this.writeToDisk(force, false);
     }
-
+    
     private int writeToDisk(final boolean force, final boolean async) {
         final long now = System.currentTimeMillis();
         int count = 0;
@@ -48,22 +46,24 @@ public abstract class ImageSet {
                     }
                 }
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             Journeymap.getLogger().error("Error writing ImageSet to disk: " + t);
         }
         return count;
     }
-
-    public boolean updatedSince(final MapType mapType, final long time) {
+    
+    public boolean updatedSince(final MapView mapView, final long time) {
         synchronized (this.imageHolders) {
-            if (mapType == null) {
+            if (mapView == null) {
                 for (final ImageHolder holder : this.imageHolders.values()) {
                     if (holder != null && holder.getImageTimestamp() >= time) {
                         return true;
                     }
                 }
-            } else {
-                final ImageHolder imageHolder = this.imageHolders.get(mapType);
+            }
+            else {
+                final ImageHolder imageHolder = this.imageHolders.get(mapView);
                 if (imageHolder != null && imageHolder.getImageTimestamp() >= time) {
                     return true;
                 }
@@ -71,7 +71,7 @@ public abstract class ImageSet {
         }
         return false;
     }
-
+    
     public void clear() {
         synchronized (this.imageHolders) {
             for (final ImageHolder imageHolder : this.imageHolders.values()) {
@@ -80,20 +80,20 @@ public abstract class ImageSet {
             this.imageHolders.clear();
         }
     }
-
+    
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this).add("imageHolders", this.imageHolders.entrySet()).toString();
+        return MoreObjects.toStringHelper((Object)this).add("imageHolders", (Object)this.imageHolders.entrySet()).toString();
     }
-
+    
     protected abstract int getImageSize();
-
-    protected ImageHolder addHolder(final MapType mapType, final File imageFile) {
-        return this.addHolder(new ImageHolder(mapType, imageFile, this.getImageSize()));
+    
+    protected ImageHolder addHolder(final MapView mapView, final File imageFile) {
+        return this.addHolder(new ImageHolder(mapView, imageFile, this.getImageSize()));
     }
-
+    
     protected ImageHolder addHolder(final ImageHolder imageHolder) {
-        this.imageHolders.put(imageHolder.mapType, imageHolder);
+        this.imageHolders.put(imageHolder.mapView, imageHolder);
         return imageHolder;
     }
 }

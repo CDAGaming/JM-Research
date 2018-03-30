@@ -1,10 +1,9 @@
 package journeymap.client.properties;
 
-import journeymap.common.properties.config.BooleanField;
-import journeymap.common.properties.config.IntegerField;
+import journeymap.common.properties.config.*;
 
-public class WaypointProperties extends ClientPropertiesBase implements Comparable<WaypointProperties> {
-    public final BooleanField managerEnabled;
+public class WaypointProperties extends ClientPropertiesBase implements Comparable<WaypointProperties>
+{
     public final BooleanField beaconEnabled;
     public final BooleanField showTexture;
     public final BooleanField showStaticBeam;
@@ -18,9 +17,8 @@ public class WaypointProperties extends ClientPropertiesBase implements Comparab
     public final IntegerField maxDistance;
     public final IntegerField minDistance;
     public final BooleanField createDeathpoints;
-
+    
     public WaypointProperties() {
-        this.managerEnabled = new BooleanField(ClientCategory.Waypoint, "jm.waypoint.enable_manager", true, true);
         this.beaconEnabled = new BooleanField(ClientCategory.WaypointBeacon, "jm.waypoint.enable_beacons", true, true);
         this.showTexture = new BooleanField(ClientCategory.WaypointBeacon, "jm.waypoint.show_texture", true);
         this.showStaticBeam = new BooleanField(ClientCategory.WaypointBeacon, "jm.waypoint.show_static_beam", true);
@@ -35,14 +33,14 @@ public class WaypointProperties extends ClientPropertiesBase implements Comparab
         this.minDistance = new IntegerField(ClientCategory.WaypointBeacon, "jm.waypoint.min_distance", 0, 64, 4);
         this.createDeathpoints = new BooleanField(ClientCategory.Waypoint, "jm.waypoint.create_deathpoints", true);
     }
-
+    
     @Override
     public String getName() {
         return "waypoint";
     }
-
+    
     @Override
     public int compareTo(final WaypointProperties other) {
-        return Integer.compare(this.hashCode(), other.hashCode());
+        return Integer.valueOf(this.hashCode()).compareTo(Integer.valueOf(other.hashCode()));
     }
 }

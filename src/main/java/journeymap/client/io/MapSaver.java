@@ -1,47 +1,35 @@
 package journeymap.client.io;
 
-import com.google.common.base.Joiner;
-import journeymap.client.Constants;
-import journeymap.client.data.WorldData;
-import journeymap.client.log.ChatLog;
-import journeymap.client.log.StatTimer;
-import journeymap.client.model.MapType;
-import journeymap.client.model.RegionCoord;
-import journeymap.client.model.RegionImageCache;
-import journeymap.common.Journeymap;
-import journeymap.common.log.LogFormatter;
-import net.minecraft.client.Minecraft;
-import net.minecraftforge.fml.client.FMLClientHandler;
-import org.apache.logging.log4j.Level;
+import java.io.*;
+import journeymap.common.*;
+import journeymap.client.*;
+import journeymap.client.log.*;
+import journeymap.common.log.*;
+import journeymap.client.model.*;
+import net.minecraftforge.fml.client.*;
+import java.util.*;
+import journeymap.client.data.*;
+import com.google.common.base.*;
+import net.minecraft.client.*;
+import java.util.regex.*;
+import java.text.*;
 
-import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-public class MapSaver {
+public class MapSaver
+{
     private static final DateFormat dateFormat;
-
-    static {
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
-    }
-
     final File worldDir;
-    final MapType mapType;
+    final MapView mapView;
     File saveFile;
     int outputColumns;
     int outputRows;
     ArrayList<File> files;
-
-    public MapSaver(final File worldDir, final MapType mapType) {
+    
+    public MapSaver(final File worldDir, final MapView mapView) {
         this.worldDir = worldDir;
-        this.mapType = mapType;
+        this.mapView = mapView;
         this.prepareFiles();
     }
-
+    
     public File saveMap() {
         final StatTimer timer = StatTimer.get("MapSaver.saveMap");
         try {
@@ -57,39 +45,41 @@ public class MapSaver {
             Journeymap.getLogger().info("Map filesize:" + this.saveFile.length());
             final String message = Constants.getString("jm.common.map_saved", this.saveFile);
             ChatLog.announceFile(message, this.saveFile);
-        } catch (OutOfMemoryError e) {
+        }
+        catch (OutOfMemoryError e) {
             final String error = "Out Of Memory: Increase Java Heap Size for Minecraft to save large maps.";
             Journeymap.getLogger().error(error);
             ChatLog.announceError(error);
             timer.cancel();
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             Journeymap.getLogger().error(LogFormatter.toString(t));
             timer.cancel();
             return null;
         }
         return this.saveFile;
     }
-
+    
     public String getSaveFileName() {
         return this.saveFile.getName();
     }
-
+    
     public boolean isValid() {
         return this.files != null && this.files.size() > 0;
     }
-
+    
     private File getImageDir() {
-        final RegionCoord fakeRc = new RegionCoord(this.worldDir, 0, 0, this.mapType.dimension);
-        return RegionImageHandler.getImageDir(fakeRc, this.mapType);
+        final RegionCoord fakeRc = new RegionCoord(this.worldDir, 0, 0, this.mapView.dimension);
+        return RegionImageHandler.getImageDir(fakeRc, this.mapView);
     }
-
+    
     private void prepareFiles() {
         try {
             final Minecraft mc = FMLClientHandler.instance().getClient();
             final String date = MapSaver.dateFormat.format(new Date());
             final String worldName = WorldData.getWorldName(mc, false);
-            final String dimName = WorldData.getSafeDimensionName(new WorldData.WrappedProvider(mc.world.provider));
-            final String fileName = Joiner.on("_").skipNulls().join(date, worldName, dimName, this.mapType.name, this.mapType.vSlice) + ".png";
+            final String dimName = WorldData.getSafeDimensionName(new WorldData.WrappedProvider(Journeymap.clientWorld().field_73011_w));
+            final String fileName = Joiner.on("_").skipNulls().join((Object)date, (Object)worldName, new Object[] { dimName, this.mapView.name().toLowerCase(), this.mapView.vSlice }) + ".png";
             final File screenshotsDir = new File(FileHandler.getMinecraftDirectory(), "screenshots");
             if (!screenshotsDir.exists()) {
                 screenshotsDir.mkdir();
@@ -98,7 +88,7 @@ public class MapSaver {
             RegionImageCache.INSTANCE.flushToDisk(false);
             final File imageDir = this.getImageDir();
             final File[] pngFiles = imageDir.listFiles();
-            final Pattern tilePattern = Pattern.compile("([^.]+),([^.]+)\\.png");
+            final Pattern tilePattern = Pattern.compile("([^\\.]+)\\,([^\\.]+)\\.png");
             Integer minX = null;
             Integer minZ = null;
             Integer maxX = null;
@@ -129,20 +119,26 @@ public class MapSaver {
             final long blankSize = RegionImageHandler.getBlank512x512ImageFile().length();
             this.outputColumns = maxX - minX + 1;
             this.outputRows = maxZ - minZ + 1;
-            this.files = new ArrayList<>(this.outputColumns * this.outputRows);
+            this.files = new ArrayList<File>(this.outputColumns * this.outputRows);
             for (int rz = minZ; rz <= maxZ; ++rz) {
                 for (int rx = minX; rx <= maxX; ++rx) {
-                    final RegionCoord rc = new RegionCoord(this.worldDir, rx, rz, this.mapType.dimension);
-                    final File rfile = RegionImageHandler.getRegionImageFile(rc, this.mapType, true);
+                    final RegionCoord rc = new RegionCoord(this.worldDir, rx, rz, this.mapView.dimension);
+                    final File rfile = RegionImageHandler.getRegionImageFile(rc, this.mapView, true);
                     if (rfile.canRead()) {
                         this.files.add(rfile);
-                    } else {
+                    }
+                    else {
                         this.files.add(RegionImageHandler.getBlank512x512ImageFile());
                     }
                 }
             }
-        } catch (Throwable t) {
-            Journeymap.getLogger().log(Level.ERROR, LogFormatter.toString(t));
         }
+        catch (Throwable t) {
+            Journeymap.getLogger().error(LogFormatter.toPartialString(t));
+        }
+    }
+    
+    static {
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
     }
 }

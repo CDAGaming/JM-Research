@@ -1,9 +1,10 @@
 package journeymap.client.ui.theme.impl;
 
-import journeymap.client.ui.theme.Theme;
-import net.minecraft.util.text.TextFormatting;
+import journeymap.client.ui.theme.*;
+import net.minecraft.util.text.*;
 
-class Style {
+class Style
+{
     Theme.LabelSpec label;
     Colors button;
     Colors toggle;
@@ -22,7 +23,7 @@ class Style {
     int toolbarMargin;
     int toolbarPadding;
     boolean useThemeImages;
-
+    
     Style() {
         this.label = new Theme.LabelSpec();
         this.button = new Colors();
@@ -44,8 +45,9 @@ class Style {
         this.useThemeImages = true;
         this.label.margin = 0;
     }
-
-    static class Colors {
+    
+    static class Colors
+    {
         String on;
         String off;
         String hover;

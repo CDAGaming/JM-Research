@@ -1,26 +1,26 @@
 package journeymap.client.cartography.render;
 
-import journeymap.client.cartography.IChunkRenderer;
-import journeymap.client.cartography.Strata;
-import journeymap.client.cartography.Stratum;
-import journeymap.client.cartography.color.RGB;
-import journeymap.client.log.StatTimer;
+import journeymap.client.log.*;
+import journeymap.common.*;
+import net.minecraft.util.math.*;
+import journeymap.client.render.*;
+import journeymap.client.feature.*;
+import journeymap.common.api.feature.*;
+import java.awt.image.*;
+import journeymap.common.log.*;
 import journeymap.client.model.*;
-import journeymap.client.render.ComparableBufferedImage;
-import journeymap.common.Journeymap;
-import journeymap.common.log.LogFormatter;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.WorldProviderHell;
+import net.minecraft.world.*;
+import journeymap.client.cartography.color.*;
+import journeymap.client.cartography.*;
 
-import java.awt.image.BufferedImage;
-
-public class CaveRenderer extends BaseRenderer implements IChunkRenderer {
+public class CaveRenderer extends BaseRenderer implements IChunkRenderer
+{
     protected SurfaceRenderer surfaceRenderer;
     protected StatTimer renderCaveTimer;
     protected Strata strata;
     protected float defaultDim;
     protected boolean mapSurfaceAboveCaves;
-
+    
     public CaveRenderer(final SurfaceRenderer surfaceRenderer) {
         this.renderCaveTimer = StatTimer.get("CaveRenderer.render");
         this.strata = new Strata("Cave", 40, 8, true);
@@ -34,33 +34,37 @@ public class CaveRenderer extends BaseRenderer implements IChunkRenderer {
         this.shadingSecondaryDownslopeMultiplier = 0.99f;
         this.shadingSecondaryUpslopeMultiplier = 1.01f;
     }
-
+    
     @Override
-    protected boolean updateOptions(final ChunkMD chunkMd, final MapType mapType) {
-        if (super.updateOptions(chunkMd, mapType)) {
+    protected boolean updateOptions(final ChunkMD chunkMd, final MapView mapView) {
+        if (super.updateOptions(chunkMd, mapView)) {
             this.mapSurfaceAboveCaves = Journeymap.getClient().getCoreProperties().mapSurfaceAboveCaves.get();
             return true;
         }
         return false;
     }
-
+    
     @Override
     public int getBlockHeight(final ChunkMD chunkMd, final BlockPos blockPos) {
-        final Integer vSlice = blockPos.getY() >> 4;
+        final Integer vSlice = blockPos.func_177956_o() >> 4;
         final int[] sliceBounds = this.getVSliceBounds(chunkMd, vSlice);
         final int sliceMinY = sliceBounds[0];
         final int sliceMaxY = sliceBounds[1];
-        final Integer y = this.getBlockHeight(chunkMd, blockPos.getX() & 0xF, vSlice, blockPos.getZ() & 0xF, sliceMinY, sliceMaxY);
-        return (y == null) ? blockPos.getY() : y;
+        final Integer y = this.getBlockHeight(chunkMd, blockPos.func_177958_n() & 0xF, vSlice, blockPos.func_177952_p() & 0xF, sliceMinY, sliceMaxY);
+        return (y == null) ? blockPos.func_177956_o() : y;
     }
-
+    
     @Override
     public synchronized boolean render(final ComparableBufferedImage chunkImage, final ChunkMD chunkMd, final Integer vSlice) {
         if (vSlice == null) {
             Journeymap.getLogger().warn("ChunkOverworldCaveRenderer is for caves. vSlice can't be null");
             return false;
         }
-        this.updateOptions(chunkMd, MapType.underground(vSlice, chunkMd.getDimension()));
+        final int dimension = chunkMd.getDimension();
+        if (!ClientFeatures.instance().isAllowed(Feature.MapType.Underground, dimension)) {
+            return false;
+        }
+        this.updateOptions(chunkMd, MapView.underground(vSlice, dimension));
         this.renderCaveTimer.start();
         try {
             if (!this.hasSlopes(chunkMd, vSlice)) {
@@ -68,37 +72,41 @@ public class CaveRenderer extends BaseRenderer implements IChunkRenderer {
             }
             BufferedImage chunkSurfaceImage = null;
             if (this.mapSurfaceAboveCaves) {
-                final MapType mapType = MapType.day(chunkMd.getDimension());
-                final RegionImageSet ris = RegionImageCache.INSTANCE.getRegionImageSet(chunkMd, mapType);
-                if (ris != null && ris.getHolder(mapType).hasTexture()) {
-                    chunkSurfaceImage = ris.getChunkImage(chunkMd, mapType);
+                final MapView mapView = MapView.day(chunkMd.getDimension());
+                final RegionImageSet ris = RegionImageCache.INSTANCE.getRegionImageSet(chunkMd, mapView);
+                if (ris != null && ris.getHolder(mapView).hasTexture()) {
+                    chunkSurfaceImage = ris.getChunkImage(chunkMd, mapView);
                 }
             }
             return this.renderUnderground(chunkSurfaceImage, chunkImage, chunkMd, vSlice);
-        } finally {
+        }
+        finally {
             this.renderCaveTimer.stop();
         }
     }
-
+    
     protected void mask(final BufferedImage chunkSurfaceImage, final BufferedImage chunkImage, final ChunkMD chunkMd, final int x, final int y, final int z) {
         if (chunkSurfaceImage == null || !this.mapSurfaceAboveCaves) {
             this.paintBlackBlock(chunkImage, x, z);
-        } else {
-            final int surfaceY = Math.max(0, chunkMd.getChunk().getHeightValue(x, z));
+        }
+        else {
+            final int surfaceY = Math.max(0, chunkMd.getChunk().func_76611_b(x, z));
             final int distance = Math.max(0, surfaceY - y);
             if (distance > 16) {
                 final int minY = this.getBlockHeight(chunkMd, new BlockPos(x, y - 1, z));
                 if (y > 0 && minY > 0) {
                     this.paintBlackBlock(chunkImage, x, z);
-                } else {
+                }
+                else {
                     this.paintVoidBlock(chunkImage, x, z);
                 }
-            } else {
+            }
+            else {
                 this.paintDimOverlay(chunkSurfaceImage, chunkImage, x, z, this.defaultDim);
             }
         }
     }
-
+    
     protected boolean renderUnderground(final BufferedImage chunkSurfaceImage, final BufferedImage chunkSliceImage, final ChunkMD chunkMd, final int vSlice) {
         final int[] sliceBounds = this.getVSliceBounds(chunkMd, vSlice);
         final int sliceMinY = sliceBounds[0];
@@ -112,17 +120,20 @@ public class CaveRenderer extends BaseRenderer implements IChunkRenderer {
                     if (ceiling < 0) {
                         this.paintVoidBlock(chunkSliceImage, x, z);
                         chunkOk = true;
-                    } else {
+                    }
+                    else {
                         final int y = Math.min(ceiling, sliceMaxY);
                         this.buildStrata(this.strata, sliceMinY - 1, chunkMd, x, y, z);
                         if (this.strata.isEmpty()) {
                             this.mask(chunkSurfaceImage, chunkSliceImage, chunkMd, x, y, z);
                             chunkOk = true;
-                        } else {
+                        }
+                        else {
                             chunkOk = (this.paintStrata(this.strata, chunkSliceImage, chunkMd, vSlice, x, ceiling, z) || chunkOk);
                         }
                     }
-                } catch (Throwable t) {
+                }
+                catch (Throwable t) {
                     this.paintBadBlock(chunkSliceImage, x, vSlice, z);
                     final String error = "CaveRenderer error at x,vSlice,z = " + x + "," + vSlice + "," + z + " : " + LogFormatter.toString(t);
                     Journeymap.getLogger().error(error);
@@ -132,7 +143,7 @@ public class CaveRenderer extends BaseRenderer implements IChunkRenderer {
         this.strata.reset();
         return chunkOk;
     }
-
+    
     protected void buildStrata(final Strata strata, final int minY, final ChunkMD chunkMd, final int x, final int topY, final int z) {
         BlockMD lavaBlockMD = null;
         try {
@@ -155,35 +166,39 @@ public class CaveRenderer extends BaseRenderer implements IChunkRenderer {
                                 if (!this.mapTransparency) {
                                     break;
                                 }
-                            } else if (y < minY) {
+                            }
+                            else if (y < minY) {
                                 break;
                             }
                         }
-                    } else if (strata.isEmpty() && y < minY) {
+                    }
+                    else if (strata.isEmpty() && y < minY) {
                         break;
                     }
                 }
             }
-        } finally {
-            if (strata.isEmpty() && lavaBlockMD != null && chunkMd.getWorld().provider instanceof WorldProviderHell) {
+        }
+        finally {
+            if (strata.isEmpty() && lavaBlockMD != null && chunkMd.getWorld().field_73011_w instanceof WorldProviderHell) {
                 strata.push(chunkMd, lavaBlockMD, x, topY, z, 14);
             }
         }
     }
-
+    
     protected boolean paintStrata(final Strata strata, final BufferedImage chunkSliceImage, final ChunkMD chunkMd, final Integer vSlice, final int x, final int y, final int z) {
         if (strata.isEmpty()) {
             this.paintBadBlock(chunkSliceImage, x, y, z);
             return false;
         }
         try {
-            Stratum stratum;
+            Stratum stratum = null;
             BlockMD blockMD = null;
             while (!strata.isEmpty()) {
                 stratum = strata.nextUp(this, true);
                 if (strata.getRenderCaveColor() == null) {
                     strata.setRenderCaveColor(stratum.getCaveColor());
-                } else {
+                }
+                else {
                     strata.setRenderCaveColor(RGB.blendWith(strata.getRenderCaveColor(), stratum.getCaveColor(), stratum.getBlockMD().getAlpha()));
                 }
                 blockMD = stratum.getBlockMD();
@@ -200,13 +215,14 @@ public class CaveRenderer extends BaseRenderer implements IChunkRenderer {
                 }
             }
             this.paintBlock(chunkSliceImage, x, z, strata.getRenderCaveColor());
-        } catch (RuntimeException e) {
+        }
+        catch (RuntimeException e) {
             this.paintBadBlock(chunkSliceImage, x, y, z);
             throw e;
         }
         return true;
     }
-
+    
     @Override
     protected Integer getBlockHeight(final ChunkMD chunkMd, final int x, final Integer vSlice, final int z, final Integer sliceMinY, final Integer sliceMaxY) {
         final Integer[][] blockSliceHeights = this.getHeights(chunkMd, vSlice);
@@ -254,14 +270,15 @@ public class CaveRenderer extends BaseRenderer implements IChunkRenderer {
                     break;
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             Journeymap.getLogger().warn("Couldn't get safe slice block height at " + x + "," + z + ": " + e);
             y = sliceMaxY;
         }
         y = Math.max(0, y);
         return blockSliceHeights[x][z] = y;
     }
-
+    
     protected int getSliceLightLevel(final ChunkMD chunkMd, final int x, final int y, final int z, final boolean adjusted) {
         return this.mapCaveLighting ? chunkMd.getSavedLightValue(x, y + 1, z) : 15;
     }
