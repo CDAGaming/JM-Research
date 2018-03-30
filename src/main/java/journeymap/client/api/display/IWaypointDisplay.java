@@ -1,13 +1,14 @@
 package journeymap.client.api.display;
 
-import java.util.*;
-import journeymap.client.api.model.*;
+import journeymap.client.api.model.MapImage;
+import journeymap.client.api.model.MapText;
 
-public interface IWaypointDisplay
-{
+import java.util.Set;
+
+public interface IWaypointDisplay {
     Set<Integer> getDisplayDimensions();
-    
+
     MapImage getIcon();
-    
+
     MapText getLabel();
 }
