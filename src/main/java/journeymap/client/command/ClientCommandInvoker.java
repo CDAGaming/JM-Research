@@ -1,67 +1,67 @@
 package journeymap.client.command;
 
-import net.minecraft.client.*;
-import journeymap.common.*;
-import com.mojang.authlib.*;
-import journeymap.common.log.*;
-import net.minecraft.client.entity.*;
-import net.minecraft.server.integrated.*;
-import net.minecraft.server.management.*;
-import com.google.common.base.*;
-import net.minecraft.server.*;
-import java.util.*;
-import net.minecraft.util.text.*;
-import net.minecraft.command.*;
-import net.minecraft.util.math.*;
+import com.google.common.base.Strings;
+import com.mojang.authlib.GameProfile;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.server.management.PlayerList;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 
-public class ClientCommandInvoker implements ICommand
-{
+import java.util.*;
+
+public class ClientCommandInvoker implements ICommand {
     Map<String, ICommand> commandMap;
-    
+
     public ClientCommandInvoker() {
-        this.commandMap = new HashMap<String, ICommand>();
+        this.commandMap = new HashMap<>();
     }
-    
+
     public static boolean commandsAllowed(final Minecraft mc) {
         final EntityPlayerSP player = Journeymap.clientPlayer();
-        if (player != null && mc.func_71401_C() != null) {
-            final IntegratedServer mcServer = mc.func_71401_C();
+        if (player != null && mc.getIntegratedServer() != null) {
+            final IntegratedServer mcServer = mc.getIntegratedServer();
             PlayerList configurationManager = null;
             GameProfile profile = null;
             try {
-                profile = new GameProfile(player.func_110124_au(), player.func_70005_c_());
-                configurationManager = mcServer.func_184103_al();
-                return configurationManager.func_152596_g(profile);
-            }
-            catch (Exception e) {
+                profile = new GameProfile(player.getUniqueID(), player.getName());
+                configurationManager = mcServer.getPlayerList();
+                return configurationManager.canSendCommands(profile);
+            } catch (Exception e) {
                 try {
                     if (profile != null && configurationManager != null) {
-                        return mcServer.func_71264_H() && mcServer.field_71305_c[0].func_72912_H().func_76086_u() && mcServer.func_71214_G().equalsIgnoreCase(profile.getName());
+                        return mcServer.isSinglePlayer() && mcServer.worlds[0].getWorldInfo().areCommandsAllowed() && mcServer.getServerOwner().equalsIgnoreCase(profile.getName());
                     }
                     Journeymap.getLogger().warn("Failed to check commandsAllowed both ways: " + LogFormatter.toString(e) + ", and profile or configManager were null.");
                     return true;
-                }
-                catch (Exception e2) {
+                } catch (Exception e2) {
                     Journeymap.getLogger().warn("Failed to check commandsAllowed. Both ways failed: " + LogFormatter.toString(e) + ", and " + LogFormatter.toString(e2));
                 }
             }
         }
         return true;
     }
-    
+
     public ClientCommandInvoker register(final ICommand command) {
-        this.commandMap.put(command.func_71517_b().toLowerCase(), command);
+        this.commandMap.put(command.getName().toLowerCase(), command);
         return this;
     }
-    
-    public String func_71517_b() {
+
+    public String getName() {
         return "jm";
     }
-    
-    public String func_71518_a(final ICommandSender sender) {
-        final StringBuffer sb = new StringBuffer();
+
+    public String getUsage(final ICommandSender sender) {
+        final StringBuilder sb = new StringBuilder();
         for (final ICommand command : this.commandMap.values()) {
-            final String usage = command.func_71518_a(sender);
+            final String usage = command.getUsage(sender);
             if (!Strings.isNullOrEmpty(usage)) {
                 if (sb.length() > 0) {
                     sb.append("\n");
@@ -71,48 +71,45 @@ public class ClientCommandInvoker implements ICommand
         }
         return sb.toString();
     }
-    
-    public List<String> func_71514_a() {
+
+    public List<String> getAliases() {
         return Collections.emptyList();
     }
-    
-    public void func_184881_a(final MinecraftServer server, final ICommandSender sender, final String[] args) throws CommandException {
+
+    public void execute(final MinecraftServer server, final ICommandSender sender, final String[] args) throws CommandException {
         try {
             if (args.length > 0) {
                 final ICommand command = this.getSubCommand(args);
                 if (command != null) {
                     final String[] subArgs = Arrays.copyOfRange(args, 1, args.length);
-                    command.func_184881_a(server, sender, subArgs);
+                    command.execute(server, sender, subArgs);
                 }
+            } else {
+                sender.sendMessage(new TextComponentString(this.getUsage(sender)));
             }
-            else {
-                sender.func_145747_a((ITextComponent)new TextComponentString(this.func_71518_a(sender)));
-            }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().error(LogFormatter.toPartialString(t));
-            throw new CommandException("Error in /jm: " + t, new Object[0]);
+            throw new CommandException("Error in /jm: " + t);
         }
     }
-    
-    public boolean func_184882_a(final MinecraftServer server, final ICommandSender sender) {
+
+    public boolean checkPermission(final MinecraftServer server, final ICommandSender sender) {
         return true;
     }
-    
-    public List<String> func_184883_a(final MinecraftServer server, final ICommandSender sender, final String[] args, final BlockPos pos) {
+
+    public List<String> getTabCompletions(final MinecraftServer server, final ICommandSender sender, final String[] args, final BlockPos pos) {
         try {
             final ICommand command = this.getSubCommand(args);
             if (command != null) {
                 final String[] subArgs = Arrays.copyOfRange(args, 1, args.length);
-                return (List<String>)command.func_184883_a(server, sender, subArgs, pos);
+                return command.getTabCompletions(server, sender, subArgs, pos);
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             Journeymap.getLogger().error("Error in addTabCompletionOptions: " + LogFormatter.toPartialString(t));
         }
         return null;
     }
-    
+
     public ICommand getSubCommand(final String[] args) {
         if (args.length > 0) {
             final ICommand command = this.commandMap.get(args[0].toLowerCase());
@@ -122,11 +119,11 @@ public class ClientCommandInvoker implements ICommand
         }
         return null;
     }
-    
-    public boolean func_82358_a(final String[] args, final int index) {
+
+    public boolean isUsernameIndex(final String[] args, final int index) {
         return false;
     }
-    
+
     public int compareTo(final ICommand o) {
         return 0;
     }
