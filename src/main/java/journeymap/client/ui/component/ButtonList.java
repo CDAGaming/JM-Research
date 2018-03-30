@@ -400,11 +400,11 @@ public class ButtonList extends ArrayList<Button> {
         CenteredHorizontal,
         CenteredVertical,
         DistributedHorizontal,
-        FilledHorizontal;
+        FilledHorizontal
     }
 
     public enum Direction {
         LeftToRight,
-        RightToLeft;
+        RightToLeft
     }
 }

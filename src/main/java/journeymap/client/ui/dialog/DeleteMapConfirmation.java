@@ -12,7 +12,7 @@ public class DeleteMapConfirmation extends JmUI {
     Button buttonClose;
 
     public DeleteMapConfirmation() {
-        this((JmUI) null);
+        this(null);
     }
 
     public DeleteMapConfirmation(final JmUI returnDisplay) {

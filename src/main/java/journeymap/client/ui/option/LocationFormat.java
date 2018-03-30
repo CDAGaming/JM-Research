@@ -19,7 +19,7 @@ public class LocationFormat {
     private HashMap<String, LocationFormatKeys> idToFormat;
 
     public LocationFormat() {
-        this.idToFormat = new HashMap<String, LocationFormatKeys>();
+        this.idToFormat = new HashMap<>();
         for (final String id : LocationFormat.locationFormatIds) {
             this.idToFormat.put(id, new LocationFormatKeys(id));
         }

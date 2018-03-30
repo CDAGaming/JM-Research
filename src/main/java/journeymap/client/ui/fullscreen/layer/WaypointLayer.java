@@ -16,7 +16,10 @@ import net.minecraft.util.math.Vec3d;
 import org.lwjgl.input.Mouse;
 
 import java.awt.geom.Point2D;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 
 public class WaypointLayer implements LayerDelegate.Layer {
     private final long hoverDelay = 100L;
@@ -32,7 +35,7 @@ public class WaypointLayer implements LayerDelegate.Layer {
         this.startHover = 0L;
         this.selectedWaypointStep = null;
         this.selected = null;
-        this.drawStepList = new ArrayList<DrawStep>(1);
+        this.drawStepList = new ArrayList<>(1);
         this.clickDrawStep = new BlockOutlineDrawStep(new BlockPos(0, 0, 0));
     }
 
@@ -47,13 +50,13 @@ public class WaypointLayer implements LayerDelegate.Layer {
         }
         final long now = Minecraft.getSystemTime();
         final int proximity = (int) Math.max(1.0, 8.0 / gridRenderer.getUIState().blockSize);
-        if (this.clickDrawStep.blockCoord != null && !blockCoord.equals((Object) this.clickDrawStep.blockCoord)) {
+        if (this.clickDrawStep.blockCoord != null && !blockCoord.equals(this.clickDrawStep.blockCoord)) {
             this.unclick();
         } else {
             this.drawStepList.add(this.clickDrawStep);
         }
         final AxisAlignedBB area = new AxisAlignedBB((double) (blockCoord.getX() - proximity), -1.0, (double) (blockCoord.getZ() - proximity), (double) (blockCoord.getX() + proximity), (double) (mc.world.getActualHeight() + 1), (double) (blockCoord.getZ() + proximity));
-        if (!this.lastCoord.equals((Object) blockCoord)) {
+        if (!this.lastCoord.equals(blockCoord)) {
             if (!area.contains(new Vec3d((double) this.lastCoord.getX(), 1.0, (double) this.lastCoord.getZ()))) {
                 this.selected = null;
                 this.lastCoord = blockCoord;
@@ -69,7 +72,7 @@ public class WaypointLayer implements LayerDelegate.Layer {
         }
         final int dimension = mc.player.dimension;
         final Collection<Waypoint> waypoints = DataCache.INSTANCE.getWaypoints(false);
-        final ArrayList<Waypoint> proximal = new ArrayList<Waypoint>();
+        final ArrayList<Waypoint> proximal = new ArrayList<>();
         for (final Waypoint waypoint : waypoints) {
             if (waypoint.isEnable() && waypoint.isInPlayerDimension() && area.contains(new Vec3d((double) waypoint.getX(), (double) waypoint.getY(), (double) waypoint.getZ()))) {
                 proximal.add(waypoint);
@@ -107,7 +110,7 @@ public class WaypointLayer implements LayerDelegate.Layer {
     }
 
     private void sortByDistance(final List<Waypoint> waypoints, final BlockPos blockCoord, final int dimension) {
-        Collections.sort(waypoints, new Comparator<Waypoint>() {
+        waypoints.sort(new Comparator<Waypoint>() {
             @Override
             public int compare(final Waypoint o1, final Waypoint o2) {
                 return Double.compare(this.getDistance(o1), this.getDistance(o2));

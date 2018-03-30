@@ -70,22 +70,22 @@ public class GridEditor extends JmUI {
         try {
             if (this.buttonList.isEmpty()) {
                 final GridSpec spec = this.gridSpecs.getSpec(this.activeMapType);
-                this.buttonStyle = new ListPropertyButton<GridSpec.Style>(EnumSet.allOf(GridSpec.Style.class), Constants.getString("jm.common.grid_style"), new EnumField<GridSpec.Style>(Category.Hidden, "", spec.style));
+                this.buttonStyle = new ListPropertyButton<>(EnumSet.allOf(GridSpec.Style.class), Constants.getString("jm.common.grid_style"), new EnumField<>(Category.Hidden, "", spec.style));
                 this.buttonOpacity = new IntSliderButton(new IntegerField(Category.Hidden, "", 0, 100, (int) Math.ceil(spec.alpha * 100.0f)), Constants.getString("jm.common.grid_opacity") + " : ", "", 0, 100, true);
-                (this.topButtons = new ButtonList(new Button[]{this.buttonStyle, this.buttonOpacity})).equalizeWidths(this.getFontRenderer());
+                (this.topButtons = new ButtonList(this.buttonStyle, this.buttonOpacity)).equalizeWidths(this.getFontRenderer());
                 this.checkDay = new CheckBox("", this.activeMapType == MapType.day(0));
                 this.checkNight = new CheckBox("", this.activeMapType == MapType.night(0));
                 this.checkUnderground = new CheckBox("", this.activeMapType.isUnderground());
-                this.leftChecks = new ButtonList(new Button[]{this.checkDay, this.checkNight, this.checkUnderground});
+                this.leftChecks = new ButtonList(this.checkDay, this.checkNight, this.checkUnderground);
                 final Theme theme = ThemeLoader.getCurrentTheme();
                 (this.buttonDay = new ThemeToggle(theme, "jm.fullscreen.map_day", "day")).setToggled(this.activeMapType == MapType.day(0), false);
                 (this.buttonNight = new ThemeToggle(theme, "jm.fullscreen.map_night", "night")).setToggled(this.activeMapType == MapType.night(0), false);
                 (this.buttonUnderground = new ThemeToggle(theme, "jm.fullscreen.map_caves", "caves")).setToggled(this.activeMapType.isUnderground(), false);
-                this.leftButtons = new ButtonList(new Button[]{this.buttonDay, this.buttonNight, this.buttonUnderground});
+                this.leftButtons = new ButtonList(this.buttonDay, this.buttonNight, this.buttonUnderground);
                 this.buttonReset = new Button(Constants.getString("jm.waypoint.reset"));
                 this.buttonCancel = new Button(Constants.getString("jm.waypoint.cancel"));
                 this.buttonClose = new Button(Constants.getString("jm.waypoint.save"));
-                (this.bottomButtons = new ButtonList(new Button[]{this.buttonReset, this.buttonCancel, this.buttonClose})).equalizeWidths(this.getFontRenderer());
+                (this.bottomButtons = new ButtonList(this.buttonReset, this.buttonCancel, this.buttonClose)).equalizeWidths(this.getFontRenderer());
                 this.buttonList.addAll(this.topButtons);
                 this.buttonList.addAll(this.leftChecks);
                 this.buttonList.addAll(this.leftButtons);
@@ -131,8 +131,7 @@ public class GridEditor extends JmUI {
         try {
             this.drawBackground(0);
             this.layoutButtons();
-            for (int k = 0; k < this.buttonList.size(); ++k) {
-                final GuiButton guibutton = this.buttonList.get(k);
+            for (final GuiButton guibutton : this.buttonList) {
                 guibutton.drawButton(this.mc, x, y, 0.0f);
             }
             this.drawTitle();

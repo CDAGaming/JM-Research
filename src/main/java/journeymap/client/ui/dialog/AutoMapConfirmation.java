@@ -21,7 +21,7 @@ public class AutoMapConfirmation extends JmUI {
     Button buttonClose;
 
     public AutoMapConfirmation() {
-        this((JmUI) null);
+        this(null);
     }
 
     public AutoMapConfirmation(final JmUI returnDisplay) {
@@ -57,7 +57,7 @@ public class AutoMapConfirmation extends JmUI {
         y += lineHeight * 3;
         this.drawCenteredString(this.getFontRenderer(), Constants.getString("jm.common.automap_dialog_text"), x, y, 16776960);
         y += lineHeight * 2;
-        final ButtonList buttons = new ButtonList(new Button[]{this.buttonAll, this.buttonMissing});
+        final ButtonList buttons = new ButtonList(this.buttonAll, this.buttonMissing);
         buttons.equalizeWidths(this.fontRenderer, 4, 200);
         buttons.layoutCenteredHorizontal(x, y, true, 4);
         this.buttonClose.centerHorizontalOn(x).below(this.buttonMissing, lineHeight);

@@ -5,7 +5,6 @@ import journeymap.client.model.Waypoint;
 import journeymap.common.Journeymap;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;

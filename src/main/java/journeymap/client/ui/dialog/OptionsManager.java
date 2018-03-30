@@ -41,7 +41,7 @@ public class OptionsManager extends JmUI {
     protected static Set<Category> openCategories;
 
     static {
-        OptionsManager.openCategories = new HashSet<Category>();
+        OptionsManager.openCategories = new HashSet<>();
     }
 
     protected final int inGameMinimapId;
@@ -63,7 +63,7 @@ public class OptionsManager extends JmUI {
     protected ButtonList editGridButtons;
 
     public OptionsManager() {
-        this((GuiScreen) null);
+        this(null);
     }
 
     public OptionsManager(final GuiScreen returnDisplay) {
@@ -72,7 +72,7 @@ public class OptionsManager extends JmUI {
 
     public OptionsManager(final GuiScreen returnDisplay, final Category... initialCategories) {
         super(String.format("JourneyMap %s %s", Journeymap.JM_VERSION, Constants.getString("jm.common.options")), returnDisplay);
-        this.changedCategories = new HashSet<Category>();
+        this.changedCategories = new HashSet<>();
         this.editGridButtons = new ButtonList();
         this.initialCategories = initialCategories;
         this.inGameMinimapId = Journeymap.getClient().getActiveMinimapId();
@@ -91,7 +91,7 @@ public class OptionsManager extends JmUI {
                 this.editGridMinimap2Button.setDrawBackground(false);
                 (this.editGridFullscreenButton = new Button(name)).setTooltip(tooltip);
                 this.editGridFullscreenButton.setDrawBackground(false);
-                this.editGridButtons = new ButtonList(new Button[]{this.editGridMinimap1Button, this.editGridMinimap2Button, this.editGridFullscreenButton});
+                this.editGridButtons = new ButtonList(this.editGridMinimap1Button, this.editGridMinimap2Button, this.editGridFullscreenButton);
             }
             if (this.minimap1PreviewButton == null) {
                 final String name = String.format("%s %s", Constants.getString("jm.minimap.preview"), "1");
@@ -110,15 +110,15 @@ public class OptionsManager extends JmUI {
                 }
             }
             if (this.renderStatsButton == null) {
-                (this.renderStatsButton = new LabelButton(150, "jm.common.renderstats", new Object[]{0, 0, 0})).setEnabled(false);
+                (this.renderStatsButton = new LabelButton(150, "jm.common.renderstats", 0, 0, 0)).setEnabled(false);
             }
             if (this.optionsListPane == null) {
-                final List<ScrollListPane.ISlot> categorySlots = new ArrayList<ScrollListPane.ISlot>();
+                final List<ScrollListPane.ISlot> categorySlots = new ArrayList<>();
                 final Minecraft mc = this.mc;
                 final int width = this.width;
                 final int height = this.height;
                 this.getClass();
-                (this.optionsListPane = new ScrollListPane<CategorySlot>(this, mc, width, height, 35, this.height - 30, 20)).setAlignTop(true);
+                (this.optionsListPane = new ScrollListPane<>(this, mc, width, height, 35, this.height - 30, 20)).setAlignTop(true);
                 this.optionsListPane.setSlots(OptionSlotFactory.getSlots(this.getToolbars()));
                 if (this.initialCategories != null) {
                     for (final Category initialCategory : this.initialCategories) {
@@ -170,7 +170,7 @@ public class OptionsManager extends JmUI {
             }
             this.buttonClose = new Button(Constants.getString("jm.common.close"));
             this.buttonAbout = new Button(Constants.getString("jm.common.splash_about"));
-            final ButtonList bottomRow = new ButtonList(new Button[]{this.buttonAbout, this.buttonClose});
+            final ButtonList bottomRow = new ButtonList(this.buttonAbout, this.buttonClose);
             bottomRow.equalizeWidths(this.getFontRenderer());
             bottomRow.setWidths(Math.max(150, this.buttonAbout.getWidth()));
             bottomRow.layoutCenteredHorizontal(this.width / 2, this.height - 25, true, 4);
@@ -399,7 +399,7 @@ public class OptionsManager extends JmUI {
     }
 
     public void refreshMinimapOptions() {
-        final Set<Category> cats = new HashSet<Category>();
+        final Set<Category> cats = new HashSet<>();
         cats.add(ClientCategory.MiniMap1);
         cats.add(ClientCategory.MiniMap2);
         for (final CategorySlot categorySlot : this.optionsListPane.getRootSlots()) {
@@ -470,12 +470,12 @@ public class OptionsManager extends JmUI {
 
     Map<Category, List<SlotMetadata>> getToolbars() {
         if (this.toolbars == null) {
-            this.toolbars = new HashMap<Category, List<SlotMetadata>>();
+            this.toolbars = new HashMap<>();
             for (final Category category : ClientCategory.values) {
                 final String name = Constants.getString("jm.config.reset");
                 final String tooltip = Constants.getString("jm.config.reset.tooltip");
                 final SlotMetadata toolbarSlotMetadata = new SlotMetadata(new ResetButton(category), name, tooltip);
-                this.toolbars.put(category, (List<SlotMetadata>) Arrays.asList(toolbarSlotMetadata));
+                this.toolbars.put(category, Collections.singletonList(toolbarSlotMetadata));
             }
         }
         return this.toolbars;
@@ -522,7 +522,7 @@ public class OptionsManager extends JmUI {
 
         @Override
         public void drawButton(final Minecraft minecraft, final int mouseX, final int mouseY, final float ticks) {
-            int labelX = 0;
+            int labelX;
             switch (this.hAlign) {
                 case Left: {
                     labelX = this.getRightX();

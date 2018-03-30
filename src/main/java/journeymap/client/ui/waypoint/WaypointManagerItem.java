@@ -17,7 +17,6 @@ import journeymap.client.waypoint.WaypointStore;
 import journeymap.common.Journeymap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.client.FMLClientHandler;
@@ -62,7 +61,7 @@ public class WaypointManagerItem implements ScrollListPane.ISlot {
         this.waypoint = waypoint;
         this.fontRenderer = fontRenderer;
         this.manager = manager;
-        final SlotMetadata<Waypoint> slotMetadata = new SlotMetadata<Waypoint>(null, null, null, false);
+        final SlotMetadata<Waypoint> slotMetadata = new SlotMetadata<>(null, null, null, false);
         final String on = Constants.getString("jm.common.on");
         final String off = Constants.getString("jm.common.off");
         (this.buttonEnable = new OnOffButton(on, off, true)).setToggled(waypoint.isEnable());
@@ -76,12 +75,12 @@ public class WaypointManagerItem implements ScrollListPane.ISlot {
             this.buttonTeleport.setDrawButton(manager.canUserTeleport);
             this.buttonTeleport.setEnabled(manager.canUserTeleport);
         }
-        (this.buttonListLeft = new ButtonList(new Button[]{this.buttonEnable, this.buttonFind, this.buttonTeleport})).setHeights(manager.rowHeight);
+        (this.buttonListLeft = new ButtonList(this.buttonEnable, this.buttonFind, this.buttonTeleport)).setHeights(manager.rowHeight);
         this.buttonListLeft.fitWidths(fontRenderer);
         this.buttonEdit = new Button(Constants.getString("jm.waypoint.edit"));
         this.buttonRemove = new Button(Constants.getString("jm.waypoint.remove"));
         (this.buttonChat = new Button(Constants.getString("jm.waypoint.chat"))).setTooltip(Constants.getString("jm.waypoint.chat.tooltip"));
-        (this.buttonListRight = new ButtonList(new Button[]{this.buttonChat, this.buttonEdit, this.buttonRemove})).setHeights(manager.rowHeight);
+        (this.buttonListRight = new ButtonList(this.buttonChat, this.buttonEdit, this.buttonRemove)).setHeights(manager.rowHeight);
         this.buttonListRight.fitWidths(fontRenderer);
         this.internalWidth = fontRenderer.getCharWidth('X') * 32;
         this.internalWidth += Math.max(manager.colLocation, manager.colName);
@@ -141,9 +140,9 @@ public class WaypointManagerItem implements ScrollListPane.ISlot {
         }
         final FontRenderer fr = FMLClientHandler.instance().getClient().fontRenderer;
         final int yOffset = 1 + (this.manager.rowHeight - fr.FONT_HEIGHT) / 2;
-        fr.drawStringWithShadow(String.format("%sm", this.getDistance()), (float) (x + this.manager.colLocation), (float) (y + yOffset), (int) color);
+        fr.drawStringWithShadow(String.format("%sm", this.getDistance()), (float) (x + this.manager.colLocation), (float) (y + yOffset), color);
         final String name = waypointValid ? this.waypoint.getName() : (TextFormatting.STRIKETHROUGH + this.waypoint.getName());
-        fr.drawStringWithShadow(name, (float) this.manager.colName, (float) (y + yOffset), (int) color);
+        fr.drawStringWithShadow(name, (float) this.manager.colName, (float) (y + yOffset), color);
     }
 
     protected void drawWaypoint(final int x, final int y) {
@@ -174,7 +173,7 @@ public class WaypointManagerItem implements ScrollListPane.ISlot {
             return false;
         }
         if (this.buttonChat.mouseOver(mouseX, mouseY)) {
-            FMLClientHandler.instance().getClient().displayGuiScreen((GuiScreen) new WaypointChat(this.waypoint));
+            FMLClientHandler.instance().getClient().displayGuiScreen(new WaypointChat(this.waypoint));
             mouseOver = true;
         } else if (this.buttonRemove.mouseOver(mouseX, mouseY)) {
             this.manager.removeWaypoint(this);

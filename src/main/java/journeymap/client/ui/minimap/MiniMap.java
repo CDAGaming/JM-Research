@@ -21,7 +21,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import org.lwjgl.opengl.GL11;
@@ -85,7 +84,7 @@ public class MiniMap {
         if (this.mc.player == null || this.mc.player.isDead) {
             return;
         }
-        MiniMap.state.refresh(this.mc, (EntityPlayer) this.mc.player, this.miniMapProperties);
+        MiniMap.state.refresh(this.mc, this.mc.player, this.miniMapProperties);
         final MapType mapType = MiniMap.state.getMapType();
         final int gridSize = (this.miniMapProperties.getSize() <= 768) ? 3 : 5;
         MiniMap.gridRenderer.setGridSize(gridSize);
@@ -127,7 +126,7 @@ public class MiniMap {
                 this.autoDayNight();
                 MiniMap.gridRenderer.setContext(MiniMap.state.getWorldDir(), MiniMap.state.getMapType());
                 if (!preview) {
-                    MiniMap.state.refresh(this.mc, (EntityPlayer) this.mc.player, this.miniMapProperties);
+                    MiniMap.state.refresh(this.mc, this.mc.player, this.miniMapProperties);
                 }
                 ClientAPI.INSTANCE.flagOverlaysForRerender();
             } else {
@@ -182,7 +181,7 @@ public class MiniMap {
                     DrawUtil.drawColoredEntity(this.centerPoint.getX(), this.centerPoint.getY(), this.playerArrowFg, this.playerArrowColor, 1.0f, 1.0f, this.mc.player.rotationYawHead);
                 }
                 GlStateManager.translate((float) (-this.dv.translateX), (float) (-this.dv.translateY), 0.0f);
-                ReticleOrientation reticleOrientation = null;
+                ReticleOrientation reticleOrientation;
                 if (this.dv.showReticle) {
                     reticleOrientation = this.dv.minimapFrame.getReticleOrientation();
                     if (reticleOrientation == ReticleOrientation.Compass) {
@@ -247,7 +246,7 @@ public class MiniMap {
         final boolean showLabel = this.miniMapProperties.showWaypointLabels.get();
         for (final DrawStep.Pass pass : DrawStep.Pass.values()) {
             for (final DrawWayPointStep drawWayPointStep : MiniMap.state.getDrawWaypointSteps()) {
-                boolean onScreen = false;
+                boolean onScreen;
                 if (pass == DrawStep.Pass.Object) {
                     final Point2D.Double waypointPos = drawWayPointStep.getPosition(0.0, 0.0, MiniMap.gridRenderer, true);
                     onScreen = this.isOnScreen(waypointPos, this.centerPoint, this.centerRect);
@@ -299,8 +298,7 @@ public class MiniMap {
     private Point2D.Double getPointOnFrame(final Point2D.Double objectPixel, final Point2D centerPixel, final double offset) {
         if (this.dv.shape == Shape.Circle) {
             final double bearing = Math.atan2(objectPixel.getY() - centerPixel.getY(), objectPixel.getX() - centerPixel.getX());
-            final Point2D.Double framePos = new Point2D.Double(this.dv.minimapWidth / 2 * Math.cos(bearing) + centerPixel.getX(), this.dv.minimapHeight / 2 * Math.sin(bearing) + centerPixel.getY());
-            return framePos;
+            return new Point2D.Double(this.dv.minimapWidth / 2 * Math.cos(bearing) + centerPixel.getX(), this.dv.minimapHeight / 2 * Math.sin(bearing) + centerPixel.getY());
         }
         final Rectangle2D.Double rect = new Rectangle2D.Double(this.dv.textureX - this.dv.translateX, this.dv.textureY - this.dv.translateY, this.dv.minimapWidth, this.dv.minimapHeight);
         if (objectPixel.x > rect.getMaxX()) {

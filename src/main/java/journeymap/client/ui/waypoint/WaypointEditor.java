@@ -88,8 +88,8 @@ public class WaypointEditor extends JmUI {
         this.labelG = Constants.getString("jm.waypoint.green_abbreviated");
         this.labelB = Constants.getString("jm.waypoint.blue_abbreviated");
         this.currentLocation = "";
-        this.fieldList = new ArrayList<TextField>();
-        this.dimButtonList = new ArrayList<DimensionButton>();
+        this.fieldList = new ArrayList<>();
+        this.dimButtonList = new ArrayList<>();
         this.originalWaypoint = waypoint;
         this.editedWaypoint = new Waypoint(this.originalWaypoint);
         this.isNew = isNew;
@@ -174,7 +174,7 @@ public class WaypointEditor extends JmUI {
                 this.buttonList.add(this.buttonReset);
                 this.buttonList.add(this.buttonSave);
                 this.buttonList.add(this.buttonClose);
-                (this.bottomButtons = new ButtonList(new Button[]{this.buttonRemove, this.buttonSave, this.buttonClose})).equalizeWidths(this.getFontRenderer());
+                (this.bottomButtons = new ButtonList(this.buttonRemove, this.buttonSave, this.buttonClose)).equalizeWidths(this.getFontRenderer());
                 this.setFormColor(this.originalWaypoint.getColor());
                 this.validate();
             }
@@ -262,8 +262,7 @@ public class WaypointEditor extends JmUI {
             this.layoutButtons();
             this.dimScrollPane.drawScreen(x, y, par3);
             DrawUtil.drawLabel(this.currentLocation, this.width / 2, this.height, DrawUtil.HAlign.Center, DrawUtil.VAlign.Above, 0, 1.0f, 12632256, 1.0f, 1.0, true);
-            for (int k = 0; k < this.buttonList.size(); ++k) {
-                final GuiButton guibutton = this.buttonList.get(k);
+            for (final GuiButton guibutton : this.buttonList) {
                 guibutton.drawButton(this.mc, x, y, 0.0f);
             }
             if (this.colorPickTooltip != null && this.colorPickRect.contains(x, y)) {
@@ -474,8 +473,8 @@ public class WaypointEditor extends JmUI {
     protected void updateWaypointFromForm() {
         this.currentColor = RGB.toInteger(this.getSafeColorInt(this.fieldR), this.getSafeColorInt(this.fieldG), this.getSafeColorInt(this.fieldB));
         this.editedWaypoint.setColor(this.currentColor);
-        this.fieldName.setTextColor((int) this.editedWaypoint.getSafeColor());
-        final ArrayList<Integer> dims = new ArrayList<Integer>();
+        this.fieldName.setTextColor(this.editedWaypoint.getSafeColor());
+        final ArrayList<Integer> dims = new ArrayList<>();
         for (final DimensionButton db : this.dimButtonList) {
             if (db.getToggled()) {
                 dims.add(db.dimension);

@@ -5,7 +5,6 @@ import journeymap.common.command.CommandJTP;
 import journeymap.common.version.Version;
 import journeymap.server.JourneymapServer;
 import journeymap.server.properties.PropertiesManager;
-import net.minecraft.command.ICommand;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.*;

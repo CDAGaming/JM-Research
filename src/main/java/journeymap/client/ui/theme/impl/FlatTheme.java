@@ -89,8 +89,7 @@ public class FlatTheme extends Theme {
         final String dark = "#6f3634";
         final String darker = "#760000";
         final String darkest = "#3b0000";
-        final Theme theme = createFlatTheme("NetherFortress", light, medium, dark, darker, darkest);
-        return theme;
+        return createFlatTheme("NetherFortress", light, medium, dark, darker, darkest);
     }
 
     public static Theme createStronghold() {

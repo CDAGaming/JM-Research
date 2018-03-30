@@ -33,7 +33,7 @@ public class KeybindingInfoLayer implements LayerDelegate.Layer {
     private FullMapProperties fullMapProperties;
 
     public KeybindingInfoLayer(final Fullscreen fullscreen) {
-        this.drawStepList = new ArrayList<DrawStep>(1);
+        this.drawStepList = new ArrayList<>(1);
         this.fontRenderer = FMLClientHandler.instance().getClient().fontRenderer;
         this.fullMapProperties = Journeymap.getClient().getFullMapProperties();
         this.mc = FMLClientHandler.instance().getClient();
@@ -110,8 +110,8 @@ public class KeybindingInfoLayer implements LayerDelegate.Layer {
                 try {
                     GlStateManager.enableBlend();
                     for (final Tuple<String, String> line : this.lines) {
-                        DrawUtil.drawLabel((String) line.getFirst(), x, y, DrawUtil.HAlign.Left, DrawUtil.VAlign.Middle, null, 0.0f, firstColor, this.fgAlpha, fontScale, false);
-                        DrawUtil.drawLabel((String) line.getSecond(), x + this.pad, y, DrawUtil.HAlign.Right, DrawUtil.VAlign.Middle, null, 0.0f, secondColor, this.fgAlpha, fontScale, false);
+                        DrawUtil.drawLabel(line.getFirst(), x, y, DrawUtil.HAlign.Left, DrawUtil.VAlign.Middle, null, 0.0f, firstColor, this.fgAlpha, fontScale, false);
+                        DrawUtil.drawLabel(line.getSecond(), x + this.pad, y, DrawUtil.HAlign.Right, DrawUtil.VAlign.Middle, null, 0.0f, secondColor, this.fgAlpha, fontScale, false);
                         y += this.lineHeight;
                     }
                 } finally {
@@ -166,7 +166,7 @@ public class KeybindingInfoLayer implements LayerDelegate.Layer {
         }
 
         private void initLines(final double fontScale) {
-            this.lines = new ArrayList<Tuple<String, String>>();
+            this.lines = new ArrayList<>();
             this.keyDescWidth = 0;
             this.keyNameWidth = 0;
             this.bgAlpha = this.fgAlphaDefault;
@@ -180,7 +180,7 @@ public class KeybindingInfoLayer implements LayerDelegate.Layer {
         private void initLine(final KeyBinding keyBinding, final double fontScale) {
             final String keyName = keyBinding.getDisplayName();
             final String keyDesc = Constants.getString(keyBinding.getKeyDescription());
-            final Tuple<String, String> line = (Tuple<String, String>) new Tuple((Object) keyName, (Object) keyDesc);
+            final Tuple<String, String> line = (Tuple<String, String>) new Tuple(keyName, keyDesc);
             this.lines.add(line);
             this.keyNameWidth = (int) Math.max(this.keyNameWidth, fontScale * KeybindingInfoLayer.this.fontRenderer.getStringWidth(keyName));
             this.keyDescWidth = (int) Math.max(this.keyDescWidth, fontScale * KeybindingInfoLayer.this.fontRenderer.getStringWidth(keyDesc));

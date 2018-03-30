@@ -3,7 +3,6 @@ package journeymap.client.api.impl;
 import journeymap.client.api.event.DisplayUpdateEvent;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 

@@ -18,7 +18,7 @@ public class ListPropertyButton<T> extends Button implements IConfigFieldHolder<
     public ListPropertyButton(final Collection<T> values, final String label, final ConfigField<T> field) {
         super("");
         this.field = field;
-        this.values = new ArrayList<T>((Collection<? extends T>) values);
+        this.values = new ArrayList<>(values);
         this.baseLabel = label;
         this.setValue(field.get());
         this.disabledLabelColor = 4210752;

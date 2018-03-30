@@ -64,7 +64,7 @@ public class WaypointManager extends JmUI {
         this.colName = 60;
         this.itemWidth = 460;
         this.rowHeight = 16;
-        this.items = new ArrayList<WaypointManagerItem>();
+        this.items = new ArrayList<>();
         this.focusWaypoint = focusWaypoint;
     }
 
@@ -102,7 +102,7 @@ public class WaypointManager extends JmUI {
                 (this.buttonOptions = new Button(Constants.getString("jm.common.options_button"))).fitWidth(this.getFontRenderer());
             }
             this.buttonClose = new Button(Constants.getString("jm.common.close"));
-            this.bottomButtons = new ButtonList(new Button[]{this.buttonOptions, this.buttonAdd, this.buttonDimensions, this.buttonClose});
+            this.bottomButtons = new ButtonList(this.buttonOptions, this.buttonAdd, this.buttonDimensions, this.buttonClose);
             this.buttonList.addAll(this.bottomButtons);
             if (this.items.isEmpty()) {
                 this.updateItems();
@@ -253,7 +253,7 @@ public class WaypointManager extends JmUI {
             return;
         }
         if (guibutton == this.buttonAdd) {
-            final Waypoint waypoint = Waypoint.of((EntityPlayer) this.mc.player);
+            final Waypoint waypoint = Waypoint.of(this.mc.player);
             UIManager.INSTANCE.openWaypointEditor(waypoint, true, this);
             return;
         }
@@ -325,7 +325,7 @@ public class WaypointManager extends JmUI {
         boolean allOn = true;
         for (final Waypoint waypoint : waypoints) {
             final WaypointManagerItem item = new WaypointManagerItem(waypoint, fr, this);
-            item.getDistanceTo((EntityPlayer) this.mc.player);
+            item.getDistanceTo(this.mc.player);
             if (currentDim == null || item.waypoint.getDimensions().contains(currentDim)) {
                 this.items.add(item);
                 if (!allOn) {
@@ -342,7 +342,7 @@ public class WaypointManager extends JmUI {
         this.buttonToggleAll.setToggled(!allOn);
         this.updateCount();
         if (WaypointManager.currentSort != null) {
-            Collections.sort(this.items, WaypointManager.currentSort);
+            this.items.sort(WaypointManager.currentSort);
         }
     }
 
@@ -362,7 +362,7 @@ public class WaypointManager extends JmUI {
             }
         }
         if (WaypointManager.currentSort != null) {
-            Collections.sort(this.items, WaypointManager.currentSort);
+            this.items.sort(WaypointManager.currentSort);
         }
         if (this.itemScrollPane != null) {
             this.itemScrollPane.setSlots(this.items);

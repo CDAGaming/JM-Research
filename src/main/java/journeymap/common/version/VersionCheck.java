@@ -7,10 +7,10 @@ import com.google.gson.JsonParser;
 import journeymap.common.Journeymap;
 import journeymap.common.thread.JMThreadFactory;
 
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.*;
-import java.util.Iterator;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -79,7 +79,7 @@ public class VersionCheck {
                     rawResponse = CharStreams.toString(in);
                     final String currentVersion = Journeymap.JM_VERSION.toString();
                     final boolean currentIsRelease = Journeymap.JM_VERSION.isRelease();
-                    final JsonObject project = new JsonParser().parse(rawResponse).getAsJsonObject();
+                    final JsonObject project = new JsonParser().parse(rawResponse.trim()).getAsJsonObject();
                     final JsonElement version = project.get("versions").getAsJsonObject().get("1.12.2");
                     if (version == null) {
                         Journeymap.getLogger().warn("No versions found online for 1.12.2");

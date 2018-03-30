@@ -1,6 +1,9 @@
 package journeymap.client.data;
 
-import com.google.common.cache.*;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheStats;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Sets;
 import journeymap.client.io.nbt.ChunkLoader;
 import journeymap.client.model.*;
@@ -13,7 +16,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
 import net.minecraftforge.fml.client.FMLClientHandler;
 
 import java.util.*;

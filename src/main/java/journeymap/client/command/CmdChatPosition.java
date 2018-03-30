@@ -6,7 +6,6 @@ import journeymap.client.task.main.IMainThreadTask;
 import journeymap.client.ui.waypoint.WaypointChat;
 import journeymap.common.Journeymap;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;

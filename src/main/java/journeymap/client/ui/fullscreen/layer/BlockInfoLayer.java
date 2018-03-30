@@ -37,7 +37,7 @@ public class BlockInfoLayer implements LayerDelegate.Layer {
     private boolean isSinglePlayer;
 
     public BlockInfoLayer(final Fullscreen fullscreen) {
-        this.drawStepList = new ArrayList<DrawStep>(1);
+        this.drawStepList = new ArrayList<>(1);
         this.locationFormat = new LocationFormat();
         this.lastCoord = null;
         this.fullscreen = fullscreen;
@@ -59,12 +59,12 @@ public class BlockInfoLayer implements LayerDelegate.Layer {
             this.drawStepList.add(this.blockInfoStep);
         }
         this.playerInfoStep.update(mc.displayWidth / 2, optionsToolbarRect.getMaxY());
-        if (!blockPos.equals((Object) this.lastCoord)) {
+        if (!blockPos.equals(this.lastCoord)) {
             final FullMapProperties fullMapProperties = Journeymap.getClient().getFullMapProperties();
             this.locationFormatKeys = this.locationFormat.getFormatKeys(fullMapProperties.locationFormat.get());
             this.lastCoord = blockPos;
             final ChunkMD chunkMD = DataCache.INSTANCE.getChunkMD(blockPos);
-            String info = "";
+            String info;
             if (chunkMD != null && chunkMD.hasChunk()) {
                 BlockMD blockMD = chunkMD.getBlockMD(blockPos.up());
                 if (blockMD == null || blockMD.isIgnore()) {

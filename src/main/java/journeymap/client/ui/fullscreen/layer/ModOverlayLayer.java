@@ -28,9 +28,9 @@ public class ModOverlayLayer implements LayerDelegate.Layer {
     protected boolean propagateClick;
 
     public ModOverlayLayer() {
-        this.allDrawSteps = new ArrayList<OverlayDrawStep>();
-        this.visibleSteps = new ArrayList<OverlayDrawStep>();
-        this.touchedSteps = new ArrayList<OverlayDrawStep>();
+        this.allDrawSteps = new ArrayList<>();
+        this.visibleSteps = new ArrayList<>();
+        this.touchedSteps = new ArrayList<>();
     }
 
     private void ensureCurrent(final Minecraft mc, final GridRenderer gridRenderer, final Point2D.Double mousePosition, final BlockPos blockCoord) {
@@ -82,7 +82,6 @@ public class ModOverlayLayer implements LayerDelegate.Layer {
                         this.propagateClick = false;
                         break;
                     }
-                    continue;
                 } catch (Throwable t) {
                     Journeymap.getLogger().error(t.getMessage(), t);
                 }

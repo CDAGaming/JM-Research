@@ -31,14 +31,14 @@ public class OptionSlotFactory {
     }
 
     public static List<CategorySlot> getSlots(final Map<Category, List<SlotMetadata>> toolbars) {
-        final HashMap<Category, List<SlotMetadata>> mergedMap = new HashMap<Category, List<SlotMetadata>>();
+        final HashMap<Category, List<SlotMetadata>> mergedMap = new HashMap<>();
         addSlots(mergedMap, ClientCategory.MiniMap1, Journeymap.getClient().getMiniMapProperties1());
         addSlots(mergedMap, ClientCategory.MiniMap2, Journeymap.getClient().getMiniMapProperties2());
         addSlots(mergedMap, ClientCategory.FullMap, Journeymap.getClient().getFullMapProperties());
         addSlots(mergedMap, ClientCategory.WebMap, Journeymap.getClient().getWebMapProperties());
         addSlots(mergedMap, ClientCategory.Waypoint, Journeymap.getClient().getWaypointProperties());
         addSlots(mergedMap, ClientCategory.Advanced, Journeymap.getClient().getCoreProperties());
-        final List<CategorySlot> categories = new ArrayList<CategorySlot>();
+        final List<CategorySlot> categories = new ArrayList<>();
         for (final Map.Entry<Category, List<SlotMetadata>> entry : mergedMap.entrySet()) {
             final Category category = entry.getKey();
             final CategorySlot categorySlot = new CategorySlot(category);
@@ -87,11 +87,11 @@ public class OptionSlotFactory {
             if (category == Category.Inherit) {
                 category = inheritedCategory;
             }
-            List<SlotMetadata> slotMetadataList = null;
+            List<SlotMetadata> slotMetadataList;
             if (mergedMap.containsKey(category)) {
                 slotMetadataList = mergedMap.get(category);
             } else {
-                slotMetadataList = new ArrayList<SlotMetadata>();
+                slotMetadataList = new ArrayList<>();
                 mergedMap.put(category, slotMetadataList);
             }
             slotMetadataList.addAll(entry.getValue());
@@ -100,7 +100,7 @@ public class OptionSlotFactory {
 
     protected static HashMap<Category, List<SlotMetadata>> buildSlots(HashMap<Category, List<SlotMetadata>> map, final Category inheritedCategory, final Class<? extends PropertiesBase> propertiesClass, final PropertiesBase properties) {
         if (map == null) {
-            map = new HashMap<Category, List<SlotMetadata>>();
+            map = new HashMap<>();
         }
         for (final ConfigField configField : properties.getConfigFields().values()) {
             if (configField.getCategory() == Category.Hidden) {
@@ -124,7 +124,7 @@ public class OptionSlotFactory {
                 }
                 List<SlotMetadata> list = map.get(category);
                 if (list == null) {
-                    list = new ArrayList<SlotMetadata>();
+                    list = new ArrayList<>();
                     map.put(category, list);
                 }
                 list.add(slotMetadata);
@@ -150,7 +150,7 @@ public class OptionSlotFactory {
         final String defaultTip = Constants.getString("jm.config.default", field.getDefaultValue());
         final boolean advanced = field.getCategory() == ClientCategory.Advanced;
         final CheckBox button = new CheckBox(name, field);
-        final SlotMetadata<Boolean> slotMetadata = new SlotMetadata<Boolean>(button, name, tooltip, defaultTip, field.getDefaultValue(), advanced);
+        final SlotMetadata<Boolean> slotMetadata = new SlotMetadata<>(button, name, tooltip, defaultTip, field.getDefaultValue(), advanced);
         slotMetadata.setMasterPropertyForCategory(field.isCategoryMaster());
         if (field.isCategoryMaster()) {
             button.setLabelColors(65535, null, null);
@@ -166,8 +166,7 @@ public class OptionSlotFactory {
         final IntSliderButton button = new IntSliderButton(field, name + " : ", "", field.getMinValue(), field.getMaxValue(), true);
         button.setDefaultStyle(false);
         button.setDrawBackground(false);
-        final SlotMetadata<Integer> slotMetadata = new SlotMetadata<Integer>(button, name, tooltip, defaultTip, (int) field.getDefaultValue(), advanced);
-        return slotMetadata;
+        return new SlotMetadata<>(button, name, tooltip, defaultTip, field.getDefaultValue(), advanced);
     }
 
     static SlotMetadata<String> getStringSlotMetadata(final StringField field) {
@@ -175,18 +174,18 @@ public class OptionSlotFactory {
             final String name = Constants.getString(field.getKey());
             final String tooltip = getTooltip(field);
             final boolean advanced = field.getCategory() == ClientCategory.Advanced;
-            ListPropertyButton<String> button = null;
-            String defaultTip = null;
+            ListPropertyButton<String> button;
+            String defaultTip;
             if (LocationFormat.IdProvider.class.isAssignableFrom(field.getValuesProviderClass())) {
                 button = new LocationFormat.Button(field);
                 defaultTip = Constants.getString("jm.config.default", ((LocationFormat.Button) button).getLabel(field.getDefaultValue()));
             } else {
-                button = new ListPropertyButton<String>(field.getValidValues(), name, field);
+                button = new ListPropertyButton<>(field.getValidValues(), name, field);
                 defaultTip = Constants.getString("jm.config.default", field.getDefaultValue());
             }
             button.setDefaultStyle(false);
             button.setDrawBackground(false);
-            final SlotMetadata<String> slotMetadata = new SlotMetadata<String>(button, name, tooltip, defaultTip, field.getDefaultValue(), advanced);
+            final SlotMetadata<String> slotMetadata = new SlotMetadata<>(button, name, tooltip, defaultTip, field.getDefaultValue(), advanced);
             slotMetadata.setValueList(field.getValidValues());
             return slotMetadata;
         } catch (Exception e) {
@@ -204,8 +203,8 @@ public class OptionSlotFactory {
             final String defaultTip = Constants.getString("jm.config.default", field.getDefaultValue());
             button.setDefaultStyle(false);
             button.setDrawBackground(false);
-            final SlotMetadata<Enum> slotMetadata = new SlotMetadata<Enum>(button, name, tooltip, defaultTip, field.getDefaultValue(), advanced);
-            slotMetadata.setValueList(Arrays.asList(field.getValidValues()));
+            final SlotMetadata<Enum> slotMetadata = new SlotMetadata<>(button, name, tooltip, defaultTip, field.getDefaultValue(), advanced);
+            slotMetadata.setValueList(Collections.singletonList(field.getValidValues()));
             return slotMetadata;
         } catch (Exception e) {
             e.printStackTrace();
@@ -223,12 +222,12 @@ public class OptionSlotFactory {
                 Files.createParentDirs(OptionSlotFactory.docFile);
                 (OptionSlotFactory.docWriter = Files.newWriter(OptionSlotFactory.docFile, OptionSlotFactory.UTF8)).append((CharSequence) String.format("<!-- Generated %s -->", new Date()));
                 OptionSlotFactory.docWriter.newLine();
-                OptionSlotFactory.docWriter.append((CharSequence) "=== Overview ===");
+                OptionSlotFactory.docWriter.append("=== Overview ===");
                 OptionSlotFactory.docWriter.newLine();
-                OptionSlotFactory.docWriter.append((CharSequence) "{{version|5.0.0|page}}");
+                OptionSlotFactory.docWriter.append("{{version|5.0.0|page}}");
                 OptionSlotFactory.docWriter.newLine();
-                OptionSlotFactory.docWriter.append((CharSequence) "This page lists all of the available options which can be configured in-game using the JourneyMap [[Options Manager]].");
-                OptionSlotFactory.docWriter.append((CharSequence) "(Note: All of this information can also be obtained from the tooltips within the [[Options Manager]] itself.) <br clear/> <br clear/>");
+                OptionSlotFactory.docWriter.append("This page lists all of the available options which can be configured in-game using the JourneyMap [[Options Manager]].");
+                OptionSlotFactory.docWriter.append("(Note: All of this information can also be obtained from the tooltips within the [[Options Manager]] itself.) <br clear/> <br clear/>");
                 OptionSlotFactory.docWriter.newLine();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -239,9 +238,9 @@ public class OptionSlotFactory {
     static void doc(final CategorySlot categorySlot) {
         try {
             OptionSlotFactory.docWriter.newLine();
-            OptionSlotFactory.docWriter.append((CharSequence) String.format("==%s==", categorySlot.getCategory().getName().replace("Preset 1", "Preset (1 and 2)")));
+            OptionSlotFactory.docWriter.append(String.format("==%s==", categorySlot.getCategory().getName().replace("Preset 1", "Preset (1 and 2)")));
             OptionSlotFactory.docWriter.newLine();
-            OptionSlotFactory.docWriter.append((CharSequence) String.format("''%s''", categorySlot.getMetadata().iterator().next().tooltip.replace("Preset 1", "Preset (1 and 2)")));
+            OptionSlotFactory.docWriter.append(String.format("''%s''", categorySlot.getMetadata().iterator().next().tooltip.replace("Preset 1", "Preset (1 and 2)")));
             OptionSlotFactory.docWriter.newLine();
             OptionSlotFactory.docWriter.newLine();
         } catch (IOException e) {
@@ -252,18 +251,18 @@ public class OptionSlotFactory {
     static void docTable(final boolean start) {
         try {
             if (start) {
-                OptionSlotFactory.docWriter.append((CharSequence) "{| class=\"wikitable\" style=\"cellpadding=\"4\"");
+                OptionSlotFactory.docWriter.append("{| class=\"wikitable\" style=\"cellpadding=\"4\"");
                 OptionSlotFactory.docWriter.newLine();
-                OptionSlotFactory.docWriter.append((CharSequence) "! scope=\"col\" | Option");
+                OptionSlotFactory.docWriter.append("! scope=\"col\" | Option");
                 OptionSlotFactory.docWriter.newLine();
-                OptionSlotFactory.docWriter.append((CharSequence) "! scope=\"col\" | Purpose");
+                OptionSlotFactory.docWriter.append("! scope=\"col\" | Purpose");
                 OptionSlotFactory.docWriter.newLine();
-                OptionSlotFactory.docWriter.append((CharSequence) "! scope=\"col\" | Range / Default Value");
+                OptionSlotFactory.docWriter.append("! scope=\"col\" | Range / Default Value");
                 OptionSlotFactory.docWriter.newLine();
-                OptionSlotFactory.docWriter.append((CharSequence) "|-");
+                OptionSlotFactory.docWriter.append("|-");
                 OptionSlotFactory.docWriter.newLine();
             } else {
-                OptionSlotFactory.docWriter.append((CharSequence) "|}");
+                OptionSlotFactory.docWriter.append("|}");
                 OptionSlotFactory.docWriter.newLine();
             }
         } catch (IOException e) {
@@ -274,16 +273,16 @@ public class OptionSlotFactory {
     static void doc(final SlotMetadata slotMetadata, final boolean advanced) {
         try {
             final String color = advanced ? "red" : "black";
-            OptionSlotFactory.docWriter.append((CharSequence) String.format("| style=\"text-align:right; white-space: nowrap; font-weight:bold; padding:6px; color:%s\" | %s", color, slotMetadata.getName()));
+            OptionSlotFactory.docWriter.append(String.format("| style=\"text-align:right; white-space: nowrap; font-weight:bold; padding:6px; color:%s\" | %s", color, slotMetadata.getName()));
             OptionSlotFactory.docWriter.newLine();
-            OptionSlotFactory.docWriter.append((CharSequence) String.format("| %s ", slotMetadata.tooltip));
+            OptionSlotFactory.docWriter.append(String.format("| %s ", slotMetadata.tooltip));
             if (slotMetadata.getValueList() != null) {
-                OptionSlotFactory.docWriter.append((CharSequence) String.format("<br/><em>Choices available:</em> <code>%s</code>", Joiner.on(", ").join((Iterable) slotMetadata.getValueList())));
+                OptionSlotFactory.docWriter.append(String.format("<br/><em>Choices available:</em> <code>%s</code>", Joiner.on(", ").join((Iterable) slotMetadata.getValueList())));
             }
             OptionSlotFactory.docWriter.newLine();
-            OptionSlotFactory.docWriter.append((CharSequence) String.format("| <code>%s</code>", slotMetadata.range.replace("[", "").replace("]", "").trim()));
+            OptionSlotFactory.docWriter.append(String.format("| <code>%s</code>", slotMetadata.range.replace("[", "").replace("]", "").trim()));
             OptionSlotFactory.docWriter.newLine();
-            OptionSlotFactory.docWriter.append((CharSequence) "|-");
+            OptionSlotFactory.docWriter.append("|-");
             OptionSlotFactory.docWriter.newLine();
         } catch (IOException e) {
             e.printStackTrace();

@@ -28,8 +28,8 @@ public class LayerDelegate {
     public LayerDelegate(final Fullscreen fullscreen) {
         this.lastClick = 0L;
         this.lastBlockPos = null;
-        this.drawSteps = new ArrayList<DrawStep>();
-        (this.layers = new ArrayList<Layer>()).add(new ModOverlayLayer());
+        this.drawSteps = new ArrayList<>();
+        (this.layers = new ArrayList<>()).add(new ModOverlayLayer());
         this.layers.add(new BlockInfoLayer(fullscreen));
         this.layers.add(new WaypointLayer());
         this.layers.add(new KeybindingInfoLayer(fullscreen));
@@ -61,7 +61,6 @@ public class LayerDelegate {
                 if (!layer.propagateClick()) {
                     break;
                 }
-                continue;
             } catch (Exception e) {
                 Journeymap.getLogger().error(LogFormatter.toString(e));
             }

@@ -170,7 +170,7 @@ public class ThemeButton extends BooleanPropertyButton {
             return null;
         }
         final List<String> list = super.getTooltip();
-        String style = null;
+        String style;
         if (!this.isEnabled()) {
             style = this.buttonSpec.tooltipDisabledStyle;
         } else {

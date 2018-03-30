@@ -53,7 +53,7 @@ public class DisplayVars {
     MapPresetStatus mapPresetStatus;
 
     DisplayVars(final Minecraft mc, final MiniMapProperties miniMapProperties) {
-        this.labels = new ArrayList<Tuple<LabelVars, ThemeLabelSource>>(4);
+        this.labels = new ArrayList<>(4);
         this.scaledResolution = new ScaledResolution(mc);
         this.showCompass = miniMapProperties.showCompass.get();
         this.showReticle = miniMapProperties.showReticle.get();
@@ -224,7 +224,7 @@ public class DisplayVars {
         for (final ThemeLabelSource themeLabelSource : themeLabelSources) {
             if (themeLabelSource.isShown()) {
                 final LabelVars labelVars = new LabelVars(this, centerX, labelY, DrawUtil.HAlign.Center, DrawUtil.VAlign.Below, this.fontScale, labelSpec);
-                final Tuple<LabelVars, ThemeLabelSource> tuple = (Tuple<LabelVars, ThemeLabelSource>) new Tuple((Object) labelVars, (Object) themeLabelSource);
+                final Tuple<LabelVars, ThemeLabelSource> tuple = (Tuple<LabelVars, ThemeLabelSource>) new Tuple(labelVars, themeLabelSource);
                 this.labels.add(tuple);
                 labelY += labelHeight;
             }
@@ -233,7 +233,7 @@ public class DisplayVars {
 
     public void drawInfoLabels(final long currentTimeMillis) {
         for (final Tuple<LabelVars, ThemeLabelSource> label : this.labels) {
-            ((LabelVars) label.getFirst()).draw(((ThemeLabelSource) label.getSecond()).getLabelText(currentTimeMillis));
+            label.getFirst().draw(label.getSecond().getLabelText(currentTimeMillis));
         }
     }
 

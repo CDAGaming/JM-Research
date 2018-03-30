@@ -10,7 +10,6 @@ import journeymap.common.Journeymap;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 public class DrawMarkerStep extends BaseOverlayDrawStep<MarkerOverlay> {

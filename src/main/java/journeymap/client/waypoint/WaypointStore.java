@@ -1,6 +1,5 @@
 package journeymap.client.waypoint;
 
-import com.google.common.base.Predicate;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Maps;
@@ -13,7 +12,6 @@ import journeymap.client.model.WaypointGroup;
 import journeymap.common.Journeymap;
 import journeymap.common.log.LogFormatter;
 
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.File;
 import java.nio.charset.Charset;

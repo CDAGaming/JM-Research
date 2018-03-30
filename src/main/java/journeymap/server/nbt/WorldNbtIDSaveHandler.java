@@ -2,7 +2,6 @@ package journeymap.server.nbt;
 
 import journeymap.server.Constants;
 import net.minecraft.world.World;
-import net.minecraft.world.storage.WorldSavedData;
 
 import java.util.UUID;
 

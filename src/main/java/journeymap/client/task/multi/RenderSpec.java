@@ -3,7 +3,6 @@ package journeymap.client.task.multi;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Multimap;
 import journeymap.client.Constants;
 import journeymap.client.data.DataCache;
 import journeymap.client.model.MapType;

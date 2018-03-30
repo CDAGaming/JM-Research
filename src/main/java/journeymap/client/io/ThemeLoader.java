@@ -16,8 +16,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.FMLClientHandler;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.*;

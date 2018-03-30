@@ -2,7 +2,7 @@ package journeymap.client.ui.theme;
 
 import com.google.common.base.Strings;
 import com.google.gson.annotations.Since;
-import net.minecraftforge.fml.common.FMLLog;
+import journeymap.common.Journeymap;
 
 import java.awt.*;
 
@@ -46,10 +46,9 @@ public class Theme {
     private static int getColor(final String hexColor) {
         if (!Strings.isNullOrEmpty(hexColor)) {
             try {
-                final int color = Integer.parseInt(hexColor.replaceFirst("#", ""), 16);
-                return color;
+                return Integer.parseInt(hexColor.replaceFirst("#", ""), 16);
             } catch (Exception e) {
-                FMLLog.warning("Journeymap theme has an invalid color string: " + hexColor, new Object[0]);
+                Journeymap.getLogger().warn("Journeymap theme has an invalid color string: " + hexColor, new Object[0]);
             }
         }
         return 16777215;
@@ -84,13 +83,8 @@ public class Theme {
             return false;
         }
         if (this.name != null) {
-            if (this.name.equals(theme.name)) {
-                return true;
-            }
-        } else if (theme.name == null) {
-            return true;
-        }
-        return false;
+            return this.name.equals(theme.name);
+        } else return theme.name == null;
     }
 
     @Override

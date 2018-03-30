@@ -7,7 +7,6 @@ import journeymap.common.log.LogFormatter;
 import journeymap.common.version.VersionCheck;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiControls;
-import net.minecraft.client.gui.GuiScreen;
 import org.apache.logging.log4j.Level;
 
 import java.awt.*;
@@ -47,7 +46,7 @@ public class FullscreenActions {
         try {
             Desktop.getDesktop().browse(URI.create(url));
         } catch (Throwable e) {
-            Journeymap.getLogger().error("Could not launch browser with URL: " + url, (Object) LogFormatter.toString(e));
+            Journeymap.getLogger().error("Could not launch browser with URL: " + url, LogFormatter.toString(e));
         }
     }
 
@@ -55,11 +54,11 @@ public class FullscreenActions {
         UIManager.INSTANCE.closeAll();
         final Fullscreen fullscreen = UIManager.INSTANCE.openFullscreenMap();
         final Minecraft mc = Minecraft.getMinecraft();
-        mc.displayGuiScreen((GuiScreen) new GuiControls((GuiScreen) fullscreen, mc.gameSettings));
+        mc.displayGuiScreen(new GuiControls(fullscreen, mc.gameSettings));
     }
 
     public static void tweet(final String message) {
-        String path = null;
+        String path;
         try {
             path = "http://twitter.com/home/?status=@JourneyMapMod+" + URLEncoder.encode(message, "UTF-8");
             Desktop.getDesktop().browse(URI.create(path));
@@ -69,7 +68,7 @@ public class FullscreenActions {
     }
 
     public static void discord() {
-        String path = null;
+        String path;
         try {
             path = "https://discord.gg/eP8gE69";
             Desktop.getDesktop().browse(URI.create(path));
@@ -83,7 +82,7 @@ public class FullscreenActions {
         try {
             Desktop.getDesktop().browse(URI.create(url));
         } catch (Throwable e) {
-            Journeymap.getLogger().error("Could not launch browser with URL: " + url, (Object) LogFormatter.toString(e));
+            Journeymap.getLogger().error("Could not launch browser with URL: " + url, LogFormatter.toString(e));
         }
     }
 }

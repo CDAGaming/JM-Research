@@ -7,7 +7,6 @@ import journeymap.client.command.CmdEditWaypoint;
 import journeymap.client.world.ChunkMonitor;
 import journeymap.common.Journeymap;
 import journeymap.common.log.LogFormatter;
-import net.minecraft.command.ICommand;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 

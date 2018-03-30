@@ -49,7 +49,6 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ITabCompleter;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -150,7 +149,7 @@ public class Fullscreen extends JmUI implements ITabCompleter {
         this.drawMapTimer = StatTimer.get("Fullscreen.drawScreen.drawMap", 50);
         this.drawMapTimerWithRefresh = StatTimer.get("Fullscreen.drawMap+refreshState", 5);
         this.locationFormat = new LocationFormat();
-        this.tempOverlays = new ArrayList<Overlay>();
+        this.tempOverlays = new ArrayList<>();
         this.mc = FMLClientHandler.instance().getClient();
         this.layerDelegate = new LayerDelegate(this);
         if (Journeymap.getClient().getFullMapProperties().showCaves.get() && DataCache.getPlayer().underground && Fullscreen.state.follow.get()) {
@@ -176,7 +175,7 @@ public class Fullscreen extends JmUI implements ITabCompleter {
     public void initGui() {
         this.fullMapProperties = Journeymap.getClient().getFullMapProperties();
         Fullscreen.state.requireRefresh();
-        Fullscreen.state.refresh(this.mc, (EntityPlayer) this.mc.player, this.fullMapProperties);
+        Fullscreen.state.refresh(this.mc, this.mc.player, this.fullMapProperties);
         final MapType mapType = Fullscreen.state.getMapType();
         Keyboard.enableRepeatEvents(true);
         if (mapType.dimension != this.mc.player.dimension) {
@@ -203,8 +202,7 @@ public class Fullscreen extends JmUI implements ITabCompleter {
                 this.updateMapType(Fullscreen.state.getMapType());
                 this.firstLayoutPass = false;
             } else {
-                for (int k = 0; k < this.buttonList.size(); ++k) {
-                    final GuiButton guibutton = this.buttonList.get(k);
+                for (final GuiButton guibutton : this.buttonList) {
                     guibutton.drawButton(this.mc, width, height, f);
                     if (tooltip == null && guibutton instanceof Button) {
                         final Button button = (Button) guibutton;
@@ -435,8 +433,8 @@ public class Fullscreen extends JmUI implements ITabCompleter {
             final boolean automapRunning = Journeymap.getClient().isTaskManagerEnabled(MapRegionTask.Manager.class);
             final String autoMapOn = Constants.getString("jm.common.automap_stop_title");
             final String autoMapOff = Constants.getString("jm.common.automap_title");
-            this.autoMapOnTooltip = (List<String>) fontRenderer.listFormattedStringToWidth(Constants.getString("jm.common.automap_stop_text"), 200);
-            this.autoMapOffTooltip = (List<String>) fontRenderer.listFormattedStringToWidth(Constants.getString("jm.common.automap_text"), 200);
+            this.autoMapOnTooltip = fontRenderer.listFormattedStringToWidth(Constants.getString("jm.common.automap_stop_text"), 200);
+            this.autoMapOffTooltip = fontRenderer.listFormattedStringToWidth(Constants.getString("jm.common.automap_text"), 200);
             (this.buttonAutomap = new ThemeToggle(theme, autoMapOn, autoMapOff, "automap")).setEnabled(FMLClientHandler.instance().getClient().isSingleplayer() && Journeymap.getClient().getCoreProperties().mappingEnabled.get());
             this.buttonAutomap.setToggled(automapRunning, false);
             this.buttonAutomap.addToggleListener((button, toggled) -> {
@@ -455,14 +453,14 @@ public class Fullscreen extends JmUI implements ITabCompleter {
                 return false;
             });
             (this.buttonDisable = new ThemeToggle(theme, "jm.common.enable_mapping_false", "disable")).addToggleListener((button, toggled) -> {
-                Journeymap.getClient().getCoreProperties().mappingEnabled.set(Boolean.valueOf(!toggled));
+                Journeymap.getClient().getCoreProperties().mappingEnabled.set(!toggled);
                 if (Journeymap.getClient().getCoreProperties().mappingEnabled.get()) {
                     DataCache.INSTANCE.invalidateChunkMDCache();
-                    ChatLog.announceI18N("jm.common.enable_mapping_true_text", new Object[0]);
+                    ChatLog.announceI18N("jm.common.enable_mapping_true_text");
                 } else {
                     Journeymap.getClient().stopMapping();
                     BlockMD.reset();
-                    ChatLog.announceI18N("jm.common.enable_mapping_false_text", new Object[0]);
+                    ChatLog.announceI18N("jm.common.enable_mapping_false_text");
                 }
                 return true;
             });
@@ -471,12 +469,12 @@ public class Fullscreen extends JmUI implements ITabCompleter {
                 Journeymap.getClient().queueMainThreadTask(new EnsureCurrentColorsTask(true, true));
                 return false;
             });
-            (this.mapTypeToolbar = new ThemeToolbar(theme, new Button[]{this.buttonLayers, this.buttonTopo, this.buttonNight, this.buttonDay})).addAllButtons(this);
-            (this.optionsToolbar = new ThemeToolbar(theme, new Button[]{this.buttonCaves, this.buttonMobs, this.buttonAnimals, this.buttonPets, this.buttonVillagers, this.buttonPlayers, this.buttonGrid, this.buttonKeys})).addAllButtons(this);
+            (this.mapTypeToolbar = new ThemeToolbar(theme, this.buttonLayers, this.buttonTopo, this.buttonNight, this.buttonDay)).addAllButtons(this);
+            (this.optionsToolbar = new ThemeToolbar(theme, this.buttonCaves, this.buttonMobs, this.buttonAnimals, this.buttonPets, this.buttonVillagers, this.buttonPlayers, this.buttonGrid, this.buttonKeys)).addAllButtons(this);
             this.optionsToolbar.visible = false;
-            (this.menuToolbar = new ThemeToolbar(theme, new Button[]{this.buttonWaypointManager, this.buttonOptions, this.buttonAbout, this.buttonBrowser, this.buttonTheme, this.buttonResetPalette, this.buttonDeletemap, this.buttonSavemap, this.buttonAutomap, this.buttonDisable})).addAllButtons(this);
+            (this.menuToolbar = new ThemeToolbar(theme, this.buttonWaypointManager, this.buttonOptions, this.buttonAbout, this.buttonBrowser, this.buttonTheme, this.buttonResetPalette, this.buttonDeletemap, this.buttonSavemap, this.buttonAutomap, this.buttonDisable)).addAllButtons(this);
             this.menuToolbar.visible = false;
-            (this.zoomToolbar = new ThemeToolbar(theme, new Button[]{this.buttonFollow, this.buttonZoomIn, this.buttonZoomOut})).setLayout(ButtonList.Layout.Vertical, ButtonList.Direction.LeftToRight);
+            (this.zoomToolbar = new ThemeToolbar(theme, this.buttonFollow, this.buttonZoomIn, this.buttonZoomOut)).setLayout(ButtonList.Layout.Vertical, ButtonList.Direction.LeftToRight);
             this.zoomToolbar.addAllButtons(this);
             this.buttonList.add(this.buttonAlert);
             this.buttonList.add(this.buttonClose);
@@ -867,7 +865,7 @@ public class Fullscreen extends JmUI implements ITabCompleter {
             this.menuToolbarBounds = null;
             this.optionsToolbarBounds = null;
             this.fullMapProperties = Journeymap.getClient().getFullMapProperties();
-            Fullscreen.state.refresh(this.mc, (EntityPlayer) player, this.fullMapProperties);
+            Fullscreen.state.refresh(this.mc, player, this.fullMapProperties);
             final MapType mapType = Fullscreen.state.getMapType();
             Fullscreen.gridRenderer.setContext(Fullscreen.state.getWorldDir(), mapType);
             if (Fullscreen.state.follow.get()) {
@@ -959,7 +957,7 @@ public class Fullscreen extends JmUI implements ITabCompleter {
             final Theme theme = ThemeLoader.getThemeByName(name);
             ThemeLoader.setCurrentTheme(theme);
             UIManager.INSTANCE.getMiniMap().reset();
-            ChatLog.announceI18N("jm.common.ui_theme_applied", new Object[0]);
+            ChatLog.announceI18N("jm.common.ui_theme_applied");
             UIManager.INSTANCE.closeAll();
         } catch (Exception e) {
             Journeymap.getLogger().error("Could not load Theme: " + LogFormatter.toString(e));

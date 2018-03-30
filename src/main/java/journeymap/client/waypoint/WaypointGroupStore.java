@@ -13,7 +13,6 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.TreeMap;
 
 @ParametersAreNonnullByDefault

@@ -6,7 +6,6 @@ import journeymap.client.model.ChunkMD;
 import journeymap.client.model.EntityDTO;
 import journeymap.common.Journeymap;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;

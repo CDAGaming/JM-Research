@@ -71,8 +71,7 @@ public abstract class JmUI extends GuiScreen {
     }
 
     protected boolean isMouseOverButton(final int mouseX, final int mouseY) {
-        for (int k = 0; k < this.buttonList.size(); ++k) {
-            final GuiButton guibutton = this.buttonList.get(k);
+        for (final GuiButton guibutton : this.buttonList) {
             if (guibutton instanceof Button) {
                 final Button button = (Button) guibutton;
                 if (button.mouseOver(mouseX, mouseY)) {
@@ -128,8 +127,7 @@ public abstract class JmUI extends GuiScreen {
             this.drawTitle();
             this.drawLogo();
             List<String> tooltip = null;
-            for (int k = 0; k < this.buttonList.size(); ++k) {
-                final GuiButton guibutton = this.buttonList.get(k);
+            for (final GuiButton guibutton : this.buttonList) {
                 guibutton.drawButton(this.mc, x, y, 0.0f);
                 if (tooltip == null && guibutton instanceof Button) {
                     final Button button = (Button) guibutton;

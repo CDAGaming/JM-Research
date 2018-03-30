@@ -150,7 +150,7 @@ public class SlotMetadata<T> implements Comparable<SlotMetadata> {
             final ArrayList<TextComponentTranslation> lines = new ArrayList<TextComponentTranslation>(4);
             if (this.tooltip != null || this.range != null || this.defaultValue != null || this.advanced) {
                 final TextFormatting nameColor = this.isToolbar() ? TextFormatting.GREEN : (this.advanced ? TextFormatting.RED : TextFormatting.AQUA);
-                lines.add(new TextComponentTranslation("jm.config.tooltip_format", new Object[]{nameColor, this.name}));
+                lines.add(new TextComponentTranslation("jm.config.tooltip_format", nameColor, this.name));
                 if (this.tooltip != null) {
                     lines.addAll(this.getWordWrappedLines(TextFormatting.YELLOW.toString(), this.tooltip));
                 }
@@ -158,11 +158,11 @@ public class SlotMetadata<T> implements Comparable<SlotMetadata> {
                     lines.addAll(this.getWordWrappedLines(TextFormatting.GRAY.toString() + TextFormatting.ITALIC.toString(), Constants.getString("jm.config.control_arrowkeys")));
                 }
                 if (this.range != null) {
-                    lines.add(new TextComponentTranslation("jm.config.tooltip_format", new Object[]{TextFormatting.WHITE, this.range}));
+                    lines.add(new TextComponentTranslation("jm.config.tooltip_format", TextFormatting.WHITE, this.range));
                 }
             }
             if (!lines.isEmpty()) {
-                final ArrayList<String> stringLines = new ArrayList<String>();
+                final ArrayList<String> stringLines = new ArrayList<>();
                 for (final TextComponentTranslation line : lines) {
                     stringLines.add(line.getUnformattedText().trim());
                 }
@@ -174,10 +174,10 @@ public class SlotMetadata<T> implements Comparable<SlotMetadata> {
 
     protected List<TextComponentTranslation> getWordWrappedLines(final String color, final String original) {
         final FontRenderer fontRenderer = FMLClientHandler.instance().getClient().fontRenderer;
-        final List<TextComponentTranslation> list = new ArrayList<TextComponentTranslation>();
+        final List<TextComponentTranslation> list = new ArrayList<>();
         final int max = fontRenderer.getBidiFlag() ? 170 : 250;
         for (final Object line : fontRenderer.listFormattedStringToWidth(original, max)) {
-            list.add(new TextComponentTranslation("jm.config.tooltip_format", new Object[]{color, line}));
+            list.add(new TextComponentTranslation("jm.config.tooltip_format", color, line));
         }
         return list;
     }
@@ -231,6 +231,6 @@ public class SlotMetadata<T> implements Comparable<SlotMetadata> {
         Boolean,
         Set,
         Integer,
-        Toolbar;
+        Toolbar
     }
 }

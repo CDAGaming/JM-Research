@@ -29,7 +29,7 @@ public class ScrollListPane<T extends ScrollListPane.ISlot> extends GuiListExten
         super(mc, width, height, top, bottom, slotHeight);
         this.hoverDelay = 800L;
         this.hpad = 12;
-        this.currentSlots = new ArrayList<ISlot>(0);
+        this.currentSlots = new ArrayList<>(0);
         this.parent = parent;
         this.setDimensions(width, height, top, bottom);
     }
@@ -137,7 +137,7 @@ public class ScrollListPane<T extends ScrollListPane.ISlot> extends GuiListExten
     }
 
     public GuiListExtended.IGuiListEntry getListEntry(final int index) {
-        return (GuiListExtended.IGuiListEntry) this.getSlot(index);
+        return this.getSlot(index);
     }
 
     public ISlot getSlot(final int index) {

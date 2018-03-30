@@ -3,7 +3,6 @@ package journeymap.client.io;
 import com.google.common.base.Joiner;
 import com.google.common.io.ByteSink;
 import com.google.common.io.ByteSource;
-import com.google.common.io.FileWriteMode;
 import com.google.common.io.Files;
 import com.google.gson.GsonBuilder;
 import journeymap.client.Constants;

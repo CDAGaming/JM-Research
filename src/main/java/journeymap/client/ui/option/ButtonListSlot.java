@@ -71,14 +71,14 @@ public class ButtonListSlot implements ScrollListPane.ISlot, Comparable<ButtonLi
 
     @Override
     public Collection<SlotMetadata> getMetadata() {
-        return (Collection<SlotMetadata>) this.buttonOptionMetadata.values();
+        return this.buttonOptionMetadata.values();
     }
 
     public void updatePosition(final int slotIndex, final int x, final int y, final float partialTicks) {
     }
 
     public void drawEntry(final int slotIndex, int x, final int y, int listWidth, final int slotHeight, final int mouseX, final int mouseY, final boolean isSelected, final float partialTicks) {
-        int margin = 0;
+        int margin;
         if (this.parent.getCurrentColumnWidth() > 0) {
             final int cols = listWidth / this.parent.currentColumnWidth;
             margin = (listWidth - (ButtonListSlot.hgap * cols - 1 + cols * this.parent.getCurrentColumnWidth())) / 2;

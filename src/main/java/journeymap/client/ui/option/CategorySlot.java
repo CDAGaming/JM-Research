@@ -29,8 +29,8 @@ public class CategorySlot implements ScrollListPane.ISlot, Comparable<CategorySl
 
     public CategorySlot(final Category category) {
         this.mc = FMLClientHandler.instance().getClient();
-        this.childMetadataList = new LinkedList<SlotMetadata>();
-        this.childSlots = new ArrayList<ScrollListPane.ISlot>();
+        this.childMetadataList = new LinkedList<>();
+        this.childSlots = new ArrayList<>();
         this.glyphClosed = "\u25b6";
         this.glyphOpen = "\u25bc";
         this.category = category;
@@ -86,7 +86,7 @@ public class CategorySlot implements ScrollListPane.ISlot, Comparable<CategorySl
         this.currentColumns = columns;
         this.childSlots.clear();
         this.sort();
-        final ArrayList<SlotMetadata> remaining = new ArrayList<SlotMetadata>(this.childMetadataList);
+        final ArrayList<SlotMetadata> remaining = new ArrayList<>(this.childMetadataList);
         while (!remaining.isEmpty()) {
             final ButtonListSlot row = new ButtonListSlot(this);
             SlotMetadata.ValueType lastType = null;
@@ -117,7 +117,7 @@ public class CategorySlot implements ScrollListPane.ISlot, Comparable<CategorySl
 
     @Override
     public Collection<SlotMetadata> getMetadata() {
-        return (Collection<SlotMetadata>) Arrays.asList(this.metadata);
+        return Collections.singletonList(this.metadata);
     }
 
     public List<SlotMetadata> getAllChildMetadata() {

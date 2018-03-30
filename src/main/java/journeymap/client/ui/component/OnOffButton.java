@@ -19,7 +19,7 @@ public class OnOffButton extends Button {
     public OnOffButton(final int id, final String labelOn, final String labelOff, final boolean toggled) {
         super(toggled ? labelOn : labelOff);
         this.toggled = true;
-        this.toggleListeners = new ArrayList<ToggleListener>(0);
+        this.toggleListeners = new ArrayList<>(0);
         this.labelOn = labelOn;
         this.labelOff = labelOff;
         this.setToggled(toggled);

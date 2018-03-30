@@ -12,7 +12,6 @@ import journeymap.client.ui.component.Button;
 import journeymap.client.ui.component.ButtonList;
 import journeymap.client.ui.component.JmUI;
 import journeymap.common.Journeymap;
-import journeymap.common.properties.Category;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -63,7 +62,7 @@ public class AboutDialog extends JmUI {
             final String bday = Constants.birthdayMessage();
             if (bday != null) {
                 this.info.lines.add(0, new SplashInfo.Line(bday, "dialog.FullscreenActions#tweet#" + bday));
-                (this.devs = new ArrayList<SplashPerson>(this.devs)).add(new SplashPerson.Fake("", "", TextureCache.getTexture(TextureCache.ColorPicker2)));
+                (this.devs = new ArrayList<>(this.devs)).add(new SplashPerson.Fake("", "", TextureCache.getTexture(TextureCache.ColorPicker2)));
             }
             return;
         }
@@ -109,11 +108,11 @@ public class AboutDialog extends JmUI {
             if (this.returnDisplay != null && this.returnDisplay instanceof OptionsManager) {
                 this.closeAndReturn();
             } else {
-                UIManager.INSTANCE.openOptionsManager(this, new Category[0]);
+                UIManager.INSTANCE.openOptionsManager(this);
             }
             return true;
         });
-        this.bottomButtons = new ButtonList(new Button[]{this.buttonOptions});
+        this.bottomButtons = new ButtonList(this.buttonOptions);
         if (this.mc.world != null) {
             this.bottomButtons.add(this.buttonClose);
         }
@@ -130,7 +129,7 @@ public class AboutDialog extends JmUI {
             FullscreenActions.launchDownloadWebsite();
             return true;
         });
-        (this.linkButtons = new ButtonList(new Button[]{this.buttonWebsite, this.buttonDownload})).equalizeWidths(fr);
+        (this.linkButtons = new ButtonList(this.buttonWebsite, this.buttonDownload)).equalizeWidths(fr);
         this.buttonList.addAll(this.linkButtons);
         final int commonWidth = Math.max(this.bottomButtons.getWidth(0) / this.bottomButtons.size(), this.linkButtons.getWidth(0) / this.linkButtons.size());
         this.bottomButtons.setWidths(commonWidth);
@@ -155,7 +154,7 @@ public class AboutDialog extends JmUI {
             FullscreenActions.discord();
             return true;
         });
-        (this.logoButtons = new ButtonList(new Button[]{this.buttonDiscord, this.buttonPatreon})).setLayout(ButtonList.Layout.Horizontal, ButtonList.Direction.LeftToRight);
+        (this.logoButtons = new ButtonList(this.buttonDiscord, this.buttonPatreon)).setLayout(ButtonList.Layout.Horizontal, ButtonList.Direction.LeftToRight);
         this.logoButtons.setHeights(Math.max(this.discordLogo.getHeight(), this.patreonLogo.getHeight()) / this.scaleFactor);
         this.logoButtons.setWidths(Math.max(this.discordLogo.getWidth(), this.patreonLogo.getWidth()) / this.scaleFactor);
         this.buttonList.addAll(this.logoButtons);

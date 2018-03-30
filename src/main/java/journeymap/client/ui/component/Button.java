@@ -56,7 +56,7 @@ public class Button extends GuiButton implements ScrollPane.Scrollable {
         this.defaultStyle = true;
         this.WIDTH_PAD = 12;
         this.fontRenderer = FMLClientHandler.instance().getClient().fontRenderer;
-        this.clickListeners = new ArrayList<Function<Button, Boolean>>(0);
+        this.clickListeners = new ArrayList<>(0);
         this.finishInit();
     }
 
@@ -210,7 +210,7 @@ public class Button extends GuiButton implements ScrollPane.Scrollable {
     }
 
     public List<String> getTooltip() {
-        final ArrayList<String> list = new ArrayList<String>();
+        final ArrayList<String> list = new ArrayList<>();
         if (this.tooltip != null) {
             for (final String line : this.tooltip) {
                 list.addAll(this.fontRenderer.listFormattedStringToWidth(line, 200));

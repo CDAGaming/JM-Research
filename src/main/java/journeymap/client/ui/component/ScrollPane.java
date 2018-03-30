@@ -3,7 +3,6 @@ package journeymap.client.ui.component;
 import journeymap.client.render.draw.DrawUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiSlot;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -66,7 +65,7 @@ public class ScrollPane extends GuiSlot {
     }
 
     protected void elementClicked(final int i, final boolean flag, final int p1, final int p2) {
-        this.selected = (Scrollable) this.items.get(i);
+        this.selected = this.items.get(i);
     }
 
     protected boolean isSelected(final int i) {
@@ -86,7 +85,7 @@ public class ScrollPane extends GuiSlot {
 
     public Button mouseClicked(final int mouseX, final int mouseY, final int mouseButton) {
         if (mouseButton == 0) {
-            final ArrayList<Scrollable> itemsCopy = new ArrayList<Scrollable>(this.items);
+            final ArrayList<Scrollable> itemsCopy = new ArrayList<>(this.items);
             for (final Scrollable item : itemsCopy) {
                 if (item == null) {
                     continue;
@@ -97,10 +96,9 @@ public class ScrollPane extends GuiSlot {
                 if (item instanceof Button) {
                     final Button button = (Button) item;
                     if (button.mousePressed(this.mc, mouseX, mouseY)) {
-                        this.actionPerformed((GuiButton) button);
+                        this.actionPerformed(button);
                         return button;
                     }
-                    continue;
                 } else {
                     item.clickScrollable(this.mc, mouseX, mouseY);
                 }
@@ -132,7 +130,7 @@ public class ScrollPane extends GuiSlot {
         final int margin = 4;
         final int itemX = this.getX() + 2;
         final int itemY = y + this.getY();
-        final Scrollable item = (Scrollable) this.items.get(index);
+        final Scrollable item = this.items.get(index);
         item.setPosition(itemX, itemY);
         item.setScrollableWidth(this.paneWidth - 4);
         if (this.inFullView(item)) {

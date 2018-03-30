@@ -81,15 +81,15 @@ public class WaypointGroup implements Comparable<WaypointGroup> {
         return this.colorInt;
     }
 
-    public WaypointGroup setColor(final int color) {
-        this.color = RGB.toHexString(color);
-        this.colorInt = color;
-        return this.setDirty();
-    }
-
     public WaypointGroup setColor(final String color) {
         this.colorInt = RGB.hexToInt(color);
         this.color = RGB.toHexString(this.colorInt);
+        return this.setDirty();
+    }
+
+    public WaypointGroup setColor(final int color) {
+        this.color = RGB.toHexString(color);
+        this.colorInt = color;
         return this.setDirty();
     }
 

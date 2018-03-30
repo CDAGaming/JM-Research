@@ -3,7 +3,6 @@ package journeymap.client.cartography;
 import journeymap.client.model.BlockMD;
 import journeymap.client.model.ChunkMD;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
 
 import java.awt.*;
 import java.util.concurrent.atomic.AtomicInteger;
