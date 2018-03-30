@@ -1,13 +1,12 @@
 package journeymap.client.cartography.color;
 
-import com.google.gson.annotations.*;
-import journeymap.client.model.*;
-import journeymap.common.*;
-import com.google.common.collect.*;
-import java.util.*;
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Ordering;
+import com.google.gson.annotations.Since;
+import journeymap.client.model.BlockMD;
+import journeymap.common.Journeymap;
 
-class BlockStateColor implements Comparable<BlockStateColor>
-{
+class BlockStateColor implements Comparable<BlockStateColor> {
     @Since(5.45)
     String block;
     @Since(5.45)
@@ -18,11 +17,11 @@ class BlockStateColor implements Comparable<BlockStateColor>
     String color;
     @Since(5.2)
     Float alpha;
-    
+
     BlockStateColor(final BlockMD blockMD) {
-        this(blockMD, Integer.valueOf(blockMD.getTextureColor()));
+        this(blockMD, blockMD.getTextureColor());
     }
-    
+
     BlockStateColor(final BlockMD blockMD, final Integer color) {
         if (Journeymap.getClient().getCoreProperties().verboseColorPalette.get()) {
             this.block = blockMD.getBlockId();
@@ -34,15 +33,15 @@ class BlockStateColor implements Comparable<BlockStateColor>
             this.alpha = blockMD.getAlpha();
         }
     }
-    
+
     BlockStateColor(final String color, final Float alpha) {
         this.color = color;
         this.alpha = ((alpha == null) ? 1.0f : alpha);
     }
-    
+
     @Override
     public int compareTo(final BlockStateColor that) {
         final Ordering ordering = Ordering.natural().nullsLast();
-        return ComparisonChain.start().compare((Object)this.name, (Object)that.name, (Comparator)ordering).compare((Object)this.block, (Object)that.block, (Comparator)ordering).compare((Object)this.state, (Object)that.state, (Comparator)ordering).compare((Object)this.color, (Object)that.color, (Comparator)ordering).compare((Object)this.alpha, (Object)that.alpha, (Comparator)ordering).result();
+        return ComparisonChain.start().compare(this.name, that.name, ordering).compare(this.block, that.block, ordering).compare(this.state, that.state, ordering).compare(this.color, that.color, ordering).compare(this.alpha, that.alpha, ordering).result();
     }
 }
