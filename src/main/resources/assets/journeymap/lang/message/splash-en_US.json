@@ -3,24 +3,15 @@
 {
   "lines": [
     {
-      "label": "New UI themes & Fullscreen Map layout",
-      "action": "dialog.FullscreenActions#open"
+      "label": "Server Configuration files have changed!"
     },
     {
-      "label": "Switch between Cave layers in Fullscreen Map",
-      "action": "dialog.FullscreenActions#showCaveLayers"
+      "label": "Servers can toggle more features using configs",
+      "action": "dialog.FullscreenActions#showFeatures"
     },
     {
-      "label": "New Minimap Option: Show Day/Night",
-      "action": "dialog.OptionsManager#MiniMap1"
-    },
-    {
-      "label": "New Cartography Options to blend colors",
-      "action": "dialog.OptionsManager#Cartography"
-    },
-    {
-      "label": "New customizable keybindings (Controls)",
-      "action": "dialog.FullscreenActions#openKeybindings"
+      "label": "Mods can toggle features using API 2.0",
+      "action": "dialog.FullscreenActions#showFeatures"
     },
     {
       "label": "JourneyMap has a public Discord!",

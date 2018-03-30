@@ -8,7 +8,7 @@ var JourneyMap = (function() {
 	var map;
 	var mapOverlay;
 
-    var mapType = "day";
+    var mapType = "Day";
 	var centerOnPlayer = true;
 	var showCaves = true;	
 	var showAnimals = false;
@@ -657,37 +657,37 @@ var JourneyMap = (function() {
         var toggleNext = true;
 	    if(!mapType) {
 	        toggleNext = false;
-	        mapType = 'day';
+	        mapType = 'Day';
 	        if (JM.world.dimension === 0 && playerUnderground === false) {
                 if (JM.world.time >= 13800) {
-                    mapType = 'night';
+                    mapType = 'Night';
                 }
             }
 	    }
 
 	    var typeChanged = false;
 	    if(toggleNext) {
-	        if (mapType === "day") {
-	            mapType = "night";
-	        } else if (mapType === "night") {
-                mapType = "topo";
+	        if (mapType === "Day") {
+	            mapType = "Night";
+	        } else if (mapType === "Night") {
+                mapType = "Topo";
             } else {
-                mapType = "day";
+                mapType = "Day";
             }
             typeChanged = true;
 	    }
 
-		if (mapType === "day") {
+		if (mapType === "Day") {
 			$("#dayNightText").html(getMessage('day_button_text'));
 			$("#dayNightButton").attr("title", getMessage('day_button_title'));
 			$("#dayNightButtonImg").attr('src', '/theme/icon/day.png')
 
-		} else if (mapType === "night") {
+		} else if (mapType === "Night") {
 			$("#dayNightText").html(getMessage('night_button_text'));
 			$("#dayNightButton").attr("title", getMessage('night_button_title'));
 			$("#dayNightButtonImg").attr('src', '/theme/icon/night.png');
 	
-		} else if (mapType === "topo") {
+		} else if (mapType === "Topo") {
             $("#dayNightText").html(getMessage('topo_button_text'));
             $("#dayNightButton").attr("title", getMessage('topo_button_title'));
             $("#dayNightButtonImg").attr('src', '/theme/icon/topo.png');
