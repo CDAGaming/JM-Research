@@ -1,18 +1,19 @@
 package journeymap.client.forge.event;
 
-import net.minecraftforge.fml.relauncher.*;
-import net.minecraftforge.client.event.*;
-import journeymap.common.*;
-import com.google.common.base.*;
-import journeymap.client.waypoint.*;
-import journeymap.common.log.*;
-import net.minecraft.util.text.*;
-import net.minecraft.client.entity.*;
-import net.minecraftforge.fml.common.eventhandler.*;
+import com.google.common.base.Strings;
+import journeymap.client.waypoint.WaypointChatParser;
+import journeymap.common.Journeymap;
+import journeymap.common.log.LogFormatter;
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class ChatEventHandler implements EventHandlerManager.EventHandler
-{
+public class ChatEventHandler implements EventHandlerManager.EventHandler {
     @SideOnly(Side.CLIENT)
     @SubscribeEvent
     public void invoke(final ClientChatReceivedEvent event) {
@@ -21,16 +22,15 @@ public class ChatEventHandler implements EventHandlerManager.EventHandler
             try {
                 if (message instanceof TextComponentTranslation) {
                     final EntityPlayerSP player = Journeymap.clientPlayer();
-                    if (player != null && "gameMode.changed".equals(((TextComponentTranslation)message).func_150268_i())) {
+                    if (player != null && "gameMode.changed".equals(((TextComponentTranslation) message).getKey())) {
                         return;
                     }
                 }
-                final String text = event.getMessage().func_150254_d();
+                final String text = event.getMessage().getFormattedText();
                 if (!Strings.isNullOrEmpty(text)) {
                     WaypointChatParser.parseChatForWaypoints(event, text);
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 Journeymap.getLogger().warn("Unexpected exception on ClientChatReceivedEvent: " + LogFormatter.toString(e));
             }
         }

@@ -1,57 +1,62 @@
 package journeymap.client.feature;
 
-import javax.annotation.*;
-import net.minecraft.client.*;
-import journeymap.common.api.feature.*;
-import net.minecraft.world.*;
-import journeymap.client.*;
-import journeymap.common.feature.*;
-import journeymap.common.*;
-import net.minecraftforge.fml.common.*;
-import java.text.*;
-import com.google.common.base.*;
-import java.util.*;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import journeymap.client.Constants;
+import journeymap.client.JourneymapClient;
+import journeymap.common.Journeymap;
+import journeymap.common.api.feature.Feature;
+import journeymap.common.feature.DimensionPolicies;
+import journeymap.common.feature.PlayerFeatures;
+import journeymap.common.feature.Policy;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.GameType;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.ModContainer;
+
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @ParametersAreNonnullByDefault
-public class ClientFeatures extends PlayerFeatures
-{
+public class ClientFeatures extends PlayerFeatures {
+    private static final Map<String, String> modIdMap;
     private static DateFormat DATEFORMAT;
     private static Supplier<ClientFeatures> instance;
-    private static final Map<String, String> modIdMap;
-    
+
+    static {
+        ClientFeatures.DATEFORMAT = new SimpleDateFormat("d MMM yyyy HH:mm:ss");
+        ClientFeatures.instance = Suppliers.memoize(ClientFeatures::new);
+        modIdMap = new HashMap<>();
+    }
+
     private ClientFeatures() {
-        super(Minecraft.func_71410_x().func_110432_I().func_148256_e().getId());
+        super(Minecraft.getMinecraft().getSession().getProfile().getId());
     }
-    
-    public boolean isAllowed(final Feature feature, final int dimension) {
-        return this.get(dimension).isAllowed(JourneymapClient.getGameType(), feature);
-    }
-    
-    @Override
-    public boolean isAllowed(final GameType gameType, final Feature feature, final int dimension) {
-        return this.get(dimension).isAllowed(gameType, feature);
-    }
-    
+
     public static ClientFeatures instance() {
-        return (ClientFeatures)ClientFeatures.instance.get();
+        return ClientFeatures.instance.get();
     }
-    
+
     public static String getServerOriginName() {
         return Constants.getString("jm.common.server_config");
     }
-    
+
     public static String getFeatureCategoryName(final Feature feature) {
         return Constants.getString(feature.getFeatureCategoryKey());
     }
-    
+
     public static String getFeatureName(final Feature feature) {
         return Constants.getString(feature.getFeatureKey());
     }
-    
+
     public static String getFeatureTooltip(final Feature feature) {
         return Constants.getString(feature.getFeatureTooltipKey());
     }
-    
+
     public static String getOriginString(final Policy policy) {
         final String origin = policy.getOrigin();
         if (origin == null) {
@@ -62,7 +67,7 @@ public class ClientFeatures extends PlayerFeatures
         }
         return getModName(origin);
     }
-    
+
     public static String getAuditString(final Policy policy) {
         final String origin = getOriginString(policy);
         final String time = ClientFeatures.DATEFORMAT.format(new Date(policy.getTimestamp()));
@@ -84,7 +89,38 @@ public class ClientFeatures extends PlayerFeatures
             }
         }
     }
-    
+
+    private static String getModName(String modId) {
+        return modIdMap.computeIfAbsent(modId, id -> {
+                    try {
+                        ModContainer mod = Loader.instance().getIndexedModList().get(modId);
+                        if (mod == null) {
+                            for (Map.Entry modEntry : Loader.instance().getIndexedModList().entrySet()) {
+                                if (!((ModContainer) modEntry.getValue()).getModId().toLowerCase().equals(modId)) continue;
+                                mod = (ModContainer) modEntry.getValue();
+                                break;
+                            }
+                        }
+                        if (mod != null) {
+                            return mod.getName();
+                        }
+                    } catch (Exception e) {
+                        Journeymap.getLogger().error("Error looking up mod " + id, e);
+                    }
+                    return id;
+                }
+        );
+    }
+
+    public boolean isAllowed(final Feature feature, final int dimension) {
+        return this.get(dimension).isAllowed(JourneymapClient.getGameType(), feature);
+    }
+
+    @Override
+    public boolean isAllowed(final GameType gameType, final Feature feature, final int dimension) {
+        return this.get(dimension).isAllowed(gameType, feature);
+    }
+
     public void logDeltas(final String header, final DimensionPolicies oldPolicies, final DimensionPolicies newPolicies) {
         boolean unchanged = true;
         final StringBuilder sb = new StringBuilder(header);
@@ -109,39 +145,5 @@ public class ClientFeatures extends PlayerFeatures
             sb.append(": No changes");
         }
         Journeymap.getLogger().info(sb.toString());
-    }
-    
-    private static String getModName(final String modId) {
-        ModContainer mod;
-        final Iterator<Map.Entry<String, ModContainer>> iterator;
-        Map.Entry<String, ModContainer> modEntry;
-        return ClientFeatures.modIdMap.computeIfAbsent(modId, id -> {
-            try {
-                mod = Loader.instance().getIndexedModList().get(modId);
-                if (mod == null) {
-                    Loader.instance().getIndexedModList().entrySet().iterator();
-                    while (iterator.hasNext()) {
-                        modEntry = iterator.next();
-                        if (modEntry.getValue().getModId().toLowerCase().equals(modId)) {
-                            mod = modEntry.getValue();
-                            break;
-                        }
-                    }
-                }
-                if (mod != null) {
-                    return mod.getName();
-                }
-            }
-            catch (Exception e) {
-                Journeymap.getLogger().error("Error looking up mod " + id, (Throwable)e);
-            }
-            return id;
-        });
-    }
-    
-    static {
-        ClientFeatures.DATEFORMAT = new SimpleDateFormat("d MMM yyyy HH:mm:ss");
-        ClientFeatures.instance = (Supplier<ClientFeatures>)Suppliers.memoize(ClientFeatures::new);
-        modIdMap = new HashMap<String, String>();
     }
 }
